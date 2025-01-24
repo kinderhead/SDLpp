@@ -1,0 +1,9 @@
+{
+    "SDL_WindowFlags": "SDL_WINDOW_",
+    "SDL_MouseButtonFlags": false,
+    "SDL_GlobFlags": "SDL_GLOB_",
+    "SDL_GPUTextureUsageFlags": "SDL_GPU_TEXTUREUSAGE_",
+    "SDL_InitFlags": "SDL_INIT_",
+    "SDL_MessageBoxFlags": "SDL_MESSAGEBOX_",
+    "SDL_TrayEntryFlags": "SDL_TRAYENTRY_"
+}

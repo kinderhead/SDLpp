@@ -1,0 +1,12 @@
+{
+    "SDL_Window":
+    {
+        "remove": ["Window"],
+        "init": "SDL_CreateWindow"
+    },
+    "SDL_Renderer":
+    {
+        "remove": ["Render", "Renderer"],
+        "init": "SDL_CreateRenderer"
+    }
+}
