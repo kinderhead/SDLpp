@@ -2,11 +2,25 @@
     "SDL_Window":
     {
         "remove": ["Window"],
-        "init": "SDL_CreateWindow"
+        "init": ["SDL_CreateWindow"],
+        "destroy": "SDL_DestroyWindow"
     },
     "SDL_Renderer":
     {
         "remove": ["Render", "Renderer"],
-        "init": "SDL_CreateRenderer"
+        "init": ["SDL_CreateRenderer"],
+        "destroy": "SDL_DestroyRenderer"
+    },
+    "SDL_Surface":
+    {
+        "remove": [],
+        "init": ["SDL_CreateSurface", "SDL_CreateSurfaceFrom"],
+        "destroy": "SDL_DestroySurface"
+    },
+    "SDL_Palette":
+    {
+        "remove": ["Palette"],
+        "init": ["SDL_CreatePalette", "SDL_CreateSurfacePalette"],
+        "destroy": "SDL_DestroyPalette"
     }
 }

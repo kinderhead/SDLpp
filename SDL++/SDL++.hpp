@@ -4,6 +4,9 @@
 #include <SDL3/SDL.h>
 #include <exception>
 #include <string>
+#include <unordered_map>
+#include <memory>
+#include <vector>
 
 namespace SDL {
 
@@ -39,17 +42,17 @@ enum WindowFlags
     MAXIMIZED = SDL_UINT64_C(0x0000000000000080),
     INPUT_FOCUS = SDL_UINT64_C(0x0000000000000200),
     POPUP_MENU = SDL_UINT64_C(0x0000000000080000),
-    MOUSE_GRABBED = SDL_UINT64_C(0x0000000000000100),
     NOT_FOCUSABLE = SDL_UINT64_C(0x0000000080000000),
     RESIZABLE = SDL_UINT64_C(0x0000000000000020),
-    HIGH_PIXEL_DENSITY = SDL_UINT64_C(0x0000000000002000),
     MOUSE_FOCUS = SDL_UINT64_C(0x0000000000000400),
-    MODAL = SDL_UINT64_C(0x0000000000001000),
     METAL = SDL_UINT64_C(0x0000000020000000),
+    MODAL = SDL_UINT64_C(0x0000000000001000),
+    HIGH_PIXEL_DENSITY = SDL_UINT64_C(0x0000000000002000),
     FULLSCREEN = SDL_UINT64_C(0x0000000000000001),
     KEYBOARD_GRABBED = SDL_UINT64_C(0x0000000000100000),
     TOOLTIP = SDL_UINT64_C(0x0000000000040000),
     EXTERNAL = SDL_UINT64_C(0x0000000000000800),
+    MOUSE_GRABBED = SDL_UINT64_C(0x0000000000000100),
     OCCLUDED = SDL_UINT64_C(0x0000000000000004)
 };
 
@@ -113,22 +116,22 @@ inline void* calloc(size_t nmemb, size_t size) { return SDL_calloc(nmemb, size);
 inline void* realloc(void* mem, size_t size) { return SDL_realloc(mem, size); }
 
 //! @copydoc SDL_free()
-inline void free(void* mem) {  SDL_free(mem); }
+inline void free(void* mem) { SDL_free(mem); }
 
 //! @copydoc SDL_GetOriginalMemoryFunctions()
-inline void GetOriginalMemoryFunctions(SDL_malloc_func* malloc_func, SDL_calloc_func* calloc_func, SDL_realloc_func* realloc_func, SDL_free_func* free_func) {  SDL_GetOriginalMemoryFunctions(malloc_func, calloc_func, realloc_func, free_func); }
+inline void GetOriginalMemoryFunctions(SDL_malloc_func* malloc_func, SDL_calloc_func* calloc_func, SDL_realloc_func* realloc_func, SDL_free_func* free_func) { SDL_GetOriginalMemoryFunctions(malloc_func, calloc_func, realloc_func, free_func); }
 
 //! @copydoc SDL_GetMemoryFunctions()
-inline void GetMemoryFunctions(SDL_malloc_func* malloc_func, SDL_calloc_func* calloc_func, SDL_realloc_func* realloc_func, SDL_free_func* free_func) {  SDL_GetMemoryFunctions(malloc_func, calloc_func, realloc_func, free_func); }
+inline void GetMemoryFunctions(SDL_malloc_func* malloc_func, SDL_calloc_func* calloc_func, SDL_realloc_func* realloc_func, SDL_free_func* free_func) { SDL_GetMemoryFunctions(malloc_func, calloc_func, realloc_func, free_func); }
 
 //! @copydoc SDL_SetMemoryFunctions()
-inline bool SetMemoryFunctions(SDL_malloc_func malloc_func, SDL_calloc_func calloc_func, SDL_realloc_func realloc_func, SDL_free_func free_func) { auto _ret = SDL_SetMemoryFunctions(malloc_func, calloc_func, realloc_func, free_func); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetMemoryFunctions(SDL_malloc_func malloc_func, SDL_calloc_func calloc_func, SDL_realloc_func realloc_func, SDL_free_func free_func) { auto _ret = SDL_SetMemoryFunctions(malloc_func, calloc_func, realloc_func, free_func); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_aligned_alloc()
 inline void* aligned_alloc(size_t alignment, size_t size) { return SDL_aligned_alloc(alignment, size); }
 
 //! @copydoc SDL_aligned_free()
-inline void aligned_free(void* mem) {  SDL_aligned_free(mem); }
+inline void aligned_free(void* mem) { SDL_aligned_free(mem); }
 
 //! @copydoc SDL_GetNumAllocations()
 inline int GetNumAllocations() { return SDL_GetNumAllocations(); }
@@ -146,13 +149,13 @@ inline const char* GetEnvironmentVariable(SDL_Environment* env, const char* name
 inline char** GetEnvironmentVariables(SDL_Environment* env) { auto _ret = SDL_GetEnvironmentVariables(env); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_SetEnvironmentVariable()
-inline bool SetEnvironmentVariable(SDL_Environment* env, const char* name, const char* value, bool overwrite) { auto _ret = SDL_SetEnvironmentVariable(env, name, value, overwrite); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetEnvironmentVariable(SDL_Environment* env, const char* name, const char* value, bool overwrite) { auto _ret = SDL_SetEnvironmentVariable(env, name, value, overwrite); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_UnsetEnvironmentVariable()
-inline bool UnsetEnvironmentVariable(SDL_Environment* env, const char* name) { auto _ret = SDL_UnsetEnvironmentVariable(env, name); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void UnsetEnvironmentVariable(SDL_Environment* env, const char* name) { auto _ret = SDL_UnsetEnvironmentVariable(env, name); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_DestroyEnvironment()
-inline void DestroyEnvironment(SDL_Environment* env) {  SDL_DestroyEnvironment(env); }
+inline void DestroyEnvironment(SDL_Environment* env) { SDL_DestroyEnvironment(env); }
 
 //! @copydoc SDL_getenv()
 inline const char* getenv(const char* name) { return SDL_getenv(name); }
@@ -167,13 +170,13 @@ inline int setenv_unsafe(const char* name, const char* value, int overwrite) { r
 inline int unsetenv_unsafe(const char* name) { return SDL_unsetenv_unsafe(name); }
 
 //! @copydoc SDL_qsort()
-inline void qsort(void* base, size_t nmemb, size_t size, SDL_CompareCallback compare) {  SDL_qsort(base, nmemb, size, compare); }
+inline void qsort(void* base, size_t nmemb, size_t size, SDL_CompareCallback compare) { SDL_qsort(base, nmemb, size, compare); }
 
 //! @copydoc SDL_bsearch()
 inline void* bsearch(const void* key, const void* base, size_t nmemb, size_t size, SDL_CompareCallback compare) { return SDL_bsearch(key, base, nmemb, size, compare); }
 
 //! @copydoc SDL_qsort_r()
-inline void qsort_r(void* base, size_t nmemb, size_t size, SDL_CompareCallback_r compare, void* userdata) {  SDL_qsort_r(base, nmemb, size, compare, userdata); }
+inline void qsort_r(void* base, size_t nmemb, size_t size, SDL_CompareCallback_r compare, void* userdata) { SDL_qsort_r(base, nmemb, size, compare, userdata); }
 
 //! @copydoc SDL_bsearch_r()
 inline void* bsearch_r(const void* key, const void* base, size_t nmemb, size_t size, SDL_CompareCallback_r compare, void* userdata) { return SDL_bsearch_r(key, base, nmemb, size, compare, userdata); }
@@ -413,7 +416,7 @@ inline int vswprintf(wchar_t* text, size_t maxlen, const wchar_t* fmt, va_list a
 inline int vasprintf(char** strp, const char* fmt, va_list ap) { return SDL_vasprintf(strp, fmt, ap); }
 
 //! @copydoc SDL_srand()
-inline void srand(Uint64 seed) {  SDL_srand(seed); }
+inline void srand(Uint64 seed) { SDL_srand(seed); }
 
 //! @copydoc SDL_rand()
 inline Sint32 rand(Sint32 n) { return SDL_rand(n); }
@@ -592,20 +595,14 @@ inline char* iconv_string(const char* tocode, const char* fromcode, const char* 
 //! @copydoc SDL_size_mul_check_overflow()
 inline bool size_mul_check_overflow(size_t a, size_t b, size_t* ret) { return SDL_size_mul_check_overflow(a, b, ret); }
 
-//! @copydoc SDL_size_mul_check_overflow_builtin()
-inline bool size_mul_check_overflow_builtin(size_t a, size_t b, size_t* ret) { return SDL_size_mul_check_overflow_builtin(a, b, ret); }
-
 //! @copydoc SDL_size_add_check_overflow()
 inline bool size_add_check_overflow(size_t a, size_t b, size_t* ret) { return SDL_size_add_check_overflow(a, b, ret); }
-
-//! @copydoc SDL_size_add_check_overflow_builtin()
-inline bool size_add_check_overflow_builtin(size_t a, size_t b, size_t* ret) { return SDL_size_add_check_overflow_builtin(a, b, ret); }
 
 //! @copydoc SDL_ReportAssertion()
 inline SDL_AssertState ReportAssertion(SDL_AssertData* data, const char* func, const char* file, int line) { return SDL_ReportAssertion(data, func, file, line); }
 
 //! @copydoc SDL_SetAssertionHandler()
-inline void SetAssertionHandler(SDL_AssertionHandler handler, void* userdata) {  SDL_SetAssertionHandler(handler, userdata); }
+inline void SetAssertionHandler(SDL_AssertionHandler handler, void* userdata) { SDL_SetAssertionHandler(handler, userdata); }
 
 //! @copydoc SDL_GetDefaultAssertionHandler()
 inline SDL_AssertionHandler GetDefaultAssertionHandler() { return SDL_GetDefaultAssertionHandler(); }
@@ -617,7 +614,7 @@ inline SDL_AssertionHandler GetAssertionHandler(void** puserdata) { return SDL_G
 inline const SDL_AssertData* GetAssertionReport() { return SDL_GetAssertionReport(); }
 
 //! @copydoc SDL_ResetAssertionReport()
-inline void ResetAssertionReport() {  SDL_ResetAssertionReport(); }
+inline void ResetAssertionReport() { SDL_ResetAssertionReport(); }
 
 //! @copydoc SDL_AsyncIOFromFile()
 inline SDL_AsyncIO* AsyncIOFromFile(const char* file, const char* mode) { auto _ret = SDL_AsyncIOFromFile(file, mode); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
@@ -626,19 +623,19 @@ inline SDL_AsyncIO* AsyncIOFromFile(const char* file, const char* mode) { auto _
 inline Sint64 GetAsyncIOSize(SDL_AsyncIO* asyncio) { auto _ret = SDL_GetAsyncIOSize(asyncio); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_ReadAsyncIO()
-inline bool ReadAsyncIO(SDL_AsyncIO* asyncio, void* ptr, Uint64 offset, Uint64 size, SDL_AsyncIOQueue* queue, void* userdata) { auto _ret = SDL_ReadAsyncIO(asyncio, ptr, offset, size, queue, userdata); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void ReadAsyncIO(SDL_AsyncIO* asyncio, void* ptr, Uint64 offset, Uint64 size, SDL_AsyncIOQueue* queue, void* userdata) { auto _ret = SDL_ReadAsyncIO(asyncio, ptr, offset, size, queue, userdata); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_WriteAsyncIO()
-inline bool WriteAsyncIO(SDL_AsyncIO* asyncio, void* ptr, Uint64 offset, Uint64 size, SDL_AsyncIOQueue* queue, void* userdata) { auto _ret = SDL_WriteAsyncIO(asyncio, ptr, offset, size, queue, userdata); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void WriteAsyncIO(SDL_AsyncIO* asyncio, void* ptr, Uint64 offset, Uint64 size, SDL_AsyncIOQueue* queue, void* userdata) { auto _ret = SDL_WriteAsyncIO(asyncio, ptr, offset, size, queue, userdata); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_CloseAsyncIO()
-inline bool CloseAsyncIO(SDL_AsyncIO* asyncio, bool flush, SDL_AsyncIOQueue* queue, void* userdata) { auto _ret = SDL_CloseAsyncIO(asyncio, flush, queue, userdata); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void CloseAsyncIO(SDL_AsyncIO* asyncio, bool flush, SDL_AsyncIOQueue* queue, void* userdata) { auto _ret = SDL_CloseAsyncIO(asyncio, flush, queue, userdata); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_CreateAsyncIOQueue()
 inline SDL_AsyncIOQueue* CreateAsyncIOQueue() { auto _ret = SDL_CreateAsyncIOQueue(); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_DestroyAsyncIOQueue()
-inline void DestroyAsyncIOQueue(SDL_AsyncIOQueue* queue) {  SDL_DestroyAsyncIOQueue(queue); }
+inline void DestroyAsyncIOQueue(SDL_AsyncIOQueue* queue) { SDL_DestroyAsyncIOQueue(queue); }
 
 //! @copydoc SDL_GetAsyncIOResult()
 inline bool GetAsyncIOResult(SDL_AsyncIOQueue* queue, SDL_AsyncIOOutcome* outcome) { return SDL_GetAsyncIOResult(queue, outcome); }
@@ -647,25 +644,25 @@ inline bool GetAsyncIOResult(SDL_AsyncIOQueue* queue, SDL_AsyncIOOutcome* outcom
 inline bool WaitAsyncIOResult(SDL_AsyncIOQueue* queue, SDL_AsyncIOOutcome* outcome, Sint32 timeoutMS) { return SDL_WaitAsyncIOResult(queue, outcome, timeoutMS); }
 
 //! @copydoc SDL_SignalAsyncIOQueue()
-inline void SignalAsyncIOQueue(SDL_AsyncIOQueue* queue) {  SDL_SignalAsyncIOQueue(queue); }
+inline void SignalAsyncIOQueue(SDL_AsyncIOQueue* queue) { SDL_SignalAsyncIOQueue(queue); }
 
 //! @copydoc SDL_LoadFileAsync()
-inline bool LoadFileAsync(const char* file, SDL_AsyncIOQueue* queue, void* userdata) { auto _ret = SDL_LoadFileAsync(file, queue, userdata); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void LoadFileAsync(const char* file, SDL_AsyncIOQueue* queue, void* userdata) { auto _ret = SDL_LoadFileAsync(file, queue, userdata); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_TryLockSpinlock()
 inline bool TryLockSpinlock(SDL_SpinLock* lock) { return SDL_TryLockSpinlock(lock); }
 
 //! @copydoc SDL_LockSpinlock()
-inline void LockSpinlock(SDL_SpinLock* lock) {  SDL_LockSpinlock(lock); }
+inline void LockSpinlock(SDL_SpinLock* lock) { SDL_LockSpinlock(lock); }
 
 //! @copydoc SDL_UnlockSpinlock()
-inline void UnlockSpinlock(SDL_SpinLock* lock) {  SDL_UnlockSpinlock(lock); }
+inline void UnlockSpinlock(SDL_SpinLock* lock) { SDL_UnlockSpinlock(lock); }
 
 //! @copydoc SDL_MemoryBarrierReleaseFunction()
-inline void MemoryBarrierReleaseFunction() {  SDL_MemoryBarrierReleaseFunction(); }
+inline void MemoryBarrierReleaseFunction() { SDL_MemoryBarrierReleaseFunction(); }
 
 //! @copydoc SDL_MemoryBarrierAcquireFunction()
-inline void MemoryBarrierAcquireFunction() {  SDL_MemoryBarrierAcquireFunction(); }
+inline void MemoryBarrierAcquireFunction() { SDL_MemoryBarrierAcquireFunction(); }
 
 //! @copydoc SDL_CompareAndSwapAtomicInt()
 inline bool CompareAndSwapAtomicInt(SDL_AtomicInt* a, int oldval, int newval) { return SDL_CompareAndSwapAtomicInt(a, oldval, newval); }
@@ -728,31 +725,31 @@ inline SDL_PropertiesID GetGlobalProperties() { auto _ret = SDL_GetGlobalPropert
 inline SDL_PropertiesID CreateProperties() { auto _ret = SDL_CreateProperties(); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_CopyProperties()
-inline bool CopyProperties(SDL_PropertiesID src, SDL_PropertiesID dst) { auto _ret = SDL_CopyProperties(src, dst); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void CopyProperties(SDL_PropertiesID src, SDL_PropertiesID dst) { auto _ret = SDL_CopyProperties(src, dst); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_LockProperties()
-inline bool LockProperties(SDL_PropertiesID props) { auto _ret = SDL_LockProperties(props); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void LockProperties(SDL_PropertiesID props) { auto _ret = SDL_LockProperties(props); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_UnlockProperties()
-inline void UnlockProperties(SDL_PropertiesID props) {  SDL_UnlockProperties(props); }
+inline void UnlockProperties(SDL_PropertiesID props) { SDL_UnlockProperties(props); }
 
 //! @copydoc SDL_SetPointerPropertyWithCleanup()
-inline bool SetPointerPropertyWithCleanup(SDL_PropertiesID props, const char* name, void* value, SDL_CleanupPropertyCallback cleanup, void* userdata) { auto _ret = SDL_SetPointerPropertyWithCleanup(props, name, value, cleanup, userdata); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetPointerPropertyWithCleanup(SDL_PropertiesID props, const char* name, void* value, SDL_CleanupPropertyCallback cleanup, void* userdata) { auto _ret = SDL_SetPointerPropertyWithCleanup(props, name, value, cleanup, userdata); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetPointerProperty()
-inline bool SetPointerProperty(SDL_PropertiesID props, const char* name, void* value) { auto _ret = SDL_SetPointerProperty(props, name, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetPointerProperty(SDL_PropertiesID props, const char* name, void* value) { auto _ret = SDL_SetPointerProperty(props, name, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetStringProperty()
-inline bool SetStringProperty(SDL_PropertiesID props, const char* name, const char* value) { auto _ret = SDL_SetStringProperty(props, name, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetStringProperty(SDL_PropertiesID props, const char* name, const char* value) { auto _ret = SDL_SetStringProperty(props, name, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetNumberProperty()
-inline bool SetNumberProperty(SDL_PropertiesID props, const char* name, Sint64 value) { auto _ret = SDL_SetNumberProperty(props, name, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetNumberProperty(SDL_PropertiesID props, const char* name, Sint64 value) { auto _ret = SDL_SetNumberProperty(props, name, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetFloatProperty()
-inline bool SetFloatProperty(SDL_PropertiesID props, const char* name, float value) { auto _ret = SDL_SetFloatProperty(props, name, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetFloatProperty(SDL_PropertiesID props, const char* name, float value) { auto _ret = SDL_SetFloatProperty(props, name, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetBooleanProperty()
-inline bool SetBooleanProperty(SDL_PropertiesID props, const char* name, bool value) { auto _ret = SDL_SetBooleanProperty(props, name, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetBooleanProperty(SDL_PropertiesID props, const char* name, bool value) { auto _ret = SDL_SetBooleanProperty(props, name, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_HasProperty()
 inline bool HasProperty(SDL_PropertiesID props, const char* name) { return SDL_HasProperty(props, name); }
@@ -776,13 +773,13 @@ inline float GetFloatProperty(SDL_PropertiesID props, const char* name, float de
 inline bool GetBooleanProperty(SDL_PropertiesID props, const char* name, bool default_value) { return SDL_GetBooleanProperty(props, name, default_value); }
 
 //! @copydoc SDL_ClearProperty()
-inline bool ClearProperty(SDL_PropertiesID props, const char* name) { auto _ret = SDL_ClearProperty(props, name); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void ClearProperty(SDL_PropertiesID props, const char* name) { auto _ret = SDL_ClearProperty(props, name); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_EnumerateProperties()
-inline bool EnumerateProperties(SDL_PropertiesID props, SDL_EnumeratePropertiesCallback callback, void* userdata) { auto _ret = SDL_EnumerateProperties(props, callback, userdata); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void EnumerateProperties(SDL_PropertiesID props, SDL_EnumeratePropertiesCallback callback, void* userdata) { auto _ret = SDL_EnumerateProperties(props, callback, userdata); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_DestroyProperties()
-inline void DestroyProperties(SDL_PropertiesID props) {  SDL_DestroyProperties(props); }
+inline void DestroyProperties(SDL_PropertiesID props) { SDL_DestroyProperties(props); }
 
 //! @copydoc SDL_CreateThreadRuntime()
 inline SDL_Thread* CreateThreadRuntime(SDL_ThreadFunction fn, const char* name, void* data, SDL_FunctionPointer pfnBeginThread, SDL_FunctionPointer pfnEndThread) { auto _ret = SDL_CreateThreadRuntime(fn, name, data, pfnBeginThread, pfnEndThread); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
@@ -800,49 +797,49 @@ inline SDL_ThreadID GetCurrentThreadID() { return SDL_GetCurrentThreadID(); }
 inline SDL_ThreadID GetThreadID(SDL_Thread* thread) { return SDL_GetThreadID(thread); }
 
 //! @copydoc SDL_SetCurrentThreadPriority()
-inline bool SetCurrentThreadPriority(SDL_ThreadPriority priority) { auto _ret = SDL_SetCurrentThreadPriority(priority); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetCurrentThreadPriority(SDL_ThreadPriority priority) { auto _ret = SDL_SetCurrentThreadPriority(priority); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_WaitThread()
-inline void WaitThread(SDL_Thread* thread, int* status) {  SDL_WaitThread(thread, status); }
+inline void WaitThread(SDL_Thread* thread, int* status) { SDL_WaitThread(thread, status); }
 
 //! @copydoc SDL_GetThreadState()
 inline SDL_ThreadState GetThreadState(SDL_Thread* thread) { return SDL_GetThreadState(thread); }
 
 //! @copydoc SDL_DetachThread()
-inline void DetachThread(SDL_Thread* thread) {  SDL_DetachThread(thread); }
+inline void DetachThread(SDL_Thread* thread) { SDL_DetachThread(thread); }
 
 //! @copydoc SDL_GetTLS()
 inline void* GetTLS(SDL_TLSID* id) { auto _ret = SDL_GetTLS(id); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_SetTLS()
-inline bool SetTLS(SDL_TLSID* id, const void* value, SDL_TLSDestructorCallback destructor) { auto _ret = SDL_SetTLS(id, value, destructor); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetTLS(SDL_TLSID* id, const void* value, SDL_TLSDestructorCallback destructor) { auto _ret = SDL_SetTLS(id, value, destructor); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_CleanupTLS()
-inline void CleanupTLS() {  SDL_CleanupTLS(); }
+inline void CleanupTLS() { SDL_CleanupTLS(); }
 
 //! @copydoc SDL_CreateMutex()
 inline SDL_Mutex* CreateMutex() { auto _ret = SDL_CreateMutex(); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_LockMutex()
-inline void LockMutex(SDL_Mutex* mutex) {  SDL_LockMutex(mutex); }
+inline void LockMutex(SDL_Mutex* mutex) { SDL_LockMutex(mutex); }
 
 //! @copydoc SDL_TryLockMutex()
 inline bool TryLockMutex(SDL_Mutex* mutex) { return SDL_TryLockMutex(mutex); }
 
 //! @copydoc SDL_UnlockMutex()
-inline void UnlockMutex(SDL_Mutex* mutex) {  SDL_UnlockMutex(mutex); }
+inline void UnlockMutex(SDL_Mutex* mutex) { SDL_UnlockMutex(mutex); }
 
 //! @copydoc SDL_DestroyMutex()
-inline void DestroyMutex(SDL_Mutex* mutex) {  SDL_DestroyMutex(mutex); }
+inline void DestroyMutex(SDL_Mutex* mutex) { SDL_DestroyMutex(mutex); }
 
 //! @copydoc SDL_CreateRWLock()
 inline SDL_RWLock* CreateRWLock() { auto _ret = SDL_CreateRWLock(); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_LockRWLockForReading()
-inline void LockRWLockForReading(SDL_RWLock* rwlock) {  SDL_LockRWLockForReading(rwlock); }
+inline void LockRWLockForReading(SDL_RWLock* rwlock) { SDL_LockRWLockForReading(rwlock); }
 
 //! @copydoc SDL_LockRWLockForWriting()
-inline void LockRWLockForWriting(SDL_RWLock* rwlock) {  SDL_LockRWLockForWriting(rwlock); }
+inline void LockRWLockForWriting(SDL_RWLock* rwlock) { SDL_LockRWLockForWriting(rwlock); }
 
 //! @copydoc SDL_TryLockRWLockForReading()
 inline bool TryLockRWLockForReading(SDL_RWLock* rwlock) { return SDL_TryLockRWLockForReading(rwlock); }
@@ -851,19 +848,19 @@ inline bool TryLockRWLockForReading(SDL_RWLock* rwlock) { return SDL_TryLockRWLo
 inline bool TryLockRWLockForWriting(SDL_RWLock* rwlock) { return SDL_TryLockRWLockForWriting(rwlock); }
 
 //! @copydoc SDL_UnlockRWLock()
-inline void UnlockRWLock(SDL_RWLock* rwlock) {  SDL_UnlockRWLock(rwlock); }
+inline void UnlockRWLock(SDL_RWLock* rwlock) { SDL_UnlockRWLock(rwlock); }
 
 //! @copydoc SDL_DestroyRWLock()
-inline void DestroyRWLock(SDL_RWLock* rwlock) {  SDL_DestroyRWLock(rwlock); }
+inline void DestroyRWLock(SDL_RWLock* rwlock) { SDL_DestroyRWLock(rwlock); }
 
 //! @copydoc SDL_CreateSemaphore()
 inline SDL_Semaphore* CreateSemaphore(Uint32 initial_value) { auto _ret = SDL_CreateSemaphore(initial_value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_DestroySemaphore()
-inline void DestroySemaphore(SDL_Semaphore* sem) {  SDL_DestroySemaphore(sem); }
+inline void DestroySemaphore(SDL_Semaphore* sem) { SDL_DestroySemaphore(sem); }
 
 //! @copydoc SDL_WaitSemaphore()
-inline void WaitSemaphore(SDL_Semaphore* sem) {  SDL_WaitSemaphore(sem); }
+inline void WaitSemaphore(SDL_Semaphore* sem) { SDL_WaitSemaphore(sem); }
 
 //! @copydoc SDL_TryWaitSemaphore()
 inline bool TryWaitSemaphore(SDL_Semaphore* sem) { return SDL_TryWaitSemaphore(sem); }
@@ -872,7 +869,7 @@ inline bool TryWaitSemaphore(SDL_Semaphore* sem) { return SDL_TryWaitSemaphore(s
 inline bool WaitSemaphoreTimeout(SDL_Semaphore* sem, Sint32 timeoutMS) { return SDL_WaitSemaphoreTimeout(sem, timeoutMS); }
 
 //! @copydoc SDL_SignalSemaphore()
-inline void SignalSemaphore(SDL_Semaphore* sem) {  SDL_SignalSemaphore(sem); }
+inline void SignalSemaphore(SDL_Semaphore* sem) { SDL_SignalSemaphore(sem); }
 
 //! @copydoc SDL_GetSemaphoreValue()
 inline Uint32 GetSemaphoreValue(SDL_Semaphore* sem) { return SDL_GetSemaphoreValue(sem); }
@@ -881,16 +878,16 @@ inline Uint32 GetSemaphoreValue(SDL_Semaphore* sem) { return SDL_GetSemaphoreVal
 inline SDL_Condition* CreateCondition() { auto _ret = SDL_CreateCondition(); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_DestroyCondition()
-inline void DestroyCondition(SDL_Condition* cond) {  SDL_DestroyCondition(cond); }
+inline void DestroyCondition(SDL_Condition* cond) { SDL_DestroyCondition(cond); }
 
 //! @copydoc SDL_SignalCondition()
-inline void SignalCondition(SDL_Condition* cond) {  SDL_SignalCondition(cond); }
+inline void SignalCondition(SDL_Condition* cond) { SDL_SignalCondition(cond); }
 
 //! @copydoc SDL_BroadcastCondition()
-inline void BroadcastCondition(SDL_Condition* cond) {  SDL_BroadcastCondition(cond); }
+inline void BroadcastCondition(SDL_Condition* cond) { SDL_BroadcastCondition(cond); }
 
 //! @copydoc SDL_WaitCondition()
-inline void WaitCondition(SDL_Condition* cond, SDL_Mutex* mutex) {  SDL_WaitCondition(cond, mutex); }
+inline void WaitCondition(SDL_Condition* cond, SDL_Mutex* mutex) { SDL_WaitCondition(cond, mutex); }
 
 //! @copydoc SDL_WaitConditionTimeout()
 inline bool WaitConditionTimeout(SDL_Condition* cond, SDL_Mutex* mutex, Sint32 timeoutMS) { return SDL_WaitConditionTimeout(cond, mutex, timeoutMS); }
@@ -902,7 +899,7 @@ inline bool ShouldInit(SDL_InitState* state) { return SDL_ShouldInit(state); }
 inline bool ShouldQuit(SDL_InitState* state) { return SDL_ShouldQuit(state); }
 
 //! @copydoc SDL_SetInitialized()
-inline void SetInitialized(SDL_InitState* state, bool initialized) {  SDL_SetInitialized(state, initialized); }
+inline void SetInitialized(SDL_InitState* state, bool initialized) { SDL_SetInitialized(state, initialized); }
 
 //! @copydoc SDL_IOFromFile()
 inline SDL_IOStream* IOFromFile(const char* file, const char* mode) { auto _ret = SDL_IOFromFile(file, mode); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
@@ -920,7 +917,7 @@ inline SDL_IOStream* IOFromDynamicMem() { auto _ret = SDL_IOFromDynamicMem(); if
 inline SDL_IOStream* OpenIO(const SDL_IOStreamInterface* iface, void* userdata) { auto _ret = SDL_OpenIO(iface, userdata); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_CloseIO()
-inline bool CloseIO(SDL_IOStream* context) { auto _ret = SDL_CloseIO(context); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void CloseIO(SDL_IOStream* context) { auto _ret = SDL_CloseIO(context); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetIOProperties()
 inline SDL_PropertiesID GetIOProperties(SDL_IOStream* context) { auto _ret = SDL_GetIOProperties(context); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
@@ -947,7 +944,7 @@ inline size_t WriteIO(SDL_IOStream* context, const void* ptr, size_t size) { aut
 inline size_t IOvprintf(SDL_IOStream* context, const char* fmt, va_list ap) { auto _ret = SDL_IOvprintf(context, fmt, ap); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_FlushIO()
-inline bool FlushIO(SDL_IOStream* context) { auto _ret = SDL_FlushIO(context); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void FlushIO(SDL_IOStream* context) { auto _ret = SDL_FlushIO(context); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_LoadFile_IO()
 inline void* LoadFile_IO(SDL_IOStream* src, size_t* datasize, bool closeio) { auto _ret = SDL_LoadFile_IO(src, datasize, closeio); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
@@ -956,94 +953,94 @@ inline void* LoadFile_IO(SDL_IOStream* src, size_t* datasize, bool closeio) { au
 inline void* LoadFile(const char* file, size_t* datasize) { auto _ret = SDL_LoadFile(file, datasize); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_SaveFile_IO()
-inline bool SaveFile_IO(SDL_IOStream* src, const void* data, size_t datasize, bool closeio) { auto _ret = SDL_SaveFile_IO(src, data, datasize, closeio); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SaveFile_IO(SDL_IOStream* src, const void* data, size_t datasize, bool closeio) { auto _ret = SDL_SaveFile_IO(src, data, datasize, closeio); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SaveFile()
-inline bool SaveFile(const char* file, const void* data, size_t datasize) { auto _ret = SDL_SaveFile(file, data, datasize); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SaveFile(const char* file, const void* data, size_t datasize) { auto _ret = SDL_SaveFile(file, data, datasize); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_ReadU8()
-inline bool ReadU8(SDL_IOStream* src, Uint8* value) { auto _ret = SDL_ReadU8(src, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void ReadU8(SDL_IOStream* src, Uint8* value) { auto _ret = SDL_ReadU8(src, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_ReadS8()
-inline bool ReadS8(SDL_IOStream* src, Sint8* value) { auto _ret = SDL_ReadS8(src, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void ReadS8(SDL_IOStream* src, Sint8* value) { auto _ret = SDL_ReadS8(src, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_ReadU16LE()
-inline bool ReadU16LE(SDL_IOStream* src, Uint16* value) { auto _ret = SDL_ReadU16LE(src, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void ReadU16LE(SDL_IOStream* src, Uint16* value) { auto _ret = SDL_ReadU16LE(src, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_ReadS16LE()
-inline bool ReadS16LE(SDL_IOStream* src, Sint16* value) { auto _ret = SDL_ReadS16LE(src, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void ReadS16LE(SDL_IOStream* src, Sint16* value) { auto _ret = SDL_ReadS16LE(src, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_ReadU16BE()
-inline bool ReadU16BE(SDL_IOStream* src, Uint16* value) { auto _ret = SDL_ReadU16BE(src, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void ReadU16BE(SDL_IOStream* src, Uint16* value) { auto _ret = SDL_ReadU16BE(src, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_ReadS16BE()
-inline bool ReadS16BE(SDL_IOStream* src, Sint16* value) { auto _ret = SDL_ReadS16BE(src, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void ReadS16BE(SDL_IOStream* src, Sint16* value) { auto _ret = SDL_ReadS16BE(src, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_ReadU32LE()
-inline bool ReadU32LE(SDL_IOStream* src, Uint32* value) { auto _ret = SDL_ReadU32LE(src, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void ReadU32LE(SDL_IOStream* src, Uint32* value) { auto _ret = SDL_ReadU32LE(src, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_ReadS32LE()
-inline bool ReadS32LE(SDL_IOStream* src, Sint32* value) { auto _ret = SDL_ReadS32LE(src, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void ReadS32LE(SDL_IOStream* src, Sint32* value) { auto _ret = SDL_ReadS32LE(src, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_ReadU32BE()
-inline bool ReadU32BE(SDL_IOStream* src, Uint32* value) { auto _ret = SDL_ReadU32BE(src, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void ReadU32BE(SDL_IOStream* src, Uint32* value) { auto _ret = SDL_ReadU32BE(src, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_ReadS32BE()
-inline bool ReadS32BE(SDL_IOStream* src, Sint32* value) { auto _ret = SDL_ReadS32BE(src, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void ReadS32BE(SDL_IOStream* src, Sint32* value) { auto _ret = SDL_ReadS32BE(src, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_ReadU64LE()
-inline bool ReadU64LE(SDL_IOStream* src, Uint64* value) { auto _ret = SDL_ReadU64LE(src, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void ReadU64LE(SDL_IOStream* src, Uint64* value) { auto _ret = SDL_ReadU64LE(src, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_ReadS64LE()
-inline bool ReadS64LE(SDL_IOStream* src, Sint64* value) { auto _ret = SDL_ReadS64LE(src, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void ReadS64LE(SDL_IOStream* src, Sint64* value) { auto _ret = SDL_ReadS64LE(src, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_ReadU64BE()
-inline bool ReadU64BE(SDL_IOStream* src, Uint64* value) { auto _ret = SDL_ReadU64BE(src, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void ReadU64BE(SDL_IOStream* src, Uint64* value) { auto _ret = SDL_ReadU64BE(src, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_ReadS64BE()
-inline bool ReadS64BE(SDL_IOStream* src, Sint64* value) { auto _ret = SDL_ReadS64BE(src, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void ReadS64BE(SDL_IOStream* src, Sint64* value) { auto _ret = SDL_ReadS64BE(src, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_WriteU8()
-inline bool WriteU8(SDL_IOStream* dst, Uint8 value) { auto _ret = SDL_WriteU8(dst, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void WriteU8(SDL_IOStream* dst, Uint8 value) { auto _ret = SDL_WriteU8(dst, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_WriteS8()
-inline bool WriteS8(SDL_IOStream* dst, Sint8 value) { auto _ret = SDL_WriteS8(dst, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void WriteS8(SDL_IOStream* dst, Sint8 value) { auto _ret = SDL_WriteS8(dst, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_WriteU16LE()
-inline bool WriteU16LE(SDL_IOStream* dst, Uint16 value) { auto _ret = SDL_WriteU16LE(dst, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void WriteU16LE(SDL_IOStream* dst, Uint16 value) { auto _ret = SDL_WriteU16LE(dst, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_WriteS16LE()
-inline bool WriteS16LE(SDL_IOStream* dst, Sint16 value) { auto _ret = SDL_WriteS16LE(dst, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void WriteS16LE(SDL_IOStream* dst, Sint16 value) { auto _ret = SDL_WriteS16LE(dst, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_WriteU16BE()
-inline bool WriteU16BE(SDL_IOStream* dst, Uint16 value) { auto _ret = SDL_WriteU16BE(dst, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void WriteU16BE(SDL_IOStream* dst, Uint16 value) { auto _ret = SDL_WriteU16BE(dst, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_WriteS16BE()
-inline bool WriteS16BE(SDL_IOStream* dst, Sint16 value) { auto _ret = SDL_WriteS16BE(dst, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void WriteS16BE(SDL_IOStream* dst, Sint16 value) { auto _ret = SDL_WriteS16BE(dst, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_WriteU32LE()
-inline bool WriteU32LE(SDL_IOStream* dst, Uint32 value) { auto _ret = SDL_WriteU32LE(dst, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void WriteU32LE(SDL_IOStream* dst, Uint32 value) { auto _ret = SDL_WriteU32LE(dst, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_WriteS32LE()
-inline bool WriteS32LE(SDL_IOStream* dst, Sint32 value) { auto _ret = SDL_WriteS32LE(dst, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void WriteS32LE(SDL_IOStream* dst, Sint32 value) { auto _ret = SDL_WriteS32LE(dst, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_WriteU32BE()
-inline bool WriteU32BE(SDL_IOStream* dst, Uint32 value) { auto _ret = SDL_WriteU32BE(dst, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void WriteU32BE(SDL_IOStream* dst, Uint32 value) { auto _ret = SDL_WriteU32BE(dst, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_WriteS32BE()
-inline bool WriteS32BE(SDL_IOStream* dst, Sint32 value) { auto _ret = SDL_WriteS32BE(dst, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void WriteS32BE(SDL_IOStream* dst, Sint32 value) { auto _ret = SDL_WriteS32BE(dst, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_WriteU64LE()
-inline bool WriteU64LE(SDL_IOStream* dst, Uint64 value) { auto _ret = SDL_WriteU64LE(dst, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void WriteU64LE(SDL_IOStream* dst, Uint64 value) { auto _ret = SDL_WriteU64LE(dst, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_WriteS64LE()
-inline bool WriteS64LE(SDL_IOStream* dst, Sint64 value) { auto _ret = SDL_WriteS64LE(dst, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void WriteS64LE(SDL_IOStream* dst, Sint64 value) { auto _ret = SDL_WriteS64LE(dst, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_WriteU64BE()
-inline bool WriteU64BE(SDL_IOStream* dst, Uint64 value) { auto _ret = SDL_WriteU64BE(dst, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void WriteU64BE(SDL_IOStream* dst, Uint64 value) { auto _ret = SDL_WriteU64BE(dst, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_WriteS64BE()
-inline bool WriteS64BE(SDL_IOStream* dst, Sint64 value) { auto _ret = SDL_WriteS64BE(dst, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void WriteS64BE(SDL_IOStream* dst, Sint64 value) { auto _ret = SDL_WriteS64BE(dst, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetNumAudioDrivers()
 inline int GetNumAudioDrivers() { return SDL_GetNumAudioDrivers(); }
@@ -1064,7 +1061,7 @@ inline SDL_AudioDeviceID* GetAudioRecordingDevices(int* count) { auto _ret = SDL
 inline const char* GetAudioDeviceName(SDL_AudioDeviceID devid) { auto _ret = SDL_GetAudioDeviceName(devid); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_GetAudioDeviceFormat()
-inline bool GetAudioDeviceFormat(SDL_AudioDeviceID devid, SDL_AudioSpec* spec, int* sample_frames) { auto _ret = SDL_GetAudioDeviceFormat(devid, spec, sample_frames); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetAudioDeviceFormat(SDL_AudioDeviceID devid, SDL_AudioSpec* spec, int* sample_frames) { auto _ret = SDL_GetAudioDeviceFormat(devid, spec, sample_frames); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetAudioDeviceChannelMap()
 inline int* GetAudioDeviceChannelMap(SDL_AudioDeviceID devid, int* count) { return SDL_GetAudioDeviceChannelMap(devid, count); }
@@ -1079,10 +1076,10 @@ inline bool IsAudioDevicePhysical(SDL_AudioDeviceID devid) { return SDL_IsAudioD
 inline bool IsAudioDevicePlayback(SDL_AudioDeviceID devid) { return SDL_IsAudioDevicePlayback(devid); }
 
 //! @copydoc SDL_PauseAudioDevice()
-inline bool PauseAudioDevice(SDL_AudioDeviceID dev) { auto _ret = SDL_PauseAudioDevice(dev); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void PauseAudioDevice(SDL_AudioDeviceID dev) { auto _ret = SDL_PauseAudioDevice(dev); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_ResumeAudioDevice()
-inline bool ResumeAudioDevice(SDL_AudioDeviceID dev) { auto _ret = SDL_ResumeAudioDevice(dev); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void ResumeAudioDevice(SDL_AudioDeviceID dev) { auto _ret = SDL_ResumeAudioDevice(dev); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_AudioDevicePaused()
 inline bool AudioDevicePaused(SDL_AudioDeviceID dev) { return SDL_AudioDevicePaused(dev); }
@@ -1091,22 +1088,22 @@ inline bool AudioDevicePaused(SDL_AudioDeviceID dev) { return SDL_AudioDevicePau
 inline float GetAudioDeviceGain(SDL_AudioDeviceID devid) { auto _ret = SDL_GetAudioDeviceGain(devid); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_SetAudioDeviceGain()
-inline bool SetAudioDeviceGain(SDL_AudioDeviceID devid, float gain) { auto _ret = SDL_SetAudioDeviceGain(devid, gain); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetAudioDeviceGain(SDL_AudioDeviceID devid, float gain) { auto _ret = SDL_SetAudioDeviceGain(devid, gain); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_CloseAudioDevice()
-inline void CloseAudioDevice(SDL_AudioDeviceID devid) {  SDL_CloseAudioDevice(devid); }
+inline void CloseAudioDevice(SDL_AudioDeviceID devid) { SDL_CloseAudioDevice(devid); }
 
 //! @copydoc SDL_BindAudioStreams()
-inline bool BindAudioStreams(SDL_AudioDeviceID devid, SDL_AudioStream** streams, int num_streams) { auto _ret = SDL_BindAudioStreams(devid, streams, num_streams); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void BindAudioStreams(SDL_AudioDeviceID devid, SDL_AudioStream** streams, int num_streams) { auto _ret = SDL_BindAudioStreams(devid, streams, num_streams); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_BindAudioStream()
-inline bool BindAudioStream(SDL_AudioDeviceID devid, SDL_AudioStream* stream) { auto _ret = SDL_BindAudioStream(devid, stream); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void BindAudioStream(SDL_AudioDeviceID devid, SDL_AudioStream* stream) { auto _ret = SDL_BindAudioStream(devid, stream); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_UnbindAudioStreams()
-inline void UnbindAudioStreams(SDL_AudioStream** streams, int num_streams) {  SDL_UnbindAudioStreams(streams, num_streams); }
+inline void UnbindAudioStreams(SDL_AudioStream** streams, int num_streams) { SDL_UnbindAudioStreams(streams, num_streams); }
 
 //! @copydoc SDL_UnbindAudioStream()
-inline void UnbindAudioStream(SDL_AudioStream* stream) {  SDL_UnbindAudioStream(stream); }
+inline void UnbindAudioStream(SDL_AudioStream* stream) { SDL_UnbindAudioStream(stream); }
 
 //! @copydoc SDL_GetAudioStreamDevice()
 inline SDL_AudioDeviceID GetAudioStreamDevice(SDL_AudioStream* stream) { return SDL_GetAudioStreamDevice(stream); }
@@ -1118,22 +1115,22 @@ inline SDL_AudioStream* CreateAudioStream(const SDL_AudioSpec* src_spec, const S
 inline SDL_PropertiesID GetAudioStreamProperties(SDL_AudioStream* stream) { auto _ret = SDL_GetAudioStreamProperties(stream); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_GetAudioStreamFormat()
-inline bool GetAudioStreamFormat(SDL_AudioStream* stream, SDL_AudioSpec* src_spec, SDL_AudioSpec* dst_spec) { auto _ret = SDL_GetAudioStreamFormat(stream, src_spec, dst_spec); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetAudioStreamFormat(SDL_AudioStream* stream, SDL_AudioSpec* src_spec, SDL_AudioSpec* dst_spec) { auto _ret = SDL_GetAudioStreamFormat(stream, src_spec, dst_spec); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetAudioStreamFormat()
-inline bool SetAudioStreamFormat(SDL_AudioStream* stream, const SDL_AudioSpec* src_spec, const SDL_AudioSpec* dst_spec) { auto _ret = SDL_SetAudioStreamFormat(stream, src_spec, dst_spec); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetAudioStreamFormat(SDL_AudioStream* stream, const SDL_AudioSpec* src_spec, const SDL_AudioSpec* dst_spec) { auto _ret = SDL_SetAudioStreamFormat(stream, src_spec, dst_spec); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetAudioStreamFrequencyRatio()
 inline float GetAudioStreamFrequencyRatio(SDL_AudioStream* stream) { auto _ret = SDL_GetAudioStreamFrequencyRatio(stream); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_SetAudioStreamFrequencyRatio()
-inline bool SetAudioStreamFrequencyRatio(SDL_AudioStream* stream, float ratio) { auto _ret = SDL_SetAudioStreamFrequencyRatio(stream, ratio); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetAudioStreamFrequencyRatio(SDL_AudioStream* stream, float ratio) { auto _ret = SDL_SetAudioStreamFrequencyRatio(stream, ratio); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetAudioStreamGain()
 inline float GetAudioStreamGain(SDL_AudioStream* stream) { auto _ret = SDL_GetAudioStreamGain(stream); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_SetAudioStreamGain()
-inline bool SetAudioStreamGain(SDL_AudioStream* stream, float gain) { auto _ret = SDL_SetAudioStreamGain(stream, gain); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetAudioStreamGain(SDL_AudioStream* stream, float gain) { auto _ret = SDL_SetAudioStreamGain(stream, gain); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetAudioStreamInputChannelMap()
 inline int* GetAudioStreamInputChannelMap(SDL_AudioStream* stream, int* count) { return SDL_GetAudioStreamInputChannelMap(stream, count); }
@@ -1142,13 +1139,13 @@ inline int* GetAudioStreamInputChannelMap(SDL_AudioStream* stream, int* count) {
 inline int* GetAudioStreamOutputChannelMap(SDL_AudioStream* stream, int* count) { return SDL_GetAudioStreamOutputChannelMap(stream, count); }
 
 //! @copydoc SDL_SetAudioStreamInputChannelMap()
-inline bool SetAudioStreamInputChannelMap(SDL_AudioStream* stream, const int* chmap, int count) { auto _ret = SDL_SetAudioStreamInputChannelMap(stream, chmap, count); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetAudioStreamInputChannelMap(SDL_AudioStream* stream, const int* chmap, int count) { auto _ret = SDL_SetAudioStreamInputChannelMap(stream, chmap, count); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetAudioStreamOutputChannelMap()
-inline bool SetAudioStreamOutputChannelMap(SDL_AudioStream* stream, const int* chmap, int count) { auto _ret = SDL_SetAudioStreamOutputChannelMap(stream, chmap, count); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetAudioStreamOutputChannelMap(SDL_AudioStream* stream, const int* chmap, int count) { auto _ret = SDL_SetAudioStreamOutputChannelMap(stream, chmap, count); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_PutAudioStreamData()
-inline bool PutAudioStreamData(SDL_AudioStream* stream, const void* buf, int len) { auto _ret = SDL_PutAudioStreamData(stream, buf, len); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void PutAudioStreamData(SDL_AudioStream* stream, const void* buf, int len) { auto _ret = SDL_PutAudioStreamData(stream, buf, len); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetAudioStreamData()
 inline int GetAudioStreamData(SDL_AudioStream* stream, void* buf, int len) { auto _ret = SDL_GetAudioStreamData(stream, buf, len); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
@@ -1160,52 +1157,52 @@ inline int GetAudioStreamAvailable(SDL_AudioStream* stream) { auto _ret = SDL_Ge
 inline int GetAudioStreamQueued(SDL_AudioStream* stream) { auto _ret = SDL_GetAudioStreamQueued(stream); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_FlushAudioStream()
-inline bool FlushAudioStream(SDL_AudioStream* stream) { auto _ret = SDL_FlushAudioStream(stream); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void FlushAudioStream(SDL_AudioStream* stream) { auto _ret = SDL_FlushAudioStream(stream); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_ClearAudioStream()
-inline bool ClearAudioStream(SDL_AudioStream* stream) { auto _ret = SDL_ClearAudioStream(stream); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void ClearAudioStream(SDL_AudioStream* stream) { auto _ret = SDL_ClearAudioStream(stream); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_PauseAudioStreamDevice()
-inline bool PauseAudioStreamDevice(SDL_AudioStream* stream) { auto _ret = SDL_PauseAudioStreamDevice(stream); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void PauseAudioStreamDevice(SDL_AudioStream* stream) { auto _ret = SDL_PauseAudioStreamDevice(stream); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_ResumeAudioStreamDevice()
-inline bool ResumeAudioStreamDevice(SDL_AudioStream* stream) { auto _ret = SDL_ResumeAudioStreamDevice(stream); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void ResumeAudioStreamDevice(SDL_AudioStream* stream) { auto _ret = SDL_ResumeAudioStreamDevice(stream); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_AudioStreamDevicePaused()
 inline bool AudioStreamDevicePaused(SDL_AudioStream* stream) { return SDL_AudioStreamDevicePaused(stream); }
 
 //! @copydoc SDL_LockAudioStream()
-inline bool LockAudioStream(SDL_AudioStream* stream) { auto _ret = SDL_LockAudioStream(stream); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void LockAudioStream(SDL_AudioStream* stream) { auto _ret = SDL_LockAudioStream(stream); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_UnlockAudioStream()
-inline bool UnlockAudioStream(SDL_AudioStream* stream) { auto _ret = SDL_UnlockAudioStream(stream); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void UnlockAudioStream(SDL_AudioStream* stream) { auto _ret = SDL_UnlockAudioStream(stream); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetAudioStreamGetCallback()
-inline bool SetAudioStreamGetCallback(SDL_AudioStream* stream, SDL_AudioStreamCallback callback, void* userdata) { auto _ret = SDL_SetAudioStreamGetCallback(stream, callback, userdata); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetAudioStreamGetCallback(SDL_AudioStream* stream, SDL_AudioStreamCallback callback, void* userdata) { auto _ret = SDL_SetAudioStreamGetCallback(stream, callback, userdata); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetAudioStreamPutCallback()
-inline bool SetAudioStreamPutCallback(SDL_AudioStream* stream, SDL_AudioStreamCallback callback, void* userdata) { auto _ret = SDL_SetAudioStreamPutCallback(stream, callback, userdata); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetAudioStreamPutCallback(SDL_AudioStream* stream, SDL_AudioStreamCallback callback, void* userdata) { auto _ret = SDL_SetAudioStreamPutCallback(stream, callback, userdata); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_DestroyAudioStream()
-inline void DestroyAudioStream(SDL_AudioStream* stream) {  SDL_DestroyAudioStream(stream); }
+inline void DestroyAudioStream(SDL_AudioStream* stream) { SDL_DestroyAudioStream(stream); }
 
 //! @copydoc SDL_OpenAudioDeviceStream()
 inline SDL_AudioStream* OpenAudioDeviceStream(SDL_AudioDeviceID devid, const SDL_AudioSpec* spec, SDL_AudioStreamCallback callback, void* userdata) { auto _ret = SDL_OpenAudioDeviceStream(devid, spec, callback, userdata); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_SetAudioPostmixCallback()
-inline bool SetAudioPostmixCallback(SDL_AudioDeviceID devid, SDL_AudioPostmixCallback callback, void* userdata) { auto _ret = SDL_SetAudioPostmixCallback(devid, callback, userdata); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetAudioPostmixCallback(SDL_AudioDeviceID devid, SDL_AudioPostmixCallback callback, void* userdata) { auto _ret = SDL_SetAudioPostmixCallback(devid, callback, userdata); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_LoadWAV_IO()
-inline bool LoadWAV_IO(SDL_IOStream* src, bool closeio, SDL_AudioSpec* spec, Uint8** audio_buf, Uint32* audio_len) { auto _ret = SDL_LoadWAV_IO(src, closeio, spec, audio_buf, audio_len); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void LoadWAV_IO(SDL_IOStream* src, bool closeio, SDL_AudioSpec* spec, Uint8** audio_buf, Uint32* audio_len) { auto _ret = SDL_LoadWAV_IO(src, closeio, spec, audio_buf, audio_len); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_LoadWAV()
-inline bool LoadWAV(const char* path, SDL_AudioSpec* spec, Uint8** audio_buf, Uint32* audio_len) { auto _ret = SDL_LoadWAV(path, spec, audio_buf, audio_len); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void LoadWAV(const char* path, SDL_AudioSpec* spec, Uint8** audio_buf, Uint32* audio_len) { auto _ret = SDL_LoadWAV(path, spec, audio_buf, audio_len); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_MixAudio()
-inline bool MixAudio(Uint8* dst, const Uint8* src, SDL_AudioFormat format, Uint32 len, float volume) { auto _ret = SDL_MixAudio(dst, src, format, len, volume); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void MixAudio(Uint8* dst, const Uint8* src, SDL_AudioFormat format, Uint32 len, float volume) { auto _ret = SDL_MixAudio(dst, src, format, len, volume); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_ConvertAudioSamples()
-inline bool ConvertAudioSamples(const SDL_AudioSpec* src_spec, const Uint8* src_data, int src_len, const SDL_AudioSpec* dst_spec, Uint8** dst_data, int* dst_len) { auto _ret = SDL_ConvertAudioSamples(src_spec, src_data, src_len, dst_spec, dst_data, dst_len); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void ConvertAudioSamples(const SDL_AudioSpec* src_spec, const Uint8* src_data, int src_len, const SDL_AudioSpec* dst_spec, Uint8** dst_data, int* dst_len) { auto _ret = SDL_ConvertAudioSamples(src_spec, src_data, src_len, dst_spec, dst_data, dst_len); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetAudioFormatName()
 inline const char* GetAudioFormatName(SDL_AudioFormat format) { return SDL_GetAudioFormatName(format); }
@@ -1226,7 +1223,7 @@ inline SDL_BlendMode ComposeCustomBlendMode(SDL_BlendFactor srcColorFactor, SDL_
 inline const char* GetPixelFormatName(SDL_PixelFormat format) { return SDL_GetPixelFormatName(format); }
 
 //! @copydoc SDL_GetMasksForPixelFormat()
-inline bool GetMasksForPixelFormat(SDL_PixelFormat format, int* bpp, Uint32* Rmask, Uint32* Gmask, Uint32* Bmask, Uint32* Amask) { auto _ret = SDL_GetMasksForPixelFormat(format, bpp, Rmask, Gmask, Bmask, Amask); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetMasksForPixelFormat(SDL_PixelFormat format, int* bpp, Uint32* Rmask, Uint32* Gmask, Uint32* Bmask, Uint32* Amask) { auto _ret = SDL_GetMasksForPixelFormat(format, bpp, Rmask, Gmask, Bmask, Amask); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetPixelFormatForMasks()
 inline SDL_PixelFormat GetPixelFormatForMasks(int bpp, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask) { return SDL_GetPixelFormatForMasks(bpp, Rmask, Gmask, Bmask, Amask); }
@@ -1238,10 +1235,10 @@ inline const SDL_PixelFormatDetails* GetPixelFormatDetails(SDL_PixelFormat forma
 inline SDL_Palette* CreatePalette(int ncolors) { auto _ret = SDL_CreatePalette(ncolors); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_SetPaletteColors()
-inline bool SetPaletteColors(SDL_Palette* palette, const SDL_Color* colors, int firstcolor, int ncolors) { auto _ret = SDL_SetPaletteColors(palette, colors, firstcolor, ncolors); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetPaletteColors(SDL_Palette* palette, const SDL_Color* colors, int firstcolor, int ncolors) { auto _ret = SDL_SetPaletteColors(palette, colors, firstcolor, ncolors); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_DestroyPalette()
-inline void DestroyPalette(SDL_Palette* palette) {  SDL_DestroyPalette(palette); }
+inline void DestroyPalette(SDL_Palette* palette) { SDL_DestroyPalette(palette); }
 
 //! @copydoc SDL_MapRGB()
 inline Uint32 MapRGB(const SDL_PixelFormatDetails* format, const SDL_Palette* palette, Uint8 r, Uint8 g, Uint8 b) { return SDL_MapRGB(format, palette, r, g, b); }
@@ -1250,13 +1247,13 @@ inline Uint32 MapRGB(const SDL_PixelFormatDetails* format, const SDL_Palette* pa
 inline Uint32 MapRGBA(const SDL_PixelFormatDetails* format, const SDL_Palette* palette, Uint8 r, Uint8 g, Uint8 b, Uint8 a) { return SDL_MapRGBA(format, palette, r, g, b, a); }
 
 //! @copydoc SDL_GetRGB()
-inline void GetRGB(Uint32 pixel, const SDL_PixelFormatDetails* format, const SDL_Palette* palette, Uint8* r, Uint8* g, Uint8* b) {  SDL_GetRGB(pixel, format, palette, r, g, b); }
+inline void GetRGB(Uint32 pixel, const SDL_PixelFormatDetails* format, const SDL_Palette* palette, Uint8* r, Uint8* g, Uint8* b) { SDL_GetRGB(pixel, format, palette, r, g, b); }
 
 //! @copydoc SDL_GetRGBA()
-inline void GetRGBA(Uint32 pixel, const SDL_PixelFormatDetails* format, const SDL_Palette* palette, Uint8* r, Uint8* g, Uint8* b, Uint8* a) {  SDL_GetRGBA(pixel, format, palette, r, g, b, a); }
+inline void GetRGBA(Uint32 pixel, const SDL_PixelFormatDetails* format, const SDL_Palette* palette, Uint8* r, Uint8* g, Uint8* b, Uint8* a) { SDL_GetRGBA(pixel, format, palette, r, g, b, a); }
 
 //! @copydoc SDL_RectToFRect()
-inline void RectToFRect(const SDL_Rect* rect, SDL_FRect* frect) {  SDL_RectToFRect(rect, frect); }
+inline void RectToFRect(const SDL_Rect* rect, SDL_FRect* frect) { SDL_RectToFRect(rect, frect); }
 
 //! @copydoc SDL_PointInRect()
 inline bool PointInRect(const SDL_Point* p, const SDL_Rect* r) { return SDL_PointInRect(p, r); }
@@ -1274,7 +1271,7 @@ inline bool HasRectIntersection(const SDL_Rect* A, const SDL_Rect* B) { return S
 inline bool GetRectIntersection(const SDL_Rect* A, const SDL_Rect* B, SDL_Rect* result) { return SDL_GetRectIntersection(A, B, result); }
 
 //! @copydoc SDL_GetRectUnion()
-inline bool GetRectUnion(const SDL_Rect* A, const SDL_Rect* B, SDL_Rect* result) { auto _ret = SDL_GetRectUnion(A, B, result); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetRectUnion(const SDL_Rect* A, const SDL_Rect* B, SDL_Rect* result) { auto _ret = SDL_GetRectUnion(A, B, result); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetRectEnclosingPoints()
 inline bool GetRectEnclosingPoints(const SDL_Point* points, int count, const SDL_Rect* clip, SDL_Rect* result) { return SDL_GetRectEnclosingPoints(points, count, clip, result); }
@@ -1301,7 +1298,7 @@ inline bool HasRectIntersectionFloat(const SDL_FRect* A, const SDL_FRect* B) { r
 inline bool GetRectIntersectionFloat(const SDL_FRect* A, const SDL_FRect* B, SDL_FRect* result) { return SDL_GetRectIntersectionFloat(A, B, result); }
 
 //! @copydoc SDL_GetRectUnionFloat()
-inline bool GetRectUnionFloat(const SDL_FRect* A, const SDL_FRect* B, SDL_FRect* result) { auto _ret = SDL_GetRectUnionFloat(A, B, result); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetRectUnionFloat(const SDL_FRect* A, const SDL_FRect* B, SDL_FRect* result) { auto _ret = SDL_GetRectUnionFloat(A, B, result); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetRectEnclosingPointsFloat()
 inline bool GetRectEnclosingPointsFloat(const SDL_FPoint* points, int count, const SDL_FRect* clip, SDL_FRect* result) { return SDL_GetRectEnclosingPointsFloat(points, count, clip, result); }
@@ -1316,13 +1313,13 @@ inline SDL_Surface* CreateSurface(int width, int height, SDL_PixelFormat format)
 inline SDL_Surface* CreateSurfaceFrom(int width, int height, SDL_PixelFormat format, void* pixels, int pitch) { auto _ret = SDL_CreateSurfaceFrom(width, height, format, pixels, pitch); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_DestroySurface()
-inline void DestroySurface(SDL_Surface* surface) {  SDL_DestroySurface(surface); }
+inline void DestroySurface(SDL_Surface* surface) { SDL_DestroySurface(surface); }
 
 //! @copydoc SDL_GetSurfaceProperties()
 inline SDL_PropertiesID GetSurfaceProperties(SDL_Surface* surface) { auto _ret = SDL_GetSurfaceProperties(surface); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_SetSurfaceColorspace()
-inline bool SetSurfaceColorspace(SDL_Surface* surface, SDL_Colorspace colorspace) { auto _ret = SDL_SetSurfaceColorspace(surface, colorspace); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetSurfaceColorspace(SDL_Surface* surface, SDL_Colorspace colorspace) { auto _ret = SDL_SetSurfaceColorspace(surface, colorspace); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetSurfaceColorspace()
 inline SDL_Colorspace GetSurfaceColorspace(SDL_Surface* surface) { return SDL_GetSurfaceColorspace(surface); }
@@ -1331,13 +1328,13 @@ inline SDL_Colorspace GetSurfaceColorspace(SDL_Surface* surface) { return SDL_Ge
 inline SDL_Palette* CreateSurfacePalette(SDL_Surface* surface) { auto _ret = SDL_CreateSurfacePalette(surface); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_SetSurfacePalette()
-inline bool SetSurfacePalette(SDL_Surface* surface, SDL_Palette* palette) { auto _ret = SDL_SetSurfacePalette(surface, palette); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetSurfacePalette(SDL_Surface* surface, SDL_Palette* palette) { auto _ret = SDL_SetSurfacePalette(surface, palette); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetSurfacePalette()
 inline SDL_Palette* GetSurfacePalette(SDL_Surface* surface) { return SDL_GetSurfacePalette(surface); }
 
 //! @copydoc SDL_AddSurfaceAlternateImage()
-inline bool AddSurfaceAlternateImage(SDL_Surface* surface, SDL_Surface* image) { auto _ret = SDL_AddSurfaceAlternateImage(surface, image); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void AddSurfaceAlternateImage(SDL_Surface* surface, SDL_Surface* image) { auto _ret = SDL_AddSurfaceAlternateImage(surface, image); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SurfaceHasAlternateImages()
 inline bool SurfaceHasAlternateImages(SDL_Surface* surface) { return SDL_SurfaceHasAlternateImages(surface); }
@@ -1346,13 +1343,13 @@ inline bool SurfaceHasAlternateImages(SDL_Surface* surface) { return SDL_Surface
 inline SDL_Surface** GetSurfaceImages(SDL_Surface* surface, int* count) { auto _ret = SDL_GetSurfaceImages(surface, count); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_RemoveSurfaceAlternateImages()
-inline void RemoveSurfaceAlternateImages(SDL_Surface* surface) {  SDL_RemoveSurfaceAlternateImages(surface); }
+inline void RemoveSurfaceAlternateImages(SDL_Surface* surface) { SDL_RemoveSurfaceAlternateImages(surface); }
 
 //! @copydoc SDL_LockSurface()
-inline bool LockSurface(SDL_Surface* surface) { auto _ret = SDL_LockSurface(surface); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void LockSurface(SDL_Surface* surface) { auto _ret = SDL_LockSurface(surface); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_UnlockSurface()
-inline void UnlockSurface(SDL_Surface* surface) {  SDL_UnlockSurface(surface); }
+inline void UnlockSurface(SDL_Surface* surface) { SDL_UnlockSurface(surface); }
 
 //! @copydoc SDL_LoadBMP_IO()
 inline SDL_Surface* LoadBMP_IO(SDL_IOStream* src, bool closeio) { auto _ret = SDL_LoadBMP_IO(src, closeio); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
@@ -1361,52 +1358,52 @@ inline SDL_Surface* LoadBMP_IO(SDL_IOStream* src, bool closeio) { auto _ret = SD
 inline SDL_Surface* LoadBMP(const char* file) { auto _ret = SDL_LoadBMP(file); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_SaveBMP_IO()
-inline bool SaveBMP_IO(SDL_Surface* surface, SDL_IOStream* dst, bool closeio) { auto _ret = SDL_SaveBMP_IO(surface, dst, closeio); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SaveBMP_IO(SDL_Surface* surface, SDL_IOStream* dst, bool closeio) { auto _ret = SDL_SaveBMP_IO(surface, dst, closeio); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SaveBMP()
-inline bool SaveBMP(SDL_Surface* surface, const char* file) { auto _ret = SDL_SaveBMP(surface, file); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SaveBMP(SDL_Surface* surface, const char* file) { auto _ret = SDL_SaveBMP(surface, file); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetSurfaceRLE()
-inline bool SetSurfaceRLE(SDL_Surface* surface, bool enabled) { auto _ret = SDL_SetSurfaceRLE(surface, enabled); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetSurfaceRLE(SDL_Surface* surface, bool enabled) { auto _ret = SDL_SetSurfaceRLE(surface, enabled); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SurfaceHasRLE()
 inline bool SurfaceHasRLE(SDL_Surface* surface) { return SDL_SurfaceHasRLE(surface); }
 
 //! @copydoc SDL_SetSurfaceColorKey()
-inline bool SetSurfaceColorKey(SDL_Surface* surface, bool enabled, Uint32 key) { auto _ret = SDL_SetSurfaceColorKey(surface, enabled, key); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetSurfaceColorKey(SDL_Surface* surface, bool enabled, Uint32 key) { auto _ret = SDL_SetSurfaceColorKey(surface, enabled, key); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SurfaceHasColorKey()
 inline bool SurfaceHasColorKey(SDL_Surface* surface) { return SDL_SurfaceHasColorKey(surface); }
 
 //! @copydoc SDL_GetSurfaceColorKey()
-inline bool GetSurfaceColorKey(SDL_Surface* surface, Uint32* key) { auto _ret = SDL_GetSurfaceColorKey(surface, key); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetSurfaceColorKey(SDL_Surface* surface, Uint32* key) { auto _ret = SDL_GetSurfaceColorKey(surface, key); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetSurfaceColorMod()
-inline bool SetSurfaceColorMod(SDL_Surface* surface, Uint8 r, Uint8 g, Uint8 b) { auto _ret = SDL_SetSurfaceColorMod(surface, r, g, b); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetSurfaceColorMod(SDL_Surface* surface, Uint8 r, Uint8 g, Uint8 b) { auto _ret = SDL_SetSurfaceColorMod(surface, r, g, b); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetSurfaceColorMod()
-inline bool GetSurfaceColorMod(SDL_Surface* surface, Uint8* r, Uint8* g, Uint8* b) { auto _ret = SDL_GetSurfaceColorMod(surface, r, g, b); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetSurfaceColorMod(SDL_Surface* surface, Uint8* r, Uint8* g, Uint8* b) { auto _ret = SDL_GetSurfaceColorMod(surface, r, g, b); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetSurfaceAlphaMod()
-inline bool SetSurfaceAlphaMod(SDL_Surface* surface, Uint8 alpha) { auto _ret = SDL_SetSurfaceAlphaMod(surface, alpha); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetSurfaceAlphaMod(SDL_Surface* surface, Uint8 alpha) { auto _ret = SDL_SetSurfaceAlphaMod(surface, alpha); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetSurfaceAlphaMod()
-inline bool GetSurfaceAlphaMod(SDL_Surface* surface, Uint8* alpha) { auto _ret = SDL_GetSurfaceAlphaMod(surface, alpha); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetSurfaceAlphaMod(SDL_Surface* surface, Uint8* alpha) { auto _ret = SDL_GetSurfaceAlphaMod(surface, alpha); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetSurfaceBlendMode()
-inline bool SetSurfaceBlendMode(SDL_Surface* surface, SDL_BlendMode blendMode) { auto _ret = SDL_SetSurfaceBlendMode(surface, blendMode); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetSurfaceBlendMode(SDL_Surface* surface, SDL_BlendMode blendMode) { auto _ret = SDL_SetSurfaceBlendMode(surface, blendMode); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetSurfaceBlendMode()
-inline bool GetSurfaceBlendMode(SDL_Surface* surface, SDL_BlendMode* blendMode) { auto _ret = SDL_GetSurfaceBlendMode(surface, blendMode); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetSurfaceBlendMode(SDL_Surface* surface, SDL_BlendMode* blendMode) { auto _ret = SDL_GetSurfaceBlendMode(surface, blendMode); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetSurfaceClipRect()
 inline bool SetSurfaceClipRect(SDL_Surface* surface, const SDL_Rect* rect) { return SDL_SetSurfaceClipRect(surface, rect); }
 
 //! @copydoc SDL_GetSurfaceClipRect()
-inline bool GetSurfaceClipRect(SDL_Surface* surface, SDL_Rect* rect) { auto _ret = SDL_GetSurfaceClipRect(surface, rect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetSurfaceClipRect(SDL_Surface* surface, SDL_Rect* rect) { auto _ret = SDL_GetSurfaceClipRect(surface, rect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_FlipSurface()
-inline bool FlipSurface(SDL_Surface* surface, SDL_FlipMode flip) { auto _ret = SDL_FlipSurface(surface, flip); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void FlipSurface(SDL_Surface* surface, SDL_FlipMode flip) { auto _ret = SDL_FlipSurface(surface, flip); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_DuplicateSurface()
 inline SDL_Surface* DuplicateSurface(SDL_Surface* surface) { auto _ret = SDL_DuplicateSurface(surface); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
@@ -1421,46 +1418,46 @@ inline SDL_Surface* ConvertSurface(SDL_Surface* surface, SDL_PixelFormat format)
 inline SDL_Surface* ConvertSurfaceAndColorspace(SDL_Surface* surface, SDL_PixelFormat format, SDL_Palette* palette, SDL_Colorspace colorspace, SDL_PropertiesID props) { auto _ret = SDL_ConvertSurfaceAndColorspace(surface, format, palette, colorspace, props); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_ConvertPixels()
-inline bool ConvertPixels(int width, int height, SDL_PixelFormat src_format, const void* src, int src_pitch, SDL_PixelFormat dst_format, void* dst, int dst_pitch) { auto _ret = SDL_ConvertPixels(width, height, src_format, src, src_pitch, dst_format, dst, dst_pitch); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void ConvertPixels(int width, int height, SDL_PixelFormat src_format, const void* src, int src_pitch, SDL_PixelFormat dst_format, void* dst, int dst_pitch) { auto _ret = SDL_ConvertPixels(width, height, src_format, src, src_pitch, dst_format, dst, dst_pitch); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_ConvertPixelsAndColorspace()
-inline bool ConvertPixelsAndColorspace(int width, int height, SDL_PixelFormat src_format, SDL_Colorspace src_colorspace, SDL_PropertiesID src_properties, const void* src, int src_pitch, SDL_PixelFormat dst_format, SDL_Colorspace dst_colorspace, SDL_PropertiesID dst_properties, void* dst, int dst_pitch) { auto _ret = SDL_ConvertPixelsAndColorspace(width, height, src_format, src_colorspace, src_properties, src, src_pitch, dst_format, dst_colorspace, dst_properties, dst, dst_pitch); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void ConvertPixelsAndColorspace(int width, int height, SDL_PixelFormat src_format, SDL_Colorspace src_colorspace, SDL_PropertiesID src_properties, const void* src, int src_pitch, SDL_PixelFormat dst_format, SDL_Colorspace dst_colorspace, SDL_PropertiesID dst_properties, void* dst, int dst_pitch) { auto _ret = SDL_ConvertPixelsAndColorspace(width, height, src_format, src_colorspace, src_properties, src, src_pitch, dst_format, dst_colorspace, dst_properties, dst, dst_pitch); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_PremultiplyAlpha()
-inline bool PremultiplyAlpha(int width, int height, SDL_PixelFormat src_format, const void* src, int src_pitch, SDL_PixelFormat dst_format, void* dst, int dst_pitch, bool linear) { auto _ret = SDL_PremultiplyAlpha(width, height, src_format, src, src_pitch, dst_format, dst, dst_pitch, linear); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void PremultiplyAlpha(int width, int height, SDL_PixelFormat src_format, const void* src, int src_pitch, SDL_PixelFormat dst_format, void* dst, int dst_pitch, bool linear) { auto _ret = SDL_PremultiplyAlpha(width, height, src_format, src, src_pitch, dst_format, dst, dst_pitch, linear); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_PremultiplySurfaceAlpha()
-inline bool PremultiplySurfaceAlpha(SDL_Surface* surface, bool linear) { auto _ret = SDL_PremultiplySurfaceAlpha(surface, linear); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void PremultiplySurfaceAlpha(SDL_Surface* surface, bool linear) { auto _ret = SDL_PremultiplySurfaceAlpha(surface, linear); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_ClearSurface()
-inline bool ClearSurface(SDL_Surface* surface, float r, float g, float b, float a) { auto _ret = SDL_ClearSurface(surface, r, g, b, a); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void ClearSurface(SDL_Surface* surface, float r, float g, float b, float a) { auto _ret = SDL_ClearSurface(surface, r, g, b, a); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_FillSurfaceRect()
-inline bool FillSurfaceRect(SDL_Surface* dst, const SDL_Rect* rect, Uint32 color) { auto _ret = SDL_FillSurfaceRect(dst, rect, color); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void FillSurfaceRect(SDL_Surface* dst, const SDL_Rect* rect, Uint32 color) { auto _ret = SDL_FillSurfaceRect(dst, rect, color); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_FillSurfaceRects()
-inline bool FillSurfaceRects(SDL_Surface* dst, const SDL_Rect* rects, int count, Uint32 color) { auto _ret = SDL_FillSurfaceRects(dst, rects, count, color); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void FillSurfaceRects(SDL_Surface* dst, const SDL_Rect* rects, int count, Uint32 color) { auto _ret = SDL_FillSurfaceRects(dst, rects, count, color); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_BlitSurface()
-inline bool BlitSurface(SDL_Surface* src, const SDL_Rect* srcrect, SDL_Surface* dst, const SDL_Rect* dstrect) { auto _ret = SDL_BlitSurface(src, srcrect, dst, dstrect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void BlitSurface(SDL_Surface* src, const SDL_Rect* srcrect, SDL_Surface* dst, const SDL_Rect* dstrect) { auto _ret = SDL_BlitSurface(src, srcrect, dst, dstrect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_BlitSurfaceUnchecked()
-inline bool BlitSurfaceUnchecked(SDL_Surface* src, const SDL_Rect* srcrect, SDL_Surface* dst, const SDL_Rect* dstrect) { auto _ret = SDL_BlitSurfaceUnchecked(src, srcrect, dst, dstrect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void BlitSurfaceUnchecked(SDL_Surface* src, const SDL_Rect* srcrect, SDL_Surface* dst, const SDL_Rect* dstrect) { auto _ret = SDL_BlitSurfaceUnchecked(src, srcrect, dst, dstrect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_BlitSurfaceScaled()
-inline bool BlitSurfaceScaled(SDL_Surface* src, const SDL_Rect* srcrect, SDL_Surface* dst, const SDL_Rect* dstrect, SDL_ScaleMode scaleMode) { auto _ret = SDL_BlitSurfaceScaled(src, srcrect, dst, dstrect, scaleMode); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void BlitSurfaceScaled(SDL_Surface* src, const SDL_Rect* srcrect, SDL_Surface* dst, const SDL_Rect* dstrect, SDL_ScaleMode scaleMode) { auto _ret = SDL_BlitSurfaceScaled(src, srcrect, dst, dstrect, scaleMode); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_BlitSurfaceUncheckedScaled()
-inline bool BlitSurfaceUncheckedScaled(SDL_Surface* src, const SDL_Rect* srcrect, SDL_Surface* dst, const SDL_Rect* dstrect, SDL_ScaleMode scaleMode) { auto _ret = SDL_BlitSurfaceUncheckedScaled(src, srcrect, dst, dstrect, scaleMode); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void BlitSurfaceUncheckedScaled(SDL_Surface* src, const SDL_Rect* srcrect, SDL_Surface* dst, const SDL_Rect* dstrect, SDL_ScaleMode scaleMode) { auto _ret = SDL_BlitSurfaceUncheckedScaled(src, srcrect, dst, dstrect, scaleMode); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_BlitSurfaceTiled()
-inline bool BlitSurfaceTiled(SDL_Surface* src, const SDL_Rect* srcrect, SDL_Surface* dst, const SDL_Rect* dstrect) { auto _ret = SDL_BlitSurfaceTiled(src, srcrect, dst, dstrect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void BlitSurfaceTiled(SDL_Surface* src, const SDL_Rect* srcrect, SDL_Surface* dst, const SDL_Rect* dstrect) { auto _ret = SDL_BlitSurfaceTiled(src, srcrect, dst, dstrect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_BlitSurfaceTiledWithScale()
-inline bool BlitSurfaceTiledWithScale(SDL_Surface* src, const SDL_Rect* srcrect, float scale, SDL_ScaleMode scaleMode, SDL_Surface* dst, const SDL_Rect* dstrect) { auto _ret = SDL_BlitSurfaceTiledWithScale(src, srcrect, scale, scaleMode, dst, dstrect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void BlitSurfaceTiledWithScale(SDL_Surface* src, const SDL_Rect* srcrect, float scale, SDL_ScaleMode scaleMode, SDL_Surface* dst, const SDL_Rect* dstrect) { auto _ret = SDL_BlitSurfaceTiledWithScale(src, srcrect, scale, scaleMode, dst, dstrect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_BlitSurface9Grid()
-inline bool BlitSurface9Grid(SDL_Surface* src, const SDL_Rect* srcrect, int left_width, int right_width, int top_height, int bottom_height, float scale, SDL_ScaleMode scaleMode, SDL_Surface* dst, const SDL_Rect* dstrect) { auto _ret = SDL_BlitSurface9Grid(src, srcrect, left_width, right_width, top_height, bottom_height, scale, scaleMode, dst, dstrect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void BlitSurface9Grid(SDL_Surface* src, const SDL_Rect* srcrect, int left_width, int right_width, int top_height, int bottom_height, float scale, SDL_ScaleMode scaleMode, SDL_Surface* dst, const SDL_Rect* dstrect) { auto _ret = SDL_BlitSurface9Grid(src, srcrect, left_width, right_width, top_height, bottom_height, scale, scaleMode, dst, dstrect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_MapSurfaceRGB()
 inline Uint32 MapSurfaceRGB(SDL_Surface* surface, Uint8 r, Uint8 g, Uint8 b) { return SDL_MapSurfaceRGB(surface, r, g, b); }
@@ -1469,16 +1466,16 @@ inline Uint32 MapSurfaceRGB(SDL_Surface* surface, Uint8 r, Uint8 g, Uint8 b) { r
 inline Uint32 MapSurfaceRGBA(SDL_Surface* surface, Uint8 r, Uint8 g, Uint8 b, Uint8 a) { return SDL_MapSurfaceRGBA(surface, r, g, b, a); }
 
 //! @copydoc SDL_ReadSurfacePixel()
-inline bool ReadSurfacePixel(SDL_Surface* surface, int x, int y, Uint8* r, Uint8* g, Uint8* b, Uint8* a) { auto _ret = SDL_ReadSurfacePixel(surface, x, y, r, g, b, a); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void ReadSurfacePixel(SDL_Surface* surface, int x, int y, Uint8* r, Uint8* g, Uint8* b, Uint8* a) { auto _ret = SDL_ReadSurfacePixel(surface, x, y, r, g, b, a); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_ReadSurfacePixelFloat()
-inline bool ReadSurfacePixelFloat(SDL_Surface* surface, int x, int y, float* r, float* g, float* b, float* a) { auto _ret = SDL_ReadSurfacePixelFloat(surface, x, y, r, g, b, a); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void ReadSurfacePixelFloat(SDL_Surface* surface, int x, int y, float* r, float* g, float* b, float* a) { auto _ret = SDL_ReadSurfacePixelFloat(surface, x, y, r, g, b, a); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_WriteSurfacePixel()
-inline bool WriteSurfacePixel(SDL_Surface* surface, int x, int y, Uint8 r, Uint8 g, Uint8 b, Uint8 a) { auto _ret = SDL_WriteSurfacePixel(surface, x, y, r, g, b, a); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void WriteSurfacePixel(SDL_Surface* surface, int x, int y, Uint8 r, Uint8 g, Uint8 b, Uint8 a) { auto _ret = SDL_WriteSurfacePixel(surface, x, y, r, g, b, a); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_WriteSurfacePixelFloat()
-inline bool WriteSurfacePixelFloat(SDL_Surface* surface, int x, int y, float r, float g, float b, float a) { auto _ret = SDL_WriteSurfacePixelFloat(surface, x, y, r, g, b, a); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void WriteSurfacePixelFloat(SDL_Surface* surface, int x, int y, float r, float g, float b, float a) { auto _ret = SDL_WriteSurfacePixelFloat(surface, x, y, r, g, b, a); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetNumCameraDrivers()
 inline int GetNumCameraDrivers() { return SDL_GetNumCameraDrivers(); }
@@ -1514,19 +1511,19 @@ inline SDL_CameraID GetCameraID(SDL_Camera* camera) { auto _ret = SDL_GetCameraI
 inline SDL_PropertiesID GetCameraProperties(SDL_Camera* camera) { auto _ret = SDL_GetCameraProperties(camera); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_GetCameraFormat()
-inline bool GetCameraFormat(SDL_Camera* camera, SDL_CameraSpec* spec) { auto _ret = SDL_GetCameraFormat(camera, spec); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetCameraFormat(SDL_Camera* camera, SDL_CameraSpec* spec) { auto _ret = SDL_GetCameraFormat(camera, spec); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_AcquireCameraFrame()
 inline SDL_Surface* AcquireCameraFrame(SDL_Camera* camera, Uint64* timestampNS) { return SDL_AcquireCameraFrame(camera, timestampNS); }
 
 //! @copydoc SDL_ReleaseCameraFrame()
-inline void ReleaseCameraFrame(SDL_Camera* camera, SDL_Surface* frame) {  SDL_ReleaseCameraFrame(camera, frame); }
+inline void ReleaseCameraFrame(SDL_Camera* camera, SDL_Surface* frame) { SDL_ReleaseCameraFrame(camera, frame); }
 
 //! @copydoc SDL_CloseCamera()
-inline void CloseCamera(SDL_Camera* camera) {  SDL_CloseCamera(camera); }
+inline void CloseCamera(SDL_Camera* camera) { SDL_CloseCamera(camera); }
 
 //! @copydoc SDL_SetClipboardText()
-inline bool SetClipboardText(const char* text) { auto _ret = SDL_SetClipboardText(text); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetClipboardText(const char* text) { auto _ret = SDL_SetClipboardText(text); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetClipboardText()
 inline char* GetClipboardText() { auto _ret = SDL_GetClipboardText(); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
@@ -1535,7 +1532,7 @@ inline char* GetClipboardText() { auto _ret = SDL_GetClipboardText(); if (!_ret)
 inline bool HasClipboardText() { return SDL_HasClipboardText(); }
 
 //! @copydoc SDL_SetPrimarySelectionText()
-inline bool SetPrimarySelectionText(const char* text) { auto _ret = SDL_SetPrimarySelectionText(text); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetPrimarySelectionText(const char* text) { auto _ret = SDL_SetPrimarySelectionText(text); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetPrimarySelectionText()
 inline char* GetPrimarySelectionText() { auto _ret = SDL_GetPrimarySelectionText(); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
@@ -1544,10 +1541,10 @@ inline char* GetPrimarySelectionText() { auto _ret = SDL_GetPrimarySelectionText
 inline bool HasPrimarySelectionText() { return SDL_HasPrimarySelectionText(); }
 
 //! @copydoc SDL_SetClipboardData()
-inline bool SetClipboardData(SDL_ClipboardDataCallback callback, SDL_ClipboardCleanupCallback cleanup, void* userdata, const char** mime_types, size_t num_mime_types) { auto _ret = SDL_SetClipboardData(callback, cleanup, userdata, mime_types, num_mime_types); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetClipboardData(SDL_ClipboardDataCallback callback, SDL_ClipboardCleanupCallback cleanup, void* userdata, const char** mime_types, size_t num_mime_types) { auto _ret = SDL_SetClipboardData(callback, cleanup, userdata, mime_types, num_mime_types); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_ClearClipboardData()
-inline bool ClearClipboardData() { auto _ret = SDL_ClearClipboardData(); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void ClearClipboardData() { auto _ret = SDL_ClearClipboardData(); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetClipboardData()
 inline void* GetClipboardData(const char* mime_type, size_t* size) { auto _ret = SDL_GetClipboardData(mime_type, size); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
@@ -1637,10 +1634,10 @@ inline SDL_PropertiesID GetDisplayProperties(SDL_DisplayID displayID) { auto _re
 inline const char* GetDisplayName(SDL_DisplayID displayID) { auto _ret = SDL_GetDisplayName(displayID); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_GetDisplayBounds()
-inline bool GetDisplayBounds(SDL_DisplayID displayID, SDL_Rect* rect) { auto _ret = SDL_GetDisplayBounds(displayID, rect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetDisplayBounds(SDL_DisplayID displayID, SDL_Rect* rect) { auto _ret = SDL_GetDisplayBounds(displayID, rect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetDisplayUsableBounds()
-inline bool GetDisplayUsableBounds(SDL_DisplayID displayID, SDL_Rect* rect) { auto _ret = SDL_GetDisplayUsableBounds(displayID, rect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetDisplayUsableBounds(SDL_DisplayID displayID, SDL_Rect* rect) { auto _ret = SDL_GetDisplayUsableBounds(displayID, rect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetNaturalDisplayOrientation()
 inline SDL_DisplayOrientation GetNaturalDisplayOrientation(SDL_DisplayID displayID) { return SDL_GetNaturalDisplayOrientation(displayID); }
@@ -1655,7 +1652,7 @@ inline float GetDisplayContentScale(SDL_DisplayID displayID) { auto _ret = SDL_G
 inline SDL_DisplayMode** GetFullscreenDisplayModes(SDL_DisplayID displayID, int* count) { auto _ret = SDL_GetFullscreenDisplayModes(displayID, count); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_GetClosestFullscreenDisplayMode()
-inline bool GetClosestFullscreenDisplayMode(SDL_DisplayID displayID, int w, int h, float refresh_rate, bool include_high_density_modes, SDL_DisplayMode* closest) { auto _ret = SDL_GetClosestFullscreenDisplayMode(displayID, w, h, refresh_rate, include_high_density_modes, closest); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetClosestFullscreenDisplayMode(SDL_DisplayID displayID, int w, int h, float refresh_rate, bool include_high_density_modes, SDL_DisplayMode* closest) { auto _ret = SDL_GetClosestFullscreenDisplayMode(displayID, w, h, refresh_rate, include_high_density_modes, closest); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetDesktopDisplayMode()
 inline const SDL_DisplayMode* GetDesktopDisplayMode(SDL_DisplayID displayID) { auto _ret = SDL_GetDesktopDisplayMode(displayID); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
@@ -1679,7 +1676,7 @@ inline float GetWindowPixelDensity(SDL_Window* window) { auto _ret = SDL_GetWind
 inline float GetWindowDisplayScale(SDL_Window* window) { auto _ret = SDL_GetWindowDisplayScale(window); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_SetWindowFullscreenMode()
-inline bool SetWindowFullscreenMode(SDL_Window* window, const SDL_DisplayMode* mode) { auto _ret = SDL_SetWindowFullscreenMode(window, mode); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetWindowFullscreenMode(SDL_Window* window, const SDL_DisplayMode* mode) { auto _ret = SDL_SetWindowFullscreenMode(window, mode); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetWindowFullscreenMode()
 inline const SDL_DisplayMode* GetWindowFullscreenMode(SDL_Window* window) { return SDL_GetWindowFullscreenMode(window); }
@@ -1718,82 +1715,82 @@ inline SDL_PropertiesID GetWindowProperties(SDL_Window* window) { auto _ret = SD
 inline SDL::WindowFlags GetWindowFlags(SDL_Window* window) { return (SDL::WindowFlags) SDL_GetWindowFlags(window); }
 
 //! @copydoc SDL_SetWindowTitle()
-inline bool SetWindowTitle(SDL_Window* window, const char* title) { auto _ret = SDL_SetWindowTitle(window, title); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetWindowTitle(SDL_Window* window, const char* title) { auto _ret = SDL_SetWindowTitle(window, title); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetWindowTitle()
 inline const char* GetWindowTitle(SDL_Window* window) { return SDL_GetWindowTitle(window); }
 
 //! @copydoc SDL_SetWindowIcon()
-inline bool SetWindowIcon(SDL_Window* window, SDL_Surface* icon) { auto _ret = SDL_SetWindowIcon(window, icon); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetWindowIcon(SDL_Window* window, SDL_Surface* icon) { auto _ret = SDL_SetWindowIcon(window, icon); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetWindowPosition()
-inline bool SetWindowPosition(SDL_Window* window, int x, int y) { auto _ret = SDL_SetWindowPosition(window, x, y); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetWindowPosition(SDL_Window* window, int x, int y) { auto _ret = SDL_SetWindowPosition(window, x, y); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetWindowPosition()
-inline bool GetWindowPosition(SDL_Window* window, int* x, int* y) { auto _ret = SDL_GetWindowPosition(window, x, y); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetWindowPosition(SDL_Window* window, int* x, int* y) { auto _ret = SDL_GetWindowPosition(window, x, y); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetWindowSize()
-inline bool SetWindowSize(SDL_Window* window, int w, int h) { auto _ret = SDL_SetWindowSize(window, w, h); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetWindowSize(SDL_Window* window, int w, int h) { auto _ret = SDL_SetWindowSize(window, w, h); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetWindowSize()
-inline bool GetWindowSize(SDL_Window* window, int* w, int* h) { auto _ret = SDL_GetWindowSize(window, w, h); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetWindowSize(SDL_Window* window, int* w, int* h) { auto _ret = SDL_GetWindowSize(window, w, h); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetWindowSafeArea()
-inline bool GetWindowSafeArea(SDL_Window* window, SDL_Rect* rect) { auto _ret = SDL_GetWindowSafeArea(window, rect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetWindowSafeArea(SDL_Window* window, SDL_Rect* rect) { auto _ret = SDL_GetWindowSafeArea(window, rect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetWindowAspectRatio()
-inline bool SetWindowAspectRatio(SDL_Window* window, float min_aspect, float max_aspect) { auto _ret = SDL_SetWindowAspectRatio(window, min_aspect, max_aspect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetWindowAspectRatio(SDL_Window* window, float min_aspect, float max_aspect) { auto _ret = SDL_SetWindowAspectRatio(window, min_aspect, max_aspect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetWindowAspectRatio()
-inline bool GetWindowAspectRatio(SDL_Window* window, float* min_aspect, float* max_aspect) { auto _ret = SDL_GetWindowAspectRatio(window, min_aspect, max_aspect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetWindowAspectRatio(SDL_Window* window, float* min_aspect, float* max_aspect) { auto _ret = SDL_GetWindowAspectRatio(window, min_aspect, max_aspect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetWindowBordersSize()
-inline bool GetWindowBordersSize(SDL_Window* window, int* top, int* left, int* bottom, int* right) { auto _ret = SDL_GetWindowBordersSize(window, top, left, bottom, right); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetWindowBordersSize(SDL_Window* window, int* top, int* left, int* bottom, int* right) { auto _ret = SDL_GetWindowBordersSize(window, top, left, bottom, right); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetWindowSizeInPixels()
-inline bool GetWindowSizeInPixels(SDL_Window* window, int* w, int* h) { auto _ret = SDL_GetWindowSizeInPixels(window, w, h); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetWindowSizeInPixels(SDL_Window* window, int* w, int* h) { auto _ret = SDL_GetWindowSizeInPixels(window, w, h); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetWindowMinimumSize()
-inline bool SetWindowMinimumSize(SDL_Window* window, int min_w, int min_h) { auto _ret = SDL_SetWindowMinimumSize(window, min_w, min_h); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetWindowMinimumSize(SDL_Window* window, int min_w, int min_h) { auto _ret = SDL_SetWindowMinimumSize(window, min_w, min_h); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetWindowMinimumSize()
-inline bool GetWindowMinimumSize(SDL_Window* window, int* w, int* h) { auto _ret = SDL_GetWindowMinimumSize(window, w, h); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetWindowMinimumSize(SDL_Window* window, int* w, int* h) { auto _ret = SDL_GetWindowMinimumSize(window, w, h); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetWindowMaximumSize()
-inline bool SetWindowMaximumSize(SDL_Window* window, int max_w, int max_h) { auto _ret = SDL_SetWindowMaximumSize(window, max_w, max_h); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetWindowMaximumSize(SDL_Window* window, int max_w, int max_h) { auto _ret = SDL_SetWindowMaximumSize(window, max_w, max_h); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetWindowMaximumSize()
-inline bool GetWindowMaximumSize(SDL_Window* window, int* w, int* h) { auto _ret = SDL_GetWindowMaximumSize(window, w, h); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetWindowMaximumSize(SDL_Window* window, int* w, int* h) { auto _ret = SDL_GetWindowMaximumSize(window, w, h); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetWindowBordered()
-inline bool SetWindowBordered(SDL_Window* window, bool bordered) { auto _ret = SDL_SetWindowBordered(window, bordered); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetWindowBordered(SDL_Window* window, bool bordered) { auto _ret = SDL_SetWindowBordered(window, bordered); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetWindowResizable()
-inline bool SetWindowResizable(SDL_Window* window, bool resizable) { auto _ret = SDL_SetWindowResizable(window, resizable); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetWindowResizable(SDL_Window* window, bool resizable) { auto _ret = SDL_SetWindowResizable(window, resizable); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetWindowAlwaysOnTop()
-inline bool SetWindowAlwaysOnTop(SDL_Window* window, bool on_top) { auto _ret = SDL_SetWindowAlwaysOnTop(window, on_top); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetWindowAlwaysOnTop(SDL_Window* window, bool on_top) { auto _ret = SDL_SetWindowAlwaysOnTop(window, on_top); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_ShowWindow()
-inline bool ShowWindow(SDL_Window* window) { auto _ret = SDL_ShowWindow(window); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void ShowWindow(SDL_Window* window) { auto _ret = SDL_ShowWindow(window); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_HideWindow()
-inline bool HideWindow(SDL_Window* window) { auto _ret = SDL_HideWindow(window); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void HideWindow(SDL_Window* window) { auto _ret = SDL_HideWindow(window); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_RaiseWindow()
-inline bool RaiseWindow(SDL_Window* window) { auto _ret = SDL_RaiseWindow(window); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void RaiseWindow(SDL_Window* window) { auto _ret = SDL_RaiseWindow(window); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_MaximizeWindow()
-inline bool MaximizeWindow(SDL_Window* window) { auto _ret = SDL_MaximizeWindow(window); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void MaximizeWindow(SDL_Window* window) { auto _ret = SDL_MaximizeWindow(window); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_MinimizeWindow()
-inline bool MinimizeWindow(SDL_Window* window) { auto _ret = SDL_MinimizeWindow(window); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void MinimizeWindow(SDL_Window* window) { auto _ret = SDL_MinimizeWindow(window); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_RestoreWindow()
-inline bool RestoreWindow(SDL_Window* window) { auto _ret = SDL_RestoreWindow(window); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void RestoreWindow(SDL_Window* window) { auto _ret = SDL_RestoreWindow(window); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetWindowFullscreen()
-inline bool SetWindowFullscreen(SDL_Window* window, bool fullscreen) { auto _ret = SDL_SetWindowFullscreen(window, fullscreen); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetWindowFullscreen(SDL_Window* window, bool fullscreen) { auto _ret = SDL_SetWindowFullscreen(window, fullscreen); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SyncWindow()
 inline bool SyncWindow(SDL_Window* window) { return SDL_SyncWindow(window); }
@@ -1805,25 +1802,25 @@ inline bool WindowHasSurface(SDL_Window* window) { return SDL_WindowHasSurface(w
 inline SDL_Surface* GetWindowSurface(SDL_Window* window) { auto _ret = SDL_GetWindowSurface(window); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_SetWindowSurfaceVSync()
-inline bool SetWindowSurfaceVSync(SDL_Window* window, int vsync) { auto _ret = SDL_SetWindowSurfaceVSync(window, vsync); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetWindowSurfaceVSync(SDL_Window* window, int vsync) { auto _ret = SDL_SetWindowSurfaceVSync(window, vsync); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetWindowSurfaceVSync()
-inline bool GetWindowSurfaceVSync(SDL_Window* window, int* vsync) { auto _ret = SDL_GetWindowSurfaceVSync(window, vsync); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetWindowSurfaceVSync(SDL_Window* window, int* vsync) { auto _ret = SDL_GetWindowSurfaceVSync(window, vsync); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_UpdateWindowSurface()
-inline bool UpdateWindowSurface(SDL_Window* window) { auto _ret = SDL_UpdateWindowSurface(window); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void UpdateWindowSurface(SDL_Window* window) { auto _ret = SDL_UpdateWindowSurface(window); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_UpdateWindowSurfaceRects()
-inline bool UpdateWindowSurfaceRects(SDL_Window* window, const SDL_Rect* rects, int numrects) { auto _ret = SDL_UpdateWindowSurfaceRects(window, rects, numrects); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void UpdateWindowSurfaceRects(SDL_Window* window, const SDL_Rect* rects, int numrects) { auto _ret = SDL_UpdateWindowSurfaceRects(window, rects, numrects); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_DestroyWindowSurface()
-inline bool DestroyWindowSurface(SDL_Window* window) { auto _ret = SDL_DestroyWindowSurface(window); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void DestroyWindowSurface(SDL_Window* window) { auto _ret = SDL_DestroyWindowSurface(window); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetWindowKeyboardGrab()
-inline bool SetWindowKeyboardGrab(SDL_Window* window, bool grabbed) { auto _ret = SDL_SetWindowKeyboardGrab(window, grabbed); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetWindowKeyboardGrab(SDL_Window* window, bool grabbed) { auto _ret = SDL_SetWindowKeyboardGrab(window, grabbed); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetWindowMouseGrab()
-inline bool SetWindowMouseGrab(SDL_Window* window, bool grabbed) { auto _ret = SDL_SetWindowMouseGrab(window, grabbed); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetWindowMouseGrab(SDL_Window* window, bool grabbed) { auto _ret = SDL_SetWindowMouseGrab(window, grabbed); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetWindowKeyboardGrab()
 inline bool GetWindowKeyboardGrab(SDL_Window* window) { return SDL_GetWindowKeyboardGrab(window); }
@@ -1835,52 +1832,52 @@ inline bool GetWindowMouseGrab(SDL_Window* window) { return SDL_GetWindowMouseGr
 inline SDL_Window* GetGrabbedWindow() { return SDL_GetGrabbedWindow(); }
 
 //! @copydoc SDL_SetWindowMouseRect()
-inline bool SetWindowMouseRect(SDL_Window* window, const SDL_Rect* rect) { auto _ret = SDL_SetWindowMouseRect(window, rect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetWindowMouseRect(SDL_Window* window, const SDL_Rect* rect) { auto _ret = SDL_SetWindowMouseRect(window, rect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetWindowMouseRect()
 inline const SDL_Rect* GetWindowMouseRect(SDL_Window* window) { return SDL_GetWindowMouseRect(window); }
 
 //! @copydoc SDL_SetWindowOpacity()
-inline bool SetWindowOpacity(SDL_Window* window, float opacity) { auto _ret = SDL_SetWindowOpacity(window, opacity); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetWindowOpacity(SDL_Window* window, float opacity) { auto _ret = SDL_SetWindowOpacity(window, opacity); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetWindowOpacity()
 inline float GetWindowOpacity(SDL_Window* window) { auto _ret = SDL_GetWindowOpacity(window); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_SetWindowParent()
-inline bool SetWindowParent(SDL_Window* window, SDL_Window* parent) { auto _ret = SDL_SetWindowParent(window, parent); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetWindowParent(SDL_Window* window, SDL_Window* parent) { auto _ret = SDL_SetWindowParent(window, parent); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetWindowModal()
-inline bool SetWindowModal(SDL_Window* window, bool modal) { auto _ret = SDL_SetWindowModal(window, modal); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetWindowModal(SDL_Window* window, bool modal) { auto _ret = SDL_SetWindowModal(window, modal); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetWindowFocusable()
-inline bool SetWindowFocusable(SDL_Window* window, bool focusable) { auto _ret = SDL_SetWindowFocusable(window, focusable); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetWindowFocusable(SDL_Window* window, bool focusable) { auto _ret = SDL_SetWindowFocusable(window, focusable); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_ShowWindowSystemMenu()
-inline bool ShowWindowSystemMenu(SDL_Window* window, int x, int y) { auto _ret = SDL_ShowWindowSystemMenu(window, x, y); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void ShowWindowSystemMenu(SDL_Window* window, int x, int y) { auto _ret = SDL_ShowWindowSystemMenu(window, x, y); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetWindowHitTest()
-inline bool SetWindowHitTest(SDL_Window* window, SDL_HitTest callback, void* callback_data) { auto _ret = SDL_SetWindowHitTest(window, callback, callback_data); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetWindowHitTest(SDL_Window* window, SDL_HitTest callback, void* callback_data) { auto _ret = SDL_SetWindowHitTest(window, callback, callback_data); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetWindowShape()
-inline bool SetWindowShape(SDL_Window* window, SDL_Surface* shape) { auto _ret = SDL_SetWindowShape(window, shape); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetWindowShape(SDL_Window* window, SDL_Surface* shape) { auto _ret = SDL_SetWindowShape(window, shape); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_FlashWindow()
-inline bool FlashWindow(SDL_Window* window, SDL_FlashOperation operation) { auto _ret = SDL_FlashWindow(window, operation); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void FlashWindow(SDL_Window* window, SDL_FlashOperation operation) { auto _ret = SDL_FlashWindow(window, operation); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_DestroyWindow()
-inline void DestroyWindow(SDL_Window* window) {  SDL_DestroyWindow(window); }
+inline void DestroyWindow(SDL_Window* window) { SDL_DestroyWindow(window); }
 
 //! @copydoc SDL_ScreenSaverEnabled()
 inline bool ScreenSaverEnabled() { return SDL_ScreenSaverEnabled(); }
 
 //! @copydoc SDL_EnableScreenSaver()
-inline bool EnableScreenSaver() { auto _ret = SDL_EnableScreenSaver(); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void EnableScreenSaver() { auto _ret = SDL_EnableScreenSaver(); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_DisableScreenSaver()
-inline bool DisableScreenSaver() { auto _ret = SDL_DisableScreenSaver(); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void DisableScreenSaver() { auto _ret = SDL_DisableScreenSaver(); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GL_LoadLibrary()
-inline bool GL_LoadLibrary(const char* path) { auto _ret = SDL_GL_LoadLibrary(path); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GL_LoadLibrary(const char* path) { auto _ret = SDL_GL_LoadLibrary(path); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GL_GetProcAddress()
 inline SDL_FunctionPointer GL_GetProcAddress(const char* proc) { return SDL_GL_GetProcAddress(proc); }
@@ -1889,25 +1886,25 @@ inline SDL_FunctionPointer GL_GetProcAddress(const char* proc) { return SDL_GL_G
 inline SDL_FunctionPointer EGL_GetProcAddress(const char* proc) { return SDL_EGL_GetProcAddress(proc); }
 
 //! @copydoc SDL_GL_UnloadLibrary()
-inline void GL_UnloadLibrary() {  SDL_GL_UnloadLibrary(); }
+inline void GL_UnloadLibrary() { SDL_GL_UnloadLibrary(); }
 
 //! @copydoc SDL_GL_ExtensionSupported()
 inline bool GL_ExtensionSupported(const char* extension) { return SDL_GL_ExtensionSupported(extension); }
 
 //! @copydoc SDL_GL_ResetAttributes()
-inline void GL_ResetAttributes() {  SDL_GL_ResetAttributes(); }
+inline void GL_ResetAttributes() { SDL_GL_ResetAttributes(); }
 
 //! @copydoc SDL_GL_SetAttribute()
-inline bool GL_SetAttribute(SDL_GLAttr attr, int value) { auto _ret = SDL_GL_SetAttribute(attr, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GL_SetAttribute(SDL_GLAttr attr, int value) { auto _ret = SDL_GL_SetAttribute(attr, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GL_GetAttribute()
-inline bool GL_GetAttribute(SDL_GLAttr attr, int* value) { auto _ret = SDL_GL_GetAttribute(attr, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GL_GetAttribute(SDL_GLAttr attr, int* value) { auto _ret = SDL_GL_GetAttribute(attr, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GL_CreateContext()
 inline SDL_GLContext GL_CreateContext(SDL_Window* window) { auto _ret = SDL_GL_CreateContext(window); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_GL_MakeCurrent()
-inline bool GL_MakeCurrent(SDL_Window* window, SDL_GLContext context) { auto _ret = SDL_GL_MakeCurrent(window, context); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GL_MakeCurrent(SDL_Window* window, SDL_GLContext context) { auto _ret = SDL_GL_MakeCurrent(window, context); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GL_GetCurrentWindow()
 inline SDL_Window* GL_GetCurrentWindow() { auto _ret = SDL_GL_GetCurrentWindow(); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
@@ -1925,34 +1922,34 @@ inline SDL_EGLConfig EGL_GetCurrentConfig() { auto _ret = SDL_EGL_GetCurrentConf
 inline SDL_EGLSurface EGL_GetWindowSurface(SDL_Window* window) { return SDL_EGL_GetWindowSurface(window); }
 
 //! @copydoc SDL_EGL_SetAttributeCallbacks()
-inline void EGL_SetAttributeCallbacks(SDL_EGLAttribArrayCallback platformAttribCallback, SDL_EGLIntArrayCallback surfaceAttribCallback, SDL_EGLIntArrayCallback contextAttribCallback, void* userdata) {  SDL_EGL_SetAttributeCallbacks(platformAttribCallback, surfaceAttribCallback, contextAttribCallback, userdata); }
+inline void EGL_SetAttributeCallbacks(SDL_EGLAttribArrayCallback platformAttribCallback, SDL_EGLIntArrayCallback surfaceAttribCallback, SDL_EGLIntArrayCallback contextAttribCallback, void* userdata) { SDL_EGL_SetAttributeCallbacks(platformAttribCallback, surfaceAttribCallback, contextAttribCallback, userdata); }
 
 //! @copydoc SDL_GL_SetSwapInterval()
-inline bool GL_SetSwapInterval(int interval) { auto _ret = SDL_GL_SetSwapInterval(interval); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GL_SetSwapInterval(int interval) { auto _ret = SDL_GL_SetSwapInterval(interval); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GL_GetSwapInterval()
-inline bool GL_GetSwapInterval(int* interval) { auto _ret = SDL_GL_GetSwapInterval(interval); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GL_GetSwapInterval(int* interval) { auto _ret = SDL_GL_GetSwapInterval(interval); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GL_SwapWindow()
-inline bool GL_SwapWindow(SDL_Window* window) { auto _ret = SDL_GL_SwapWindow(window); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GL_SwapWindow(SDL_Window* window) { auto _ret = SDL_GL_SwapWindow(window); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GL_DestroyContext()
-inline bool GL_DestroyContext(SDL_GLContext context) { auto _ret = SDL_GL_DestroyContext(context); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GL_DestroyContext(SDL_GLContext context) { auto _ret = SDL_GL_DestroyContext(context); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_ShowOpenFileDialog()
-inline void ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter* filters, int nfilters, const char* default_location, bool allow_many) {  SDL_ShowOpenFileDialog(callback, userdata, window, filters, nfilters, default_location, allow_many); }
+inline void ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter* filters, int nfilters, const char* default_location, bool allow_many) { SDL_ShowOpenFileDialog(callback, userdata, window, filters, nfilters, default_location, allow_many); }
 
 //! @copydoc SDL_ShowSaveFileDialog()
-inline void ShowSaveFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter* filters, int nfilters, const char* default_location) {  SDL_ShowSaveFileDialog(callback, userdata, window, filters, nfilters, default_location); }
+inline void ShowSaveFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter* filters, int nfilters, const char* default_location) { SDL_ShowSaveFileDialog(callback, userdata, window, filters, nfilters, default_location); }
 
 //! @copydoc SDL_ShowOpenFolderDialog()
-inline void ShowOpenFolderDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const char* default_location, bool allow_many) {  SDL_ShowOpenFolderDialog(callback, userdata, window, default_location, allow_many); }
+inline void ShowOpenFolderDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const char* default_location, bool allow_many) { SDL_ShowOpenFolderDialog(callback, userdata, window, default_location, allow_many); }
 
 //! @copydoc SDL_ShowFileDialogWithProperties()
-inline void ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFileCallback callback, void* userdata, SDL_PropertiesID props) {  SDL_ShowFileDialogWithProperties(type, callback, userdata, props); }
+inline void ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFileCallback callback, void* userdata, SDL_PropertiesID props) { SDL_ShowFileDialogWithProperties(type, callback, userdata, props); }
 
 //! @copydoc SDL_GUIDToString()
-inline void GUIDToString(SDL_GUID guid, char* pszGUID, int cbGUID) {  SDL_GUIDToString(guid, pszGUID, cbGUID); }
+inline void GUIDToString(SDL_GUID guid, char* pszGUID, int cbGUID) { SDL_GUIDToString(guid, pszGUID, cbGUID); }
 
 //! @copydoc SDL_StringToGUID()
 inline SDL_GUID StringToGUID(const char* pchGUID) { return SDL_StringToGUID(pchGUID); }
@@ -1994,19 +1991,19 @@ inline int GetSensorNonPortableType(SDL_Sensor* sensor) { return SDL_GetSensorNo
 inline SDL_SensorID GetSensorID(SDL_Sensor* sensor) { auto _ret = SDL_GetSensorID(sensor); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_GetSensorData()
-inline bool GetSensorData(SDL_Sensor* sensor, float* data, int num_values) { auto _ret = SDL_GetSensorData(sensor, data, num_values); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetSensorData(SDL_Sensor* sensor, float* data, int num_values) { auto _ret = SDL_GetSensorData(sensor, data, num_values); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_CloseSensor()
-inline void CloseSensor(SDL_Sensor* sensor) {  SDL_CloseSensor(sensor); }
+inline void CloseSensor(SDL_Sensor* sensor) { SDL_CloseSensor(sensor); }
 
 //! @copydoc SDL_UpdateSensors()
-inline void UpdateSensors() {  SDL_UpdateSensors(); }
+inline void UpdateSensors() { SDL_UpdateSensors(); }
 
 //! @copydoc SDL_LockJoysticks()
-inline void LockJoysticks() {  SDL_LockJoysticks(); }
+inline void LockJoysticks() { SDL_LockJoysticks(); }
 
 //! @copydoc SDL_UnlockJoysticks()
-inline void UnlockJoysticks() {  SDL_UnlockJoysticks(); }
+inline void UnlockJoysticks() { SDL_UnlockJoysticks(); }
 
 //! @copydoc SDL_HasJoystick()
 inline bool HasJoystick() { return SDL_HasJoystick(); }
@@ -2051,28 +2048,28 @@ inline SDL_Joystick* GetJoystickFromPlayerIndex(int player_index) { auto _ret = 
 inline SDL_JoystickID AttachVirtualJoystick(const SDL_VirtualJoystickDesc* desc) { auto _ret = SDL_AttachVirtualJoystick(desc); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_DetachVirtualJoystick()
-inline bool DetachVirtualJoystick(SDL_JoystickID instance_id) { auto _ret = SDL_DetachVirtualJoystick(instance_id); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void DetachVirtualJoystick(SDL_JoystickID instance_id) { auto _ret = SDL_DetachVirtualJoystick(instance_id); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_IsJoystickVirtual()
 inline bool IsJoystickVirtual(SDL_JoystickID instance_id) { return SDL_IsJoystickVirtual(instance_id); }
 
 //! @copydoc SDL_SetJoystickVirtualAxis()
-inline bool SetJoystickVirtualAxis(SDL_Joystick* joystick, int axis, Sint16 value) { auto _ret = SDL_SetJoystickVirtualAxis(joystick, axis, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetJoystickVirtualAxis(SDL_Joystick* joystick, int axis, Sint16 value) { auto _ret = SDL_SetJoystickVirtualAxis(joystick, axis, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetJoystickVirtualBall()
-inline bool SetJoystickVirtualBall(SDL_Joystick* joystick, int ball, Sint16 xrel, Sint16 yrel) { auto _ret = SDL_SetJoystickVirtualBall(joystick, ball, xrel, yrel); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetJoystickVirtualBall(SDL_Joystick* joystick, int ball, Sint16 xrel, Sint16 yrel) { auto _ret = SDL_SetJoystickVirtualBall(joystick, ball, xrel, yrel); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetJoystickVirtualButton()
-inline bool SetJoystickVirtualButton(SDL_Joystick* joystick, int button, bool down) { auto _ret = SDL_SetJoystickVirtualButton(joystick, button, down); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetJoystickVirtualButton(SDL_Joystick* joystick, int button, bool down) { auto _ret = SDL_SetJoystickVirtualButton(joystick, button, down); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetJoystickVirtualHat()
-inline bool SetJoystickVirtualHat(SDL_Joystick* joystick, int hat, Uint8 value) { auto _ret = SDL_SetJoystickVirtualHat(joystick, hat, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetJoystickVirtualHat(SDL_Joystick* joystick, int hat, Uint8 value) { auto _ret = SDL_SetJoystickVirtualHat(joystick, hat, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetJoystickVirtualTouchpad()
-inline bool SetJoystickVirtualTouchpad(SDL_Joystick* joystick, int touchpad, int finger, bool down, float x, float y, float pressure) { auto _ret = SDL_SetJoystickVirtualTouchpad(joystick, touchpad, finger, down, x, y, pressure); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetJoystickVirtualTouchpad(SDL_Joystick* joystick, int touchpad, int finger, bool down, float x, float y, float pressure) { auto _ret = SDL_SetJoystickVirtualTouchpad(joystick, touchpad, finger, down, x, y, pressure); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SendJoystickVirtualSensorData()
-inline bool SendJoystickVirtualSensorData(SDL_Joystick* joystick, SDL_SensorType type, Uint64 sensor_timestamp, const float* data, int num_values) { auto _ret = SDL_SendJoystickVirtualSensorData(joystick, type, sensor_timestamp, data, num_values); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SendJoystickVirtualSensorData(SDL_Joystick* joystick, SDL_SensorType type, Uint64 sensor_timestamp, const float* data, int num_values) { auto _ret = SDL_SendJoystickVirtualSensorData(joystick, type, sensor_timestamp, data, num_values); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetJoystickProperties()
 inline SDL_PropertiesID GetJoystickProperties(SDL_Joystick* joystick) { auto _ret = SDL_GetJoystickProperties(joystick); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
@@ -2087,7 +2084,7 @@ inline const char* GetJoystickPath(SDL_Joystick* joystick) { auto _ret = SDL_Get
 inline int GetJoystickPlayerIndex(SDL_Joystick* joystick) { return SDL_GetJoystickPlayerIndex(joystick); }
 
 //! @copydoc SDL_SetJoystickPlayerIndex()
-inline bool SetJoystickPlayerIndex(SDL_Joystick* joystick, int player_index) { auto _ret = SDL_SetJoystickPlayerIndex(joystick, player_index); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetJoystickPlayerIndex(SDL_Joystick* joystick, int player_index) { auto _ret = SDL_SetJoystickPlayerIndex(joystick, player_index); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetJoystickGUID()
 inline SDL_GUID GetJoystickGUID(SDL_Joystick* joystick) { auto _ret = SDL_GetJoystickGUID(joystick); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
@@ -2111,10 +2108,10 @@ inline const char* GetJoystickSerial(SDL_Joystick* joystick) { return SDL_GetJoy
 inline SDL_JoystickType GetJoystickType(SDL_Joystick* joystick) { return SDL_GetJoystickType(joystick); }
 
 //! @copydoc SDL_GetJoystickGUIDInfo()
-inline void GetJoystickGUIDInfo(SDL_GUID guid, Uint16* vendor, Uint16* product, Uint16* version, Uint16* crc16) {  SDL_GetJoystickGUIDInfo(guid, vendor, product, version, crc16); }
+inline void GetJoystickGUIDInfo(SDL_GUID guid, Uint16* vendor, Uint16* product, Uint16* version, Uint16* crc16) { SDL_GetJoystickGUIDInfo(guid, vendor, product, version, crc16); }
 
 //! @copydoc SDL_JoystickConnected()
-inline bool JoystickConnected(SDL_Joystick* joystick) { auto _ret = SDL_JoystickConnected(joystick); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void JoystickConnected(SDL_Joystick* joystick) { auto _ret = SDL_JoystickConnected(joystick); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetJoystickID()
 inline SDL_JoystickID GetJoystickID(SDL_Joystick* joystick) { auto _ret = SDL_GetJoystickID(joystick); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
@@ -2132,13 +2129,13 @@ inline int GetNumJoystickHats(SDL_Joystick* joystick) { auto _ret = SDL_GetNumJo
 inline int GetNumJoystickButtons(SDL_Joystick* joystick) { auto _ret = SDL_GetNumJoystickButtons(joystick); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_SetJoystickEventsEnabled()
-inline void SetJoystickEventsEnabled(bool enabled) {  SDL_SetJoystickEventsEnabled(enabled); }
+inline void SetJoystickEventsEnabled(bool enabled) { SDL_SetJoystickEventsEnabled(enabled); }
 
 //! @copydoc SDL_JoystickEventsEnabled()
 inline bool JoystickEventsEnabled() { return SDL_JoystickEventsEnabled(); }
 
 //! @copydoc SDL_UpdateJoysticks()
-inline void UpdateJoysticks() {  SDL_UpdateJoysticks(); }
+inline void UpdateJoysticks() { SDL_UpdateJoysticks(); }
 
 //! @copydoc SDL_GetJoystickAxis()
 inline Sint16 GetJoystickAxis(SDL_Joystick* joystick, int axis) { auto _ret = SDL_GetJoystickAxis(joystick, axis); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
@@ -2147,7 +2144,7 @@ inline Sint16 GetJoystickAxis(SDL_Joystick* joystick, int axis) { auto _ret = SD
 inline bool GetJoystickAxisInitialState(SDL_Joystick* joystick, int axis, Sint16* state) { return SDL_GetJoystickAxisInitialState(joystick, axis, state); }
 
 //! @copydoc SDL_GetJoystickBall()
-inline bool GetJoystickBall(SDL_Joystick* joystick, int ball, int* dx, int* dy) { auto _ret = SDL_GetJoystickBall(joystick, ball, dx, dy); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetJoystickBall(SDL_Joystick* joystick, int ball, int* dx, int* dy) { auto _ret = SDL_GetJoystickBall(joystick, ball, dx, dy); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetJoystickHat()
 inline Uint8 GetJoystickHat(SDL_Joystick* joystick, int hat) { return SDL_GetJoystickHat(joystick, hat); }
@@ -2159,16 +2156,16 @@ inline bool GetJoystickButton(SDL_Joystick* joystick, int button) { return SDL_G
 inline bool RumbleJoystick(SDL_Joystick* joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms) { return SDL_RumbleJoystick(joystick, low_frequency_rumble, high_frequency_rumble, duration_ms); }
 
 //! @copydoc SDL_RumbleJoystickTriggers()
-inline bool RumbleJoystickTriggers(SDL_Joystick* joystick, Uint16 left_rumble, Uint16 right_rumble, Uint32 duration_ms) { auto _ret = SDL_RumbleJoystickTriggers(joystick, left_rumble, right_rumble, duration_ms); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void RumbleJoystickTriggers(SDL_Joystick* joystick, Uint16 left_rumble, Uint16 right_rumble, Uint32 duration_ms) { auto _ret = SDL_RumbleJoystickTriggers(joystick, left_rumble, right_rumble, duration_ms); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetJoystickLED()
-inline bool SetJoystickLED(SDL_Joystick* joystick, Uint8 red, Uint8 green, Uint8 blue) { auto _ret = SDL_SetJoystickLED(joystick, red, green, blue); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetJoystickLED(SDL_Joystick* joystick, Uint8 red, Uint8 green, Uint8 blue) { auto _ret = SDL_SetJoystickLED(joystick, red, green, blue); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SendJoystickEffect()
-inline bool SendJoystickEffect(SDL_Joystick* joystick, const void* data, int size) { auto _ret = SDL_SendJoystickEffect(joystick, data, size); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SendJoystickEffect(SDL_Joystick* joystick, const void* data, int size) { auto _ret = SDL_SendJoystickEffect(joystick, data, size); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_CloseJoystick()
-inline void CloseJoystick(SDL_Joystick* joystick) {  SDL_CloseJoystick(joystick); }
+inline void CloseJoystick(SDL_Joystick* joystick) { SDL_CloseJoystick(joystick); }
 
 //! @copydoc SDL_GetJoystickConnectionState()
 inline SDL_JoystickConnectionState GetJoystickConnectionState(SDL_Joystick* joystick) { auto _ret = SDL_GetJoystickConnectionState(joystick); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
@@ -2186,7 +2183,7 @@ inline int AddGamepadMappingsFromIO(SDL_IOStream* src, bool closeio) { auto _ret
 inline int AddGamepadMappingsFromFile(const char* file) { auto _ret = SDL_AddGamepadMappingsFromFile(file); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_ReloadGamepadMappings()
-inline bool ReloadGamepadMappings() { auto _ret = SDL_ReloadGamepadMappings(); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void ReloadGamepadMappings() { auto _ret = SDL_ReloadGamepadMappings(); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetGamepadMappings()
 inline char** GetGamepadMappings(int* count) { auto _ret = SDL_GetGamepadMappings(count); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
@@ -2198,7 +2195,7 @@ inline char* GetGamepadMappingForGUID(SDL_GUID guid) { auto _ret = SDL_GetGamepa
 inline char* GetGamepadMapping(SDL_Gamepad* gamepad) { auto _ret = SDL_GetGamepadMapping(gamepad); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_SetGamepadMapping()
-inline bool SetGamepadMapping(SDL_JoystickID instance_id, const char* mapping) { auto _ret = SDL_SetGamepadMapping(instance_id, mapping); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetGamepadMapping(SDL_JoystickID instance_id, const char* mapping) { auto _ret = SDL_SetGamepadMapping(instance_id, mapping); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_HasGamepad()
 inline bool HasGamepad() { return SDL_HasGamepad(); }
@@ -2270,7 +2267,7 @@ inline SDL_GamepadType GetRealGamepadType(SDL_Gamepad* gamepad) { return SDL_Get
 inline int GetGamepadPlayerIndex(SDL_Gamepad* gamepad) { return SDL_GetGamepadPlayerIndex(gamepad); }
 
 //! @copydoc SDL_SetGamepadPlayerIndex()
-inline bool SetGamepadPlayerIndex(SDL_Gamepad* gamepad, int player_index) { auto _ret = SDL_SetGamepadPlayerIndex(gamepad, player_index); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetGamepadPlayerIndex(SDL_Gamepad* gamepad, int player_index) { auto _ret = SDL_SetGamepadPlayerIndex(gamepad, player_index); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetGamepadVendor()
 inline Uint16 GetGamepadVendor(SDL_Gamepad* gamepad) { return SDL_GetGamepadVendor(gamepad); }
@@ -2303,7 +2300,7 @@ inline bool GamepadConnected(SDL_Gamepad* gamepad) { return SDL_GamepadConnected
 inline SDL_Joystick* GetGamepadJoystick(SDL_Gamepad* gamepad) { auto _ret = SDL_GetGamepadJoystick(gamepad); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_SetGamepadEventsEnabled()
-inline void SetGamepadEventsEnabled(bool enabled) {  SDL_SetGamepadEventsEnabled(enabled); }
+inline void SetGamepadEventsEnabled(bool enabled) { SDL_SetGamepadEventsEnabled(enabled); }
 
 //! @copydoc SDL_GamepadEventsEnabled()
 inline bool GamepadEventsEnabled() { return SDL_GamepadEventsEnabled(); }
@@ -2312,7 +2309,7 @@ inline bool GamepadEventsEnabled() { return SDL_GamepadEventsEnabled(); }
 inline SDL_GamepadBinding** GetGamepadBindings(SDL_Gamepad* gamepad, int* count) { auto _ret = SDL_GetGamepadBindings(gamepad, count); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_UpdateGamepads()
-inline void UpdateGamepads() {  SDL_UpdateGamepads(); }
+inline void UpdateGamepads() { SDL_UpdateGamepads(); }
 
 //! @copydoc SDL_GetGamepadTypeFromString()
 inline SDL_GamepadType GetGamepadTypeFromString(const char* str) { return SDL_GetGamepadTypeFromString(str); }
@@ -2357,13 +2354,13 @@ inline int GetNumGamepadTouchpads(SDL_Gamepad* gamepad) { return SDL_GetNumGamep
 inline int GetNumGamepadTouchpadFingers(SDL_Gamepad* gamepad, int touchpad) { return SDL_GetNumGamepadTouchpadFingers(gamepad, touchpad); }
 
 //! @copydoc SDL_GetGamepadTouchpadFinger()
-inline bool GetGamepadTouchpadFinger(SDL_Gamepad* gamepad, int touchpad, int finger, bool* down, float* x, float* y, float* pressure) { auto _ret = SDL_GetGamepadTouchpadFinger(gamepad, touchpad, finger, down, x, y, pressure); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetGamepadTouchpadFinger(SDL_Gamepad* gamepad, int touchpad, int finger, bool* down, float* x, float* y, float* pressure) { auto _ret = SDL_GetGamepadTouchpadFinger(gamepad, touchpad, finger, down, x, y, pressure); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GamepadHasSensor()
 inline bool GamepadHasSensor(SDL_Gamepad* gamepad, SDL_SensorType type) { return SDL_GamepadHasSensor(gamepad, type); }
 
 //! @copydoc SDL_SetGamepadSensorEnabled()
-inline bool SetGamepadSensorEnabled(SDL_Gamepad* gamepad, SDL_SensorType type, bool enabled) { auto _ret = SDL_SetGamepadSensorEnabled(gamepad, type, enabled); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetGamepadSensorEnabled(SDL_Gamepad* gamepad, SDL_SensorType type, bool enabled) { auto _ret = SDL_SetGamepadSensorEnabled(gamepad, type, enabled); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GamepadSensorEnabled()
 inline bool GamepadSensorEnabled(SDL_Gamepad* gamepad, SDL_SensorType type) { return SDL_GamepadSensorEnabled(gamepad, type); }
@@ -2372,22 +2369,22 @@ inline bool GamepadSensorEnabled(SDL_Gamepad* gamepad, SDL_SensorType type) { re
 inline float GetGamepadSensorDataRate(SDL_Gamepad* gamepad, SDL_SensorType type) { return SDL_GetGamepadSensorDataRate(gamepad, type); }
 
 //! @copydoc SDL_GetGamepadSensorData()
-inline bool GetGamepadSensorData(SDL_Gamepad* gamepad, SDL_SensorType type, float* data, int num_values) { auto _ret = SDL_GetGamepadSensorData(gamepad, type, data, num_values); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetGamepadSensorData(SDL_Gamepad* gamepad, SDL_SensorType type, float* data, int num_values) { auto _ret = SDL_GetGamepadSensorData(gamepad, type, data, num_values); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_RumbleGamepad()
-inline bool RumbleGamepad(SDL_Gamepad* gamepad, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms) { auto _ret = SDL_RumbleGamepad(gamepad, low_frequency_rumble, high_frequency_rumble, duration_ms); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void RumbleGamepad(SDL_Gamepad* gamepad, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms) { auto _ret = SDL_RumbleGamepad(gamepad, low_frequency_rumble, high_frequency_rumble, duration_ms); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_RumbleGamepadTriggers()
-inline bool RumbleGamepadTriggers(SDL_Gamepad* gamepad, Uint16 left_rumble, Uint16 right_rumble, Uint32 duration_ms) { auto _ret = SDL_RumbleGamepadTriggers(gamepad, left_rumble, right_rumble, duration_ms); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void RumbleGamepadTriggers(SDL_Gamepad* gamepad, Uint16 left_rumble, Uint16 right_rumble, Uint32 duration_ms) { auto _ret = SDL_RumbleGamepadTriggers(gamepad, left_rumble, right_rumble, duration_ms); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetGamepadLED()
-inline bool SetGamepadLED(SDL_Gamepad* gamepad, Uint8 red, Uint8 green, Uint8 blue) { auto _ret = SDL_SetGamepadLED(gamepad, red, green, blue); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetGamepadLED(SDL_Gamepad* gamepad, Uint8 red, Uint8 green, Uint8 blue) { auto _ret = SDL_SetGamepadLED(gamepad, red, green, blue); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SendGamepadEffect()
-inline bool SendGamepadEffect(SDL_Gamepad* gamepad, const void* data, int size) { auto _ret = SDL_SendGamepadEffect(gamepad, data, size); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SendGamepadEffect(SDL_Gamepad* gamepad, const void* data, int size) { auto _ret = SDL_SendGamepadEffect(gamepad, data, size); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_CloseGamepad()
-inline void CloseGamepad(SDL_Gamepad* gamepad) {  SDL_CloseGamepad(gamepad); }
+inline void CloseGamepad(SDL_Gamepad* gamepad) { SDL_CloseGamepad(gamepad); }
 
 //! @copydoc SDL_GetGamepadAppleSFSymbolsNameForButton()
 inline const char* GetGamepadAppleSFSymbolsNameForButton(SDL_Gamepad* gamepad, SDL_GamepadButton button) { return SDL_GetGamepadAppleSFSymbolsNameForButton(gamepad, button); }
@@ -2411,13 +2408,13 @@ inline SDL_Window* GetKeyboardFocus() { return SDL_GetKeyboardFocus(); }
 inline const bool* GetKeyboardState(int* numkeys) { return SDL_GetKeyboardState(numkeys); }
 
 //! @copydoc SDL_ResetKeyboard()
-inline void ResetKeyboard() {  SDL_ResetKeyboard(); }
+inline void ResetKeyboard() { SDL_ResetKeyboard(); }
 
 //! @copydoc SDL_GetModState()
 inline SDL_Keymod GetModState() { return SDL_GetModState(); }
 
 //! @copydoc SDL_SetModState()
-inline void SetModState(SDL_Keymod modstate) {  SDL_SetModState(modstate); }
+inline void SetModState(SDL_Keymod modstate) { SDL_SetModState(modstate); }
 
 //! @copydoc SDL_GetKeyFromScancode()
 inline SDL_Keycode GetKeyFromScancode(SDL_Scancode scancode, SDL_Keymod modstate, bool key_event) { return SDL_GetKeyFromScancode(scancode, modstate, key_event); }
@@ -2426,7 +2423,7 @@ inline SDL_Keycode GetKeyFromScancode(SDL_Scancode scancode, SDL_Keymod modstate
 inline SDL_Scancode GetScancodeFromKey(SDL_Keycode key, SDL_Keymod* modstate) { return SDL_GetScancodeFromKey(key, modstate); }
 
 //! @copydoc SDL_SetScancodeName()
-inline bool SetScancodeName(SDL_Scancode scancode, const char* name) { auto _ret = SDL_SetScancodeName(scancode, name); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetScancodeName(SDL_Scancode scancode, const char* name) { auto _ret = SDL_SetScancodeName(scancode, name); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetScancodeName()
 inline const char* GetScancodeName(SDL_Scancode scancode) { return SDL_GetScancodeName(scancode); }
@@ -2441,25 +2438,25 @@ inline const char* GetKeyName(SDL_Keycode key) { return SDL_GetKeyName(key); }
 inline SDL_Keycode GetKeyFromName(const char* name) { auto _ret = SDL_GetKeyFromName(name); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_StartTextInput()
-inline bool StartTextInput(SDL_Window* window) { auto _ret = SDL_StartTextInput(window); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void StartTextInput(SDL_Window* window) { auto _ret = SDL_StartTextInput(window); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_StartTextInputWithProperties()
-inline bool StartTextInputWithProperties(SDL_Window* window, SDL_PropertiesID props) { auto _ret = SDL_StartTextInputWithProperties(window, props); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void StartTextInputWithProperties(SDL_Window* window, SDL_PropertiesID props) { auto _ret = SDL_StartTextInputWithProperties(window, props); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_TextInputActive()
 inline bool TextInputActive(SDL_Window* window) { return SDL_TextInputActive(window); }
 
 //! @copydoc SDL_StopTextInput()
-inline bool StopTextInput(SDL_Window* window) { auto _ret = SDL_StopTextInput(window); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void StopTextInput(SDL_Window* window) { auto _ret = SDL_StopTextInput(window); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_ClearComposition()
-inline bool ClearComposition(SDL_Window* window) { auto _ret = SDL_ClearComposition(window); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void ClearComposition(SDL_Window* window) { auto _ret = SDL_ClearComposition(window); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetTextInputArea()
-inline bool SetTextInputArea(SDL_Window* window, const SDL_Rect* rect, int cursor) { auto _ret = SDL_SetTextInputArea(window, rect, cursor); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetTextInputArea(SDL_Window* window, const SDL_Rect* rect, int cursor) { auto _ret = SDL_SetTextInputArea(window, rect, cursor); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetTextInputArea()
-inline bool GetTextInputArea(SDL_Window* window, SDL_Rect* rect, int* cursor) { auto _ret = SDL_GetTextInputArea(window, rect, cursor); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetTextInputArea(SDL_Window* window, SDL_Rect* rect, int* cursor) { auto _ret = SDL_GetTextInputArea(window, rect, cursor); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_HasScreenKeyboardSupport()
 inline bool HasScreenKeyboardSupport() { return SDL_HasScreenKeyboardSupport(); }
@@ -2489,19 +2486,19 @@ inline SDL_MouseButtonFlags GetGlobalMouseState(float* x, float* y) { return SDL
 inline SDL_MouseButtonFlags GetRelativeMouseState(float* x, float* y) { return SDL_GetRelativeMouseState(x, y); }
 
 //! @copydoc SDL_WarpMouseInWindow()
-inline void WarpMouseInWindow(SDL_Window* window, float x, float y) {  SDL_WarpMouseInWindow(window, x, y); }
+inline void WarpMouseInWindow(SDL_Window* window, float x, float y) { SDL_WarpMouseInWindow(window, x, y); }
 
 //! @copydoc SDL_WarpMouseGlobal()
-inline bool WarpMouseGlobal(float x, float y) { auto _ret = SDL_WarpMouseGlobal(x, y); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void WarpMouseGlobal(float x, float y) { auto _ret = SDL_WarpMouseGlobal(x, y); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetWindowRelativeMouseMode()
-inline bool SetWindowRelativeMouseMode(SDL_Window* window, bool enabled) { auto _ret = SDL_SetWindowRelativeMouseMode(window, enabled); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetWindowRelativeMouseMode(SDL_Window* window, bool enabled) { auto _ret = SDL_SetWindowRelativeMouseMode(window, enabled); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetWindowRelativeMouseMode()
 inline bool GetWindowRelativeMouseMode(SDL_Window* window) { return SDL_GetWindowRelativeMouseMode(window); }
 
 //! @copydoc SDL_CaptureMouse()
-inline bool CaptureMouse(bool enabled) { auto _ret = SDL_CaptureMouse(enabled); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void CaptureMouse(bool enabled) { auto _ret = SDL_CaptureMouse(enabled); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_CreateCursor()
 inline SDL_Cursor* CreateCursor(const Uint8* data, const Uint8* mask, int w, int h, int hot_x, int hot_y) { auto _ret = SDL_CreateCursor(data, mask, w, h, hot_x, hot_y); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
@@ -2513,7 +2510,7 @@ inline SDL_Cursor* CreateColorCursor(SDL_Surface* surface, int hot_x, int hot_y)
 inline SDL_Cursor* CreateSystemCursor(SDL_SystemCursor id) { auto _ret = SDL_CreateSystemCursor(id); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_SetCursor()
-inline bool SetCursor(SDL_Cursor* cursor) { auto _ret = SDL_SetCursor(cursor); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetCursor(SDL_Cursor* cursor) { auto _ret = SDL_SetCursor(cursor); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetCursor()
 inline SDL_Cursor* GetCursor() { return SDL_GetCursor(); }
@@ -2522,13 +2519,13 @@ inline SDL_Cursor* GetCursor() { return SDL_GetCursor(); }
 inline SDL_Cursor* GetDefaultCursor() { auto _ret = SDL_GetDefaultCursor(); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_DestroyCursor()
-inline void DestroyCursor(SDL_Cursor* cursor) {  SDL_DestroyCursor(cursor); }
+inline void DestroyCursor(SDL_Cursor* cursor) { SDL_DestroyCursor(cursor); }
 
 //! @copydoc SDL_ShowCursor()
-inline bool ShowCursor() { auto _ret = SDL_ShowCursor(); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void ShowCursor() { auto _ret = SDL_ShowCursor(); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_HideCursor()
-inline bool HideCursor() { auto _ret = SDL_HideCursor(); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void HideCursor() { auto _ret = SDL_HideCursor(); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_CursorVisible()
 inline bool CursorVisible() { return SDL_CursorVisible(); }
@@ -2546,7 +2543,7 @@ inline SDL_TouchDeviceType GetTouchDeviceType(SDL_TouchID touchID) { return SDL_
 inline SDL_Finger** GetTouchFingers(SDL_TouchID touchID, int* count) { auto _ret = SDL_GetTouchFingers(touchID, count); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_PumpEvents()
-inline void PumpEvents() {  SDL_PumpEvents(); }
+inline void PumpEvents() { SDL_PumpEvents(); }
 
 //! @copydoc SDL_PeepEvents()
 inline int PeepEvents(SDL_Event* events, int numevents, SDL_EventAction action, Uint32 minType, Uint32 maxType) { auto _ret = SDL_PeepEvents(events, numevents, action, minType, maxType); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
@@ -2558,40 +2555,40 @@ inline bool HasEvent(Uint32 type) { return SDL_HasEvent(type); }
 inline bool HasEvents(Uint32 minType, Uint32 maxType) { return SDL_HasEvents(minType, maxType); }
 
 //! @copydoc SDL_FlushEvent()
-inline void FlushEvent(Uint32 type) {  SDL_FlushEvent(type); }
+inline void FlushEvent(Uint32 type) { SDL_FlushEvent(type); }
 
 //! @copydoc SDL_FlushEvents()
-inline void FlushEvents(Uint32 minType, Uint32 maxType) {  SDL_FlushEvents(minType, maxType); }
+inline void FlushEvents(Uint32 minType, Uint32 maxType) { SDL_FlushEvents(minType, maxType); }
 
 //! @copydoc SDL_PollEvent()
 inline bool PollEvent(SDL_Event* event) { return SDL_PollEvent(event); }
 
 //! @copydoc SDL_WaitEvent()
-inline bool WaitEvent(SDL_Event* event) { auto _ret = SDL_WaitEvent(event); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void WaitEvent(SDL_Event* event) { auto _ret = SDL_WaitEvent(event); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_WaitEventTimeout()
 inline bool WaitEventTimeout(SDL_Event* event, Sint32 timeoutMS) { return SDL_WaitEventTimeout(event, timeoutMS); }
 
 //! @copydoc SDL_PushEvent()
-inline bool PushEvent(SDL_Event* event) { auto _ret = SDL_PushEvent(event); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void PushEvent(SDL_Event* event) { auto _ret = SDL_PushEvent(event); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetEventFilter()
-inline void SetEventFilter(SDL_EventFilter filter, void* userdata) {  SDL_SetEventFilter(filter, userdata); }
+inline void SetEventFilter(SDL_EventFilter filter, void* userdata) { SDL_SetEventFilter(filter, userdata); }
 
 //! @copydoc SDL_GetEventFilter()
 inline bool GetEventFilter(SDL_EventFilter* filter, void** userdata) { return SDL_GetEventFilter(filter, userdata); }
 
 //! @copydoc SDL_AddEventWatch()
-inline bool AddEventWatch(SDL_EventFilter filter, void* userdata) { auto _ret = SDL_AddEventWatch(filter, userdata); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void AddEventWatch(SDL_EventFilter filter, void* userdata) { auto _ret = SDL_AddEventWatch(filter, userdata); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_RemoveEventWatch()
-inline void RemoveEventWatch(SDL_EventFilter filter, void* userdata) {  SDL_RemoveEventWatch(filter, userdata); }
+inline void RemoveEventWatch(SDL_EventFilter filter, void* userdata) { SDL_RemoveEventWatch(filter, userdata); }
 
 //! @copydoc SDL_FilterEvents()
-inline void FilterEvents(SDL_EventFilter filter, void* userdata) {  SDL_FilterEvents(filter, userdata); }
+inline void FilterEvents(SDL_EventFilter filter, void* userdata) { SDL_FilterEvents(filter, userdata); }
 
 //! @copydoc SDL_SetEventEnabled()
-inline void SetEventEnabled(Uint32 type, bool enabled) {  SDL_SetEventEnabled(type, enabled); }
+inline void SetEventEnabled(Uint32 type, bool enabled) { SDL_SetEventEnabled(type, enabled); }
 
 //! @copydoc SDL_EventEnabled()
 inline bool EventEnabled(Uint32 type) { return SDL_EventEnabled(type); }
@@ -2612,22 +2609,22 @@ inline char* GetPrefPath(const char* org, const char* app) { return SDL_GetPrefP
 inline const char* GetUserFolder(SDL_Folder folder) { auto _ret = SDL_GetUserFolder(folder); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_CreateDirectory()
-inline bool CreateDirectory(const char* path) { auto _ret = SDL_CreateDirectory(path); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void CreateDirectory(const char* path) { auto _ret = SDL_CreateDirectory(path); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_EnumerateDirectory()
-inline bool EnumerateDirectory(const char* path, SDL_EnumerateDirectoryCallback callback, void* userdata) { auto _ret = SDL_EnumerateDirectory(path, callback, userdata); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void EnumerateDirectory(const char* path, SDL_EnumerateDirectoryCallback callback, void* userdata) { auto _ret = SDL_EnumerateDirectory(path, callback, userdata); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_RemovePath()
-inline bool RemovePath(const char* path) { auto _ret = SDL_RemovePath(path); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void RemovePath(const char* path) { auto _ret = SDL_RemovePath(path); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_RenamePath()
-inline bool RenamePath(const char* oldpath, const char* newpath) { auto _ret = SDL_RenamePath(oldpath, newpath); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void RenamePath(const char* oldpath, const char* newpath) { auto _ret = SDL_RenamePath(oldpath, newpath); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_CopyFile()
-inline bool CopyFile(const char* oldpath, const char* newpath) { auto _ret = SDL_CopyFile(oldpath, newpath); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void CopyFile(const char* oldpath, const char* newpath) { auto _ret = SDL_CopyFile(oldpath, newpath); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetPathInfo()
-inline bool GetPathInfo(const char* path, SDL_PathInfo* info) { auto _ret = SDL_GetPathInfo(path, info); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetPathInfo(const char* path, SDL_PathInfo* info) { auto _ret = SDL_GetPathInfo(path, info); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GlobDirectory()
 inline char** GlobDirectory(const char* path, const char* pattern, SDL::GlobFlags flags, int* count) { auto _ret = SDL_GlobDirectory(path, pattern, flags, count); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
@@ -2648,7 +2645,7 @@ inline SDL_GPUDevice* CreateGPUDevice(SDL_GPUShaderFormat format_flags, bool deb
 inline SDL_GPUDevice* CreateGPUDeviceWithProperties(SDL_PropertiesID props) { auto _ret = SDL_CreateGPUDeviceWithProperties(props); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_DestroyGPUDevice()
-inline void DestroyGPUDevice(SDL_GPUDevice* device) {  SDL_DestroyGPUDevice(device); }
+inline void DestroyGPUDevice(SDL_GPUDevice* device) { SDL_DestroyGPUDevice(device); }
 
 //! @copydoc SDL_GetNumGPUDrivers()
 inline int GetNumGPUDrivers() { return SDL_GetNumGPUDrivers(); }
@@ -2684,169 +2681,169 @@ inline SDL_GPUBuffer* CreateGPUBuffer(SDL_GPUDevice* device, const SDL_GPUBuffer
 inline SDL_GPUTransferBuffer* CreateGPUTransferBuffer(SDL_GPUDevice* device, const SDL_GPUTransferBufferCreateInfo* createinfo) { auto _ret = SDL_CreateGPUTransferBuffer(device, createinfo); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_SetGPUBufferName()
-inline void SetGPUBufferName(SDL_GPUDevice* device, SDL_GPUBuffer* buffer, const char* text) {  SDL_SetGPUBufferName(device, buffer, text); }
+inline void SetGPUBufferName(SDL_GPUDevice* device, SDL_GPUBuffer* buffer, const char* text) { SDL_SetGPUBufferName(device, buffer, text); }
 
 //! @copydoc SDL_SetGPUTextureName()
-inline void SetGPUTextureName(SDL_GPUDevice* device, SDL_GPUTexture* texture, const char* text) {  SDL_SetGPUTextureName(device, texture, text); }
+inline void SetGPUTextureName(SDL_GPUDevice* device, SDL_GPUTexture* texture, const char* text) { SDL_SetGPUTextureName(device, texture, text); }
 
 //! @copydoc SDL_InsertGPUDebugLabel()
-inline void InsertGPUDebugLabel(SDL_GPUCommandBuffer* command_buffer, const char* text) {  SDL_InsertGPUDebugLabel(command_buffer, text); }
+inline void InsertGPUDebugLabel(SDL_GPUCommandBuffer* command_buffer, const char* text) { SDL_InsertGPUDebugLabel(command_buffer, text); }
 
 //! @copydoc SDL_PushGPUDebugGroup()
-inline void PushGPUDebugGroup(SDL_GPUCommandBuffer* command_buffer, const char* name) {  SDL_PushGPUDebugGroup(command_buffer, name); }
+inline void PushGPUDebugGroup(SDL_GPUCommandBuffer* command_buffer, const char* name) { SDL_PushGPUDebugGroup(command_buffer, name); }
 
 //! @copydoc SDL_PopGPUDebugGroup()
-inline void PopGPUDebugGroup(SDL_GPUCommandBuffer* command_buffer) {  SDL_PopGPUDebugGroup(command_buffer); }
+inline void PopGPUDebugGroup(SDL_GPUCommandBuffer* command_buffer) { SDL_PopGPUDebugGroup(command_buffer); }
 
 //! @copydoc SDL_ReleaseGPUTexture()
-inline void ReleaseGPUTexture(SDL_GPUDevice* device, SDL_GPUTexture* texture) {  SDL_ReleaseGPUTexture(device, texture); }
+inline void ReleaseGPUTexture(SDL_GPUDevice* device, SDL_GPUTexture* texture) { SDL_ReleaseGPUTexture(device, texture); }
 
 //! @copydoc SDL_ReleaseGPUSampler()
-inline void ReleaseGPUSampler(SDL_GPUDevice* device, SDL_GPUSampler* sampler) {  SDL_ReleaseGPUSampler(device, sampler); }
+inline void ReleaseGPUSampler(SDL_GPUDevice* device, SDL_GPUSampler* sampler) { SDL_ReleaseGPUSampler(device, sampler); }
 
 //! @copydoc SDL_ReleaseGPUBuffer()
-inline void ReleaseGPUBuffer(SDL_GPUDevice* device, SDL_GPUBuffer* buffer) {  SDL_ReleaseGPUBuffer(device, buffer); }
+inline void ReleaseGPUBuffer(SDL_GPUDevice* device, SDL_GPUBuffer* buffer) { SDL_ReleaseGPUBuffer(device, buffer); }
 
 //! @copydoc SDL_ReleaseGPUTransferBuffer()
-inline void ReleaseGPUTransferBuffer(SDL_GPUDevice* device, SDL_GPUTransferBuffer* transfer_buffer) {  SDL_ReleaseGPUTransferBuffer(device, transfer_buffer); }
+inline void ReleaseGPUTransferBuffer(SDL_GPUDevice* device, SDL_GPUTransferBuffer* transfer_buffer) { SDL_ReleaseGPUTransferBuffer(device, transfer_buffer); }
 
 //! @copydoc SDL_ReleaseGPUComputePipeline()
-inline void ReleaseGPUComputePipeline(SDL_GPUDevice* device, SDL_GPUComputePipeline* compute_pipeline) {  SDL_ReleaseGPUComputePipeline(device, compute_pipeline); }
+inline void ReleaseGPUComputePipeline(SDL_GPUDevice* device, SDL_GPUComputePipeline* compute_pipeline) { SDL_ReleaseGPUComputePipeline(device, compute_pipeline); }
 
 //! @copydoc SDL_ReleaseGPUShader()
-inline void ReleaseGPUShader(SDL_GPUDevice* device, SDL_GPUShader* shader) {  SDL_ReleaseGPUShader(device, shader); }
+inline void ReleaseGPUShader(SDL_GPUDevice* device, SDL_GPUShader* shader) { SDL_ReleaseGPUShader(device, shader); }
 
 //! @copydoc SDL_ReleaseGPUGraphicsPipeline()
-inline void ReleaseGPUGraphicsPipeline(SDL_GPUDevice* device, SDL_GPUGraphicsPipeline* graphics_pipeline) {  SDL_ReleaseGPUGraphicsPipeline(device, graphics_pipeline); }
+inline void ReleaseGPUGraphicsPipeline(SDL_GPUDevice* device, SDL_GPUGraphicsPipeline* graphics_pipeline) { SDL_ReleaseGPUGraphicsPipeline(device, graphics_pipeline); }
 
 //! @copydoc SDL_AcquireGPUCommandBuffer()
 inline SDL_GPUCommandBuffer* AcquireGPUCommandBuffer(SDL_GPUDevice* device) { auto _ret = SDL_AcquireGPUCommandBuffer(device); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_PushGPUVertexUniformData()
-inline void PushGPUVertexUniformData(SDL_GPUCommandBuffer* command_buffer, Uint32 slot_index, const void* data, Uint32 length) {  SDL_PushGPUVertexUniformData(command_buffer, slot_index, data, length); }
+inline void PushGPUVertexUniformData(SDL_GPUCommandBuffer* command_buffer, Uint32 slot_index, const void* data, Uint32 length) { SDL_PushGPUVertexUniformData(command_buffer, slot_index, data, length); }
 
 //! @copydoc SDL_PushGPUFragmentUniformData()
-inline void PushGPUFragmentUniformData(SDL_GPUCommandBuffer* command_buffer, Uint32 slot_index, const void* data, Uint32 length) {  SDL_PushGPUFragmentUniformData(command_buffer, slot_index, data, length); }
+inline void PushGPUFragmentUniformData(SDL_GPUCommandBuffer* command_buffer, Uint32 slot_index, const void* data, Uint32 length) { SDL_PushGPUFragmentUniformData(command_buffer, slot_index, data, length); }
 
 //! @copydoc SDL_PushGPUComputeUniformData()
-inline void PushGPUComputeUniformData(SDL_GPUCommandBuffer* command_buffer, Uint32 slot_index, const void* data, Uint32 length) {  SDL_PushGPUComputeUniformData(command_buffer, slot_index, data, length); }
+inline void PushGPUComputeUniformData(SDL_GPUCommandBuffer* command_buffer, Uint32 slot_index, const void* data, Uint32 length) { SDL_PushGPUComputeUniformData(command_buffer, slot_index, data, length); }
 
 //! @copydoc SDL_BeginGPURenderPass()
 inline SDL_GPURenderPass* BeginGPURenderPass(SDL_GPUCommandBuffer* command_buffer, const SDL_GPUColorTargetInfo* color_target_infos, Uint32 num_color_targets, const SDL_GPUDepthStencilTargetInfo* depth_stencil_target_info) { return SDL_BeginGPURenderPass(command_buffer, color_target_infos, num_color_targets, depth_stencil_target_info); }
 
 //! @copydoc SDL_BindGPUGraphicsPipeline()
-inline void BindGPUGraphicsPipeline(SDL_GPURenderPass* render_pass, SDL_GPUGraphicsPipeline* graphics_pipeline) {  SDL_BindGPUGraphicsPipeline(render_pass, graphics_pipeline); }
+inline void BindGPUGraphicsPipeline(SDL_GPURenderPass* render_pass, SDL_GPUGraphicsPipeline* graphics_pipeline) { SDL_BindGPUGraphicsPipeline(render_pass, graphics_pipeline); }
 
 //! @copydoc SDL_SetGPUViewport()
-inline void SetGPUViewport(SDL_GPURenderPass* render_pass, const SDL_GPUViewport* viewport) {  SDL_SetGPUViewport(render_pass, viewport); }
+inline void SetGPUViewport(SDL_GPURenderPass* render_pass, const SDL_GPUViewport* viewport) { SDL_SetGPUViewport(render_pass, viewport); }
 
 //! @copydoc SDL_SetGPUScissor()
-inline void SetGPUScissor(SDL_GPURenderPass* render_pass, const SDL_Rect* scissor) {  SDL_SetGPUScissor(render_pass, scissor); }
+inline void SetGPUScissor(SDL_GPURenderPass* render_pass, const SDL_Rect* scissor) { SDL_SetGPUScissor(render_pass, scissor); }
 
 //! @copydoc SDL_SetGPUBlendConstants()
-inline void SetGPUBlendConstants(SDL_GPURenderPass* render_pass, SDL_FColor blend_constants) {  SDL_SetGPUBlendConstants(render_pass, blend_constants); }
+inline void SetGPUBlendConstants(SDL_GPURenderPass* render_pass, SDL_FColor blend_constants) { SDL_SetGPUBlendConstants(render_pass, blend_constants); }
 
 //! @copydoc SDL_SetGPUStencilReference()
-inline void SetGPUStencilReference(SDL_GPURenderPass* render_pass, Uint8 reference) {  SDL_SetGPUStencilReference(render_pass, reference); }
+inline void SetGPUStencilReference(SDL_GPURenderPass* render_pass, Uint8 reference) { SDL_SetGPUStencilReference(render_pass, reference); }
 
 //! @copydoc SDL_BindGPUVertexBuffers()
-inline void BindGPUVertexBuffers(SDL_GPURenderPass* render_pass, Uint32 first_slot, const SDL_GPUBufferBinding* bindings, Uint32 num_bindings) {  SDL_BindGPUVertexBuffers(render_pass, first_slot, bindings, num_bindings); }
+inline void BindGPUVertexBuffers(SDL_GPURenderPass* render_pass, Uint32 first_slot, const SDL_GPUBufferBinding* bindings, Uint32 num_bindings) { SDL_BindGPUVertexBuffers(render_pass, first_slot, bindings, num_bindings); }
 
 //! @copydoc SDL_BindGPUIndexBuffer()
-inline void BindGPUIndexBuffer(SDL_GPURenderPass* render_pass, const SDL_GPUBufferBinding* binding, SDL_GPUIndexElementSize index_element_size) {  SDL_BindGPUIndexBuffer(render_pass, binding, index_element_size); }
+inline void BindGPUIndexBuffer(SDL_GPURenderPass* render_pass, const SDL_GPUBufferBinding* binding, SDL_GPUIndexElementSize index_element_size) { SDL_BindGPUIndexBuffer(render_pass, binding, index_element_size); }
 
 //! @copydoc SDL_BindGPUVertexSamplers()
-inline void BindGPUVertexSamplers(SDL_GPURenderPass* render_pass, Uint32 first_slot, const SDL_GPUTextureSamplerBinding* texture_sampler_bindings, Uint32 num_bindings) {  SDL_BindGPUVertexSamplers(render_pass, first_slot, texture_sampler_bindings, num_bindings); }
+inline void BindGPUVertexSamplers(SDL_GPURenderPass* render_pass, Uint32 first_slot, const SDL_GPUTextureSamplerBinding* texture_sampler_bindings, Uint32 num_bindings) { SDL_BindGPUVertexSamplers(render_pass, first_slot, texture_sampler_bindings, num_bindings); }
 
 //! @copydoc SDL_BindGPUVertexStorageTextures()
-inline void BindGPUVertexStorageTextures(SDL_GPURenderPass* render_pass, Uint32 first_slot, SDL_GPUTexture** storage_textures, Uint32 num_bindings) {  SDL_BindGPUVertexStorageTextures(render_pass, first_slot, storage_textures, num_bindings); }
+inline void BindGPUVertexStorageTextures(SDL_GPURenderPass* render_pass, Uint32 first_slot, SDL_GPUTexture** storage_textures, Uint32 num_bindings) { SDL_BindGPUVertexStorageTextures(render_pass, first_slot, storage_textures, num_bindings); }
 
 //! @copydoc SDL_BindGPUVertexStorageBuffers()
-inline void BindGPUVertexStorageBuffers(SDL_GPURenderPass* render_pass, Uint32 first_slot, SDL_GPUBuffer** storage_buffers, Uint32 num_bindings) {  SDL_BindGPUVertexStorageBuffers(render_pass, first_slot, storage_buffers, num_bindings); }
+inline void BindGPUVertexStorageBuffers(SDL_GPURenderPass* render_pass, Uint32 first_slot, SDL_GPUBuffer** storage_buffers, Uint32 num_bindings) { SDL_BindGPUVertexStorageBuffers(render_pass, first_slot, storage_buffers, num_bindings); }
 
 //! @copydoc SDL_BindGPUFragmentSamplers()
-inline void BindGPUFragmentSamplers(SDL_GPURenderPass* render_pass, Uint32 first_slot, const SDL_GPUTextureSamplerBinding* texture_sampler_bindings, Uint32 num_bindings) {  SDL_BindGPUFragmentSamplers(render_pass, first_slot, texture_sampler_bindings, num_bindings); }
+inline void BindGPUFragmentSamplers(SDL_GPURenderPass* render_pass, Uint32 first_slot, const SDL_GPUTextureSamplerBinding* texture_sampler_bindings, Uint32 num_bindings) { SDL_BindGPUFragmentSamplers(render_pass, first_slot, texture_sampler_bindings, num_bindings); }
 
 //! @copydoc SDL_BindGPUFragmentStorageTextures()
-inline void BindGPUFragmentStorageTextures(SDL_GPURenderPass* render_pass, Uint32 first_slot, SDL_GPUTexture** storage_textures, Uint32 num_bindings) {  SDL_BindGPUFragmentStorageTextures(render_pass, first_slot, storage_textures, num_bindings); }
+inline void BindGPUFragmentStorageTextures(SDL_GPURenderPass* render_pass, Uint32 first_slot, SDL_GPUTexture** storage_textures, Uint32 num_bindings) { SDL_BindGPUFragmentStorageTextures(render_pass, first_slot, storage_textures, num_bindings); }
 
 //! @copydoc SDL_BindGPUFragmentStorageBuffers()
-inline void BindGPUFragmentStorageBuffers(SDL_GPURenderPass* render_pass, Uint32 first_slot, SDL_GPUBuffer** storage_buffers, Uint32 num_bindings) {  SDL_BindGPUFragmentStorageBuffers(render_pass, first_slot, storage_buffers, num_bindings); }
+inline void BindGPUFragmentStorageBuffers(SDL_GPURenderPass* render_pass, Uint32 first_slot, SDL_GPUBuffer** storage_buffers, Uint32 num_bindings) { SDL_BindGPUFragmentStorageBuffers(render_pass, first_slot, storage_buffers, num_bindings); }
 
 //! @copydoc SDL_DrawGPUIndexedPrimitives()
-inline void DrawGPUIndexedPrimitives(SDL_GPURenderPass* render_pass, Uint32 num_indices, Uint32 num_instances, Uint32 first_index, Sint32 vertex_offset, Uint32 first_instance) {  SDL_DrawGPUIndexedPrimitives(render_pass, num_indices, num_instances, first_index, vertex_offset, first_instance); }
+inline void DrawGPUIndexedPrimitives(SDL_GPURenderPass* render_pass, Uint32 num_indices, Uint32 num_instances, Uint32 first_index, Sint32 vertex_offset, Uint32 first_instance) { SDL_DrawGPUIndexedPrimitives(render_pass, num_indices, num_instances, first_index, vertex_offset, first_instance); }
 
 //! @copydoc SDL_DrawGPUPrimitives()
-inline void DrawGPUPrimitives(SDL_GPURenderPass* render_pass, Uint32 num_vertices, Uint32 num_instances, Uint32 first_vertex, Uint32 first_instance) {  SDL_DrawGPUPrimitives(render_pass, num_vertices, num_instances, first_vertex, first_instance); }
+inline void DrawGPUPrimitives(SDL_GPURenderPass* render_pass, Uint32 num_vertices, Uint32 num_instances, Uint32 first_vertex, Uint32 first_instance) { SDL_DrawGPUPrimitives(render_pass, num_vertices, num_instances, first_vertex, first_instance); }
 
 //! @copydoc SDL_DrawGPUPrimitivesIndirect()
-inline void DrawGPUPrimitivesIndirect(SDL_GPURenderPass* render_pass, SDL_GPUBuffer* buffer, Uint32 offset, Uint32 draw_count) {  SDL_DrawGPUPrimitivesIndirect(render_pass, buffer, offset, draw_count); }
+inline void DrawGPUPrimitivesIndirect(SDL_GPURenderPass* render_pass, SDL_GPUBuffer* buffer, Uint32 offset, Uint32 draw_count) { SDL_DrawGPUPrimitivesIndirect(render_pass, buffer, offset, draw_count); }
 
 //! @copydoc SDL_DrawGPUIndexedPrimitivesIndirect()
-inline void DrawGPUIndexedPrimitivesIndirect(SDL_GPURenderPass* render_pass, SDL_GPUBuffer* buffer, Uint32 offset, Uint32 draw_count) {  SDL_DrawGPUIndexedPrimitivesIndirect(render_pass, buffer, offset, draw_count); }
+inline void DrawGPUIndexedPrimitivesIndirect(SDL_GPURenderPass* render_pass, SDL_GPUBuffer* buffer, Uint32 offset, Uint32 draw_count) { SDL_DrawGPUIndexedPrimitivesIndirect(render_pass, buffer, offset, draw_count); }
 
 //! @copydoc SDL_EndGPURenderPass()
-inline void EndGPURenderPass(SDL_GPURenderPass* render_pass) {  SDL_EndGPURenderPass(render_pass); }
+inline void EndGPURenderPass(SDL_GPURenderPass* render_pass) { SDL_EndGPURenderPass(render_pass); }
 
 //! @copydoc SDL_BeginGPUComputePass()
 inline SDL_GPUComputePass* BeginGPUComputePass(SDL_GPUCommandBuffer* command_buffer, const SDL_GPUStorageTextureReadWriteBinding* storage_texture_bindings, Uint32 num_storage_texture_bindings, const SDL_GPUStorageBufferReadWriteBinding* storage_buffer_bindings, Uint32 num_storage_buffer_bindings) { return SDL_BeginGPUComputePass(command_buffer, storage_texture_bindings, num_storage_texture_bindings, storage_buffer_bindings, num_storage_buffer_bindings); }
 
 //! @copydoc SDL_BindGPUComputePipeline()
-inline void BindGPUComputePipeline(SDL_GPUComputePass* compute_pass, SDL_GPUComputePipeline* compute_pipeline) {  SDL_BindGPUComputePipeline(compute_pass, compute_pipeline); }
+inline void BindGPUComputePipeline(SDL_GPUComputePass* compute_pass, SDL_GPUComputePipeline* compute_pipeline) { SDL_BindGPUComputePipeline(compute_pass, compute_pipeline); }
 
 //! @copydoc SDL_BindGPUComputeSamplers()
-inline void BindGPUComputeSamplers(SDL_GPUComputePass* compute_pass, Uint32 first_slot, const SDL_GPUTextureSamplerBinding* texture_sampler_bindings, Uint32 num_bindings) {  SDL_BindGPUComputeSamplers(compute_pass, first_slot, texture_sampler_bindings, num_bindings); }
+inline void BindGPUComputeSamplers(SDL_GPUComputePass* compute_pass, Uint32 first_slot, const SDL_GPUTextureSamplerBinding* texture_sampler_bindings, Uint32 num_bindings) { SDL_BindGPUComputeSamplers(compute_pass, first_slot, texture_sampler_bindings, num_bindings); }
 
 //! @copydoc SDL_BindGPUComputeStorageTextures()
-inline void BindGPUComputeStorageTextures(SDL_GPUComputePass* compute_pass, Uint32 first_slot, SDL_GPUTexture** storage_textures, Uint32 num_bindings) {  SDL_BindGPUComputeStorageTextures(compute_pass, first_slot, storage_textures, num_bindings); }
+inline void BindGPUComputeStorageTextures(SDL_GPUComputePass* compute_pass, Uint32 first_slot, SDL_GPUTexture** storage_textures, Uint32 num_bindings) { SDL_BindGPUComputeStorageTextures(compute_pass, first_slot, storage_textures, num_bindings); }
 
 //! @copydoc SDL_BindGPUComputeStorageBuffers()
-inline void BindGPUComputeStorageBuffers(SDL_GPUComputePass* compute_pass, Uint32 first_slot, SDL_GPUBuffer** storage_buffers, Uint32 num_bindings) {  SDL_BindGPUComputeStorageBuffers(compute_pass, first_slot, storage_buffers, num_bindings); }
+inline void BindGPUComputeStorageBuffers(SDL_GPUComputePass* compute_pass, Uint32 first_slot, SDL_GPUBuffer** storage_buffers, Uint32 num_bindings) { SDL_BindGPUComputeStorageBuffers(compute_pass, first_slot, storage_buffers, num_bindings); }
 
 //! @copydoc SDL_DispatchGPUCompute()
-inline void DispatchGPUCompute(SDL_GPUComputePass* compute_pass, Uint32 groupcount_x, Uint32 groupcount_y, Uint32 groupcount_z) {  SDL_DispatchGPUCompute(compute_pass, groupcount_x, groupcount_y, groupcount_z); }
+inline void DispatchGPUCompute(SDL_GPUComputePass* compute_pass, Uint32 groupcount_x, Uint32 groupcount_y, Uint32 groupcount_z) { SDL_DispatchGPUCompute(compute_pass, groupcount_x, groupcount_y, groupcount_z); }
 
 //! @copydoc SDL_DispatchGPUComputeIndirect()
-inline void DispatchGPUComputeIndirect(SDL_GPUComputePass* compute_pass, SDL_GPUBuffer* buffer, Uint32 offset) {  SDL_DispatchGPUComputeIndirect(compute_pass, buffer, offset); }
+inline void DispatchGPUComputeIndirect(SDL_GPUComputePass* compute_pass, SDL_GPUBuffer* buffer, Uint32 offset) { SDL_DispatchGPUComputeIndirect(compute_pass, buffer, offset); }
 
 //! @copydoc SDL_EndGPUComputePass()
-inline void EndGPUComputePass(SDL_GPUComputePass* compute_pass) {  SDL_EndGPUComputePass(compute_pass); }
+inline void EndGPUComputePass(SDL_GPUComputePass* compute_pass) { SDL_EndGPUComputePass(compute_pass); }
 
 //! @copydoc SDL_MapGPUTransferBuffer()
 inline void* MapGPUTransferBuffer(SDL_GPUDevice* device, SDL_GPUTransferBuffer* transfer_buffer, bool cycle) { auto _ret = SDL_MapGPUTransferBuffer(device, transfer_buffer, cycle); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_UnmapGPUTransferBuffer()
-inline void UnmapGPUTransferBuffer(SDL_GPUDevice* device, SDL_GPUTransferBuffer* transfer_buffer) {  SDL_UnmapGPUTransferBuffer(device, transfer_buffer); }
+inline void UnmapGPUTransferBuffer(SDL_GPUDevice* device, SDL_GPUTransferBuffer* transfer_buffer) { SDL_UnmapGPUTransferBuffer(device, transfer_buffer); }
 
 //! @copydoc SDL_BeginGPUCopyPass()
 inline SDL_GPUCopyPass* BeginGPUCopyPass(SDL_GPUCommandBuffer* command_buffer) { return SDL_BeginGPUCopyPass(command_buffer); }
 
 //! @copydoc SDL_UploadToGPUTexture()
-inline void UploadToGPUTexture(SDL_GPUCopyPass* copy_pass, const SDL_GPUTextureTransferInfo* source, const SDL_GPUTextureRegion* destination, bool cycle) {  SDL_UploadToGPUTexture(copy_pass, source, destination, cycle); }
+inline void UploadToGPUTexture(SDL_GPUCopyPass* copy_pass, const SDL_GPUTextureTransferInfo* source, const SDL_GPUTextureRegion* destination, bool cycle) { SDL_UploadToGPUTexture(copy_pass, source, destination, cycle); }
 
 //! @copydoc SDL_UploadToGPUBuffer()
-inline void UploadToGPUBuffer(SDL_GPUCopyPass* copy_pass, const SDL_GPUTransferBufferLocation* source, const SDL_GPUBufferRegion* destination, bool cycle) {  SDL_UploadToGPUBuffer(copy_pass, source, destination, cycle); }
+inline void UploadToGPUBuffer(SDL_GPUCopyPass* copy_pass, const SDL_GPUTransferBufferLocation* source, const SDL_GPUBufferRegion* destination, bool cycle) { SDL_UploadToGPUBuffer(copy_pass, source, destination, cycle); }
 
 //! @copydoc SDL_CopyGPUTextureToTexture()
-inline void CopyGPUTextureToTexture(SDL_GPUCopyPass* copy_pass, const SDL_GPUTextureLocation* source, const SDL_GPUTextureLocation* destination, Uint32 w, Uint32 h, Uint32 d, bool cycle) {  SDL_CopyGPUTextureToTexture(copy_pass, source, destination, w, h, d, cycle); }
+inline void CopyGPUTextureToTexture(SDL_GPUCopyPass* copy_pass, const SDL_GPUTextureLocation* source, const SDL_GPUTextureLocation* destination, Uint32 w, Uint32 h, Uint32 d, bool cycle) { SDL_CopyGPUTextureToTexture(copy_pass, source, destination, w, h, d, cycle); }
 
 //! @copydoc SDL_CopyGPUBufferToBuffer()
-inline void CopyGPUBufferToBuffer(SDL_GPUCopyPass* copy_pass, const SDL_GPUBufferLocation* source, const SDL_GPUBufferLocation* destination, Uint32 size, bool cycle) {  SDL_CopyGPUBufferToBuffer(copy_pass, source, destination, size, cycle); }
+inline void CopyGPUBufferToBuffer(SDL_GPUCopyPass* copy_pass, const SDL_GPUBufferLocation* source, const SDL_GPUBufferLocation* destination, Uint32 size, bool cycle) { SDL_CopyGPUBufferToBuffer(copy_pass, source, destination, size, cycle); }
 
 //! @copydoc SDL_DownloadFromGPUTexture()
-inline void DownloadFromGPUTexture(SDL_GPUCopyPass* copy_pass, const SDL_GPUTextureRegion* source, const SDL_GPUTextureTransferInfo* destination) {  SDL_DownloadFromGPUTexture(copy_pass, source, destination); }
+inline void DownloadFromGPUTexture(SDL_GPUCopyPass* copy_pass, const SDL_GPUTextureRegion* source, const SDL_GPUTextureTransferInfo* destination) { SDL_DownloadFromGPUTexture(copy_pass, source, destination); }
 
 //! @copydoc SDL_DownloadFromGPUBuffer()
-inline void DownloadFromGPUBuffer(SDL_GPUCopyPass* copy_pass, const SDL_GPUBufferRegion* source, const SDL_GPUTransferBufferLocation* destination) {  SDL_DownloadFromGPUBuffer(copy_pass, source, destination); }
+inline void DownloadFromGPUBuffer(SDL_GPUCopyPass* copy_pass, const SDL_GPUBufferRegion* source, const SDL_GPUTransferBufferLocation* destination) { SDL_DownloadFromGPUBuffer(copy_pass, source, destination); }
 
 //! @copydoc SDL_EndGPUCopyPass()
-inline void EndGPUCopyPass(SDL_GPUCopyPass* copy_pass) {  SDL_EndGPUCopyPass(copy_pass); }
+inline void EndGPUCopyPass(SDL_GPUCopyPass* copy_pass) { SDL_EndGPUCopyPass(copy_pass); }
 
 //! @copydoc SDL_GenerateMipmapsForGPUTexture()
-inline void GenerateMipmapsForGPUTexture(SDL_GPUCommandBuffer* command_buffer, SDL_GPUTexture* texture) {  SDL_GenerateMipmapsForGPUTexture(command_buffer, texture); }
+inline void GenerateMipmapsForGPUTexture(SDL_GPUCommandBuffer* command_buffer, SDL_GPUTexture* texture) { SDL_GenerateMipmapsForGPUTexture(command_buffer, texture); }
 
 //! @copydoc SDL_BlitGPUTexture()
-inline void BlitGPUTexture(SDL_GPUCommandBuffer* command_buffer, const SDL_GPUBlitInfo* info) {  SDL_BlitGPUTexture(command_buffer, info); }
+inline void BlitGPUTexture(SDL_GPUCommandBuffer* command_buffer, const SDL_GPUBlitInfo* info) { SDL_BlitGPUTexture(command_buffer, info); }
 
 //! @copydoc SDL_WindowSupportsGPUSwapchainComposition()
 inline bool WindowSupportsGPUSwapchainComposition(SDL_GPUDevice* device, SDL_Window* window, SDL_GPUSwapchainComposition swapchain_composition) { return SDL_WindowSupportsGPUSwapchainComposition(device, window, swapchain_composition); }
@@ -2855,49 +2852,49 @@ inline bool WindowSupportsGPUSwapchainComposition(SDL_GPUDevice* device, SDL_Win
 inline bool WindowSupportsGPUPresentMode(SDL_GPUDevice* device, SDL_Window* window, SDL_GPUPresentMode present_mode) { return SDL_WindowSupportsGPUPresentMode(device, window, present_mode); }
 
 //! @copydoc SDL_ClaimWindowForGPUDevice()
-inline bool ClaimWindowForGPUDevice(SDL_GPUDevice* device, SDL_Window* window) { auto _ret = SDL_ClaimWindowForGPUDevice(device, window); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void ClaimWindowForGPUDevice(SDL_GPUDevice* device, SDL_Window* window) { auto _ret = SDL_ClaimWindowForGPUDevice(device, window); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_ReleaseWindowFromGPUDevice()
-inline void ReleaseWindowFromGPUDevice(SDL_GPUDevice* device, SDL_Window* window) {  SDL_ReleaseWindowFromGPUDevice(device, window); }
+inline void ReleaseWindowFromGPUDevice(SDL_GPUDevice* device, SDL_Window* window) { SDL_ReleaseWindowFromGPUDevice(device, window); }
 
 //! @copydoc SDL_SetGPUSwapchainParameters()
-inline bool SetGPUSwapchainParameters(SDL_GPUDevice* device, SDL_Window* window, SDL_GPUSwapchainComposition swapchain_composition, SDL_GPUPresentMode present_mode) { auto _ret = SDL_SetGPUSwapchainParameters(device, window, swapchain_composition, present_mode); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetGPUSwapchainParameters(SDL_GPUDevice* device, SDL_Window* window, SDL_GPUSwapchainComposition swapchain_composition, SDL_GPUPresentMode present_mode) { auto _ret = SDL_SetGPUSwapchainParameters(device, window, swapchain_composition, present_mode); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetGPUAllowedFramesInFlight()
-inline bool SetGPUAllowedFramesInFlight(SDL_GPUDevice* device, Uint32 allowed_frames_in_flight) { auto _ret = SDL_SetGPUAllowedFramesInFlight(device, allowed_frames_in_flight); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetGPUAllowedFramesInFlight(SDL_GPUDevice* device, Uint32 allowed_frames_in_flight) { auto _ret = SDL_SetGPUAllowedFramesInFlight(device, allowed_frames_in_flight); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetGPUSwapchainTextureFormat()
 inline SDL_GPUTextureFormat GetGPUSwapchainTextureFormat(SDL_GPUDevice* device, SDL_Window* window) { return SDL_GetGPUSwapchainTextureFormat(device, window); }
 
 //! @copydoc SDL_AcquireGPUSwapchainTexture()
-inline bool AcquireGPUSwapchainTexture(SDL_GPUCommandBuffer* command_buffer, SDL_Window* window, SDL_GPUTexture** swapchain_texture, Uint32* swapchain_texture_width, Uint32* swapchain_texture_height) { auto _ret = SDL_AcquireGPUSwapchainTexture(command_buffer, window, swapchain_texture, swapchain_texture_width, swapchain_texture_height); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void AcquireGPUSwapchainTexture(SDL_GPUCommandBuffer* command_buffer, SDL_Window* window, SDL_GPUTexture** swapchain_texture, Uint32* swapchain_texture_width, Uint32* swapchain_texture_height) { auto _ret = SDL_AcquireGPUSwapchainTexture(command_buffer, window, swapchain_texture, swapchain_texture_width, swapchain_texture_height); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_WaitForGPUSwapchain()
-inline bool WaitForGPUSwapchain(SDL_GPUDevice* device, SDL_Window* window) { auto _ret = SDL_WaitForGPUSwapchain(device, window); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void WaitForGPUSwapchain(SDL_GPUDevice* device, SDL_Window* window) { auto _ret = SDL_WaitForGPUSwapchain(device, window); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_WaitAndAcquireGPUSwapchainTexture()
-inline bool WaitAndAcquireGPUSwapchainTexture(SDL_GPUCommandBuffer* command_buffer, SDL_Window* window, SDL_GPUTexture** swapchain_texture, Uint32* swapchain_texture_width, Uint32* swapchain_texture_height) { auto _ret = SDL_WaitAndAcquireGPUSwapchainTexture(command_buffer, window, swapchain_texture, swapchain_texture_width, swapchain_texture_height); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void WaitAndAcquireGPUSwapchainTexture(SDL_GPUCommandBuffer* command_buffer, SDL_Window* window, SDL_GPUTexture** swapchain_texture, Uint32* swapchain_texture_width, Uint32* swapchain_texture_height) { auto _ret = SDL_WaitAndAcquireGPUSwapchainTexture(command_buffer, window, swapchain_texture, swapchain_texture_width, swapchain_texture_height); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SubmitGPUCommandBuffer()
-inline bool SubmitGPUCommandBuffer(SDL_GPUCommandBuffer* command_buffer) { auto _ret = SDL_SubmitGPUCommandBuffer(command_buffer); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SubmitGPUCommandBuffer(SDL_GPUCommandBuffer* command_buffer) { auto _ret = SDL_SubmitGPUCommandBuffer(command_buffer); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SubmitGPUCommandBufferAndAcquireFence()
 inline SDL_GPUFence* SubmitGPUCommandBufferAndAcquireFence(SDL_GPUCommandBuffer* command_buffer) { auto _ret = SDL_SubmitGPUCommandBufferAndAcquireFence(command_buffer); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_CancelGPUCommandBuffer()
-inline bool CancelGPUCommandBuffer(SDL_GPUCommandBuffer* command_buffer) { auto _ret = SDL_CancelGPUCommandBuffer(command_buffer); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void CancelGPUCommandBuffer(SDL_GPUCommandBuffer* command_buffer) { auto _ret = SDL_CancelGPUCommandBuffer(command_buffer); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_WaitForGPUIdle()
-inline bool WaitForGPUIdle(SDL_GPUDevice* device) { auto _ret = SDL_WaitForGPUIdle(device); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void WaitForGPUIdle(SDL_GPUDevice* device) { auto _ret = SDL_WaitForGPUIdle(device); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_WaitForGPUFences()
-inline bool WaitForGPUFences(SDL_GPUDevice* device, bool wait_all, SDL_GPUFence** fences, Uint32 num_fences) { auto _ret = SDL_WaitForGPUFences(device, wait_all, fences, num_fences); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void WaitForGPUFences(SDL_GPUDevice* device, bool wait_all, SDL_GPUFence** fences, Uint32 num_fences) { auto _ret = SDL_WaitForGPUFences(device, wait_all, fences, num_fences); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_QueryGPUFence()
 inline bool QueryGPUFence(SDL_GPUDevice* device, SDL_GPUFence* fence) { return SDL_QueryGPUFence(device, fence); }
 
 //! @copydoc SDL_ReleaseGPUFence()
-inline void ReleaseGPUFence(SDL_GPUDevice* device, SDL_GPUFence* fence) {  SDL_ReleaseGPUFence(device, fence); }
+inline void ReleaseGPUFence(SDL_GPUDevice* device, SDL_GPUFence* fence) { SDL_ReleaseGPUFence(device, fence); }
 
 //! @copydoc SDL_GPUTextureFormatTexelBlockSize()
 inline Uint32 GPUTextureFormatTexelBlockSize(SDL_GPUTextureFormat format) { return SDL_GPUTextureFormatTexelBlockSize(format); }
@@ -2942,7 +2939,7 @@ inline bool IsJoystickHaptic(SDL_Joystick* joystick) { return SDL_IsJoystickHapt
 inline SDL_Haptic* OpenHapticFromJoystick(SDL_Joystick* joystick) { auto _ret = SDL_OpenHapticFromJoystick(joystick); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_CloseHaptic()
-inline void CloseHaptic(SDL_Haptic* haptic) {  SDL_CloseHaptic(haptic); }
+inline void CloseHaptic(SDL_Haptic* haptic) { SDL_CloseHaptic(haptic); }
 
 //! @copydoc SDL_GetMaxHapticEffects()
 inline int GetMaxHapticEffects(SDL_Haptic* haptic) { auto _ret = SDL_GetMaxHapticEffects(haptic); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
@@ -2963,46 +2960,46 @@ inline bool HapticEffectSupported(SDL_Haptic* haptic, const SDL_HapticEffect* ef
 inline int CreateHapticEffect(SDL_Haptic* haptic, const SDL_HapticEffect* effect) { auto _ret = SDL_CreateHapticEffect(haptic, effect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_UpdateHapticEffect()
-inline bool UpdateHapticEffect(SDL_Haptic* haptic, int effect, const SDL_HapticEffect* data) { auto _ret = SDL_UpdateHapticEffect(haptic, effect, data); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void UpdateHapticEffect(SDL_Haptic* haptic, int effect, const SDL_HapticEffect* data) { auto _ret = SDL_UpdateHapticEffect(haptic, effect, data); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_RunHapticEffect()
-inline bool RunHapticEffect(SDL_Haptic* haptic, int effect, Uint32 iterations) { auto _ret = SDL_RunHapticEffect(haptic, effect, iterations); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void RunHapticEffect(SDL_Haptic* haptic, int effect, Uint32 iterations) { auto _ret = SDL_RunHapticEffect(haptic, effect, iterations); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_StopHapticEffect()
-inline bool StopHapticEffect(SDL_Haptic* haptic, int effect) { auto _ret = SDL_StopHapticEffect(haptic, effect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void StopHapticEffect(SDL_Haptic* haptic, int effect) { auto _ret = SDL_StopHapticEffect(haptic, effect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_DestroyHapticEffect()
-inline void DestroyHapticEffect(SDL_Haptic* haptic, int effect) {  SDL_DestroyHapticEffect(haptic, effect); }
+inline void DestroyHapticEffect(SDL_Haptic* haptic, int effect) { SDL_DestroyHapticEffect(haptic, effect); }
 
 //! @copydoc SDL_GetHapticEffectStatus()
 inline bool GetHapticEffectStatus(SDL_Haptic* haptic, int effect) { return SDL_GetHapticEffectStatus(haptic, effect); }
 
 //! @copydoc SDL_SetHapticGain()
-inline bool SetHapticGain(SDL_Haptic* haptic, int gain) { auto _ret = SDL_SetHapticGain(haptic, gain); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetHapticGain(SDL_Haptic* haptic, int gain) { auto _ret = SDL_SetHapticGain(haptic, gain); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetHapticAutocenter()
-inline bool SetHapticAutocenter(SDL_Haptic* haptic, int autocenter) { auto _ret = SDL_SetHapticAutocenter(haptic, autocenter); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetHapticAutocenter(SDL_Haptic* haptic, int autocenter) { auto _ret = SDL_SetHapticAutocenter(haptic, autocenter); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_PauseHaptic()
-inline bool PauseHaptic(SDL_Haptic* haptic) { auto _ret = SDL_PauseHaptic(haptic); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void PauseHaptic(SDL_Haptic* haptic) { auto _ret = SDL_PauseHaptic(haptic); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_ResumeHaptic()
-inline bool ResumeHaptic(SDL_Haptic* haptic) { auto _ret = SDL_ResumeHaptic(haptic); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void ResumeHaptic(SDL_Haptic* haptic) { auto _ret = SDL_ResumeHaptic(haptic); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_StopHapticEffects()
-inline bool StopHapticEffects(SDL_Haptic* haptic) { auto _ret = SDL_StopHapticEffects(haptic); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void StopHapticEffects(SDL_Haptic* haptic) { auto _ret = SDL_StopHapticEffects(haptic); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_HapticRumbleSupported()
 inline bool HapticRumbleSupported(SDL_Haptic* haptic) { return SDL_HapticRumbleSupported(haptic); }
 
 //! @copydoc SDL_InitHapticRumble()
-inline bool InitHapticRumble(SDL_Haptic* haptic) { auto _ret = SDL_InitHapticRumble(haptic); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void InitHapticRumble(SDL_Haptic* haptic) { auto _ret = SDL_InitHapticRumble(haptic); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_PlayHapticRumble()
-inline bool PlayHapticRumble(SDL_Haptic* haptic, float strength, Uint32 length) { auto _ret = SDL_PlayHapticRumble(haptic, strength, length); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void PlayHapticRumble(SDL_Haptic* haptic, float strength, Uint32 length) { auto _ret = SDL_PlayHapticRumble(haptic, strength, length); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_StopHapticRumble()
-inline bool StopHapticRumble(SDL_Haptic* haptic) { auto _ret = SDL_StopHapticRumble(haptic); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void StopHapticRumble(SDL_Haptic* haptic) { auto _ret = SDL_StopHapticRumble(haptic); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_hid_init()
 inline int hid_init() { auto _ret = SDL_hid_init(); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
@@ -3017,7 +3014,7 @@ inline Uint32 hid_device_change_count() { return SDL_hid_device_change_count(); 
 inline SDL_hid_device_info* hid_enumerate(unsigned short vendor_id, unsigned short product_id) { return SDL_hid_enumerate(vendor_id, product_id); }
 
 //! @copydoc SDL_hid_free_enumeration()
-inline void hid_free_enumeration(SDL_hid_device_info* devs) {  SDL_hid_free_enumeration(devs); }
+inline void hid_free_enumeration(SDL_hid_device_info* devs) { SDL_hid_free_enumeration(devs); }
 
 //! @copydoc SDL_hid_open()
 inline SDL_hid_device* hid_open(unsigned short vendor_id, unsigned short product_id, const wchar_t* serial_number) { auto _ret = SDL_hid_open(vendor_id, product_id, serial_number); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
@@ -3068,19 +3065,19 @@ inline SDL_hid_device_info* hid_get_device_info(SDL_hid_device* dev) { auto _ret
 inline int hid_get_report_descriptor(SDL_hid_device* dev, unsigned char* buf, size_t buf_size) { auto _ret = SDL_hid_get_report_descriptor(dev, buf, buf_size); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_hid_ble_scan()
-inline void hid_ble_scan(bool active) {  SDL_hid_ble_scan(active); }
+inline void hid_ble_scan(bool active) { SDL_hid_ble_scan(active); }
 
 //! @copydoc SDL_SetHintWithPriority()
-inline bool SetHintWithPriority(const char* name, const char* value, SDL_HintPriority priority) { auto _ret = SDL_SetHintWithPriority(name, value, priority); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetHintWithPriority(const char* name, const char* value, SDL_HintPriority priority) { auto _ret = SDL_SetHintWithPriority(name, value, priority); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetHint()
-inline bool SetHint(const char* name, const char* value) { auto _ret = SDL_SetHint(name, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetHint(const char* name, const char* value) { auto _ret = SDL_SetHint(name, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_ResetHint()
-inline bool ResetHint(const char* name) { auto _ret = SDL_ResetHint(name); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void ResetHint(const char* name) { auto _ret = SDL_ResetHint(name); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_ResetHints()
-inline void ResetHints() {  SDL_ResetHints(); }
+inline void ResetHints() { SDL_ResetHints(); }
 
 //! @copydoc SDL_GetHint()
 inline const char* GetHint(const char* name) { return SDL_GetHint(name); }
@@ -3089,37 +3086,37 @@ inline const char* GetHint(const char* name) { return SDL_GetHint(name); }
 inline bool GetHintBoolean(const char* name, bool default_value) { return SDL_GetHintBoolean(name, default_value); }
 
 //! @copydoc SDL_AddHintCallback()
-inline bool AddHintCallback(const char* name, SDL_HintCallback callback, void* userdata) { auto _ret = SDL_AddHintCallback(name, callback, userdata); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void AddHintCallback(const char* name, SDL_HintCallback callback, void* userdata) { auto _ret = SDL_AddHintCallback(name, callback, userdata); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_RemoveHintCallback()
-inline void RemoveHintCallback(const char* name, SDL_HintCallback callback, void* userdata) {  SDL_RemoveHintCallback(name, callback, userdata); }
+inline void RemoveHintCallback(const char* name, SDL_HintCallback callback, void* userdata) { SDL_RemoveHintCallback(name, callback, userdata); }
 
 //! @copydoc SDL_Init()
-inline bool Init(SDL::InitFlags flags) { auto _ret = SDL_Init(flags); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void Init(SDL::InitFlags flags) { auto _ret = SDL_Init(flags); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_InitSubSystem()
-inline bool InitSubSystem(SDL::InitFlags flags) { auto _ret = SDL_InitSubSystem(flags); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void InitSubSystem(SDL::InitFlags flags) { auto _ret = SDL_InitSubSystem(flags); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_QuitSubSystem()
-inline void QuitSubSystem(SDL::InitFlags flags) {  SDL_QuitSubSystem(flags); }
+inline void QuitSubSystem(SDL::InitFlags flags) { SDL_QuitSubSystem(flags); }
 
 //! @copydoc SDL_WasInit()
 inline SDL::InitFlags WasInit(SDL::InitFlags flags) { return (SDL::InitFlags) SDL_WasInit(flags); }
 
 //! @copydoc SDL_Quit()
-inline void Quit() {  SDL_Quit(); }
+inline void Quit() { SDL_Quit(); }
 
 //! @copydoc SDL_IsMainThread()
 inline bool IsMainThread() { return SDL_IsMainThread(); }
 
 //! @copydoc SDL_RunOnMainThread()
-inline bool RunOnMainThread(SDL_MainThreadCallback callback, void* userdata, bool wait_complete) { auto _ret = SDL_RunOnMainThread(callback, userdata, wait_complete); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void RunOnMainThread(SDL_MainThreadCallback callback, void* userdata, bool wait_complete) { auto _ret = SDL_RunOnMainThread(callback, userdata, wait_complete); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetAppMetadata()
-inline bool SetAppMetadata(const char* appname, const char* appversion, const char* appidentifier) { auto _ret = SDL_SetAppMetadata(appname, appversion, appidentifier); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetAppMetadata(const char* appname, const char* appversion, const char* appidentifier) { auto _ret = SDL_SetAppMetadata(appname, appversion, appidentifier); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetAppMetadataProperty()
-inline bool SetAppMetadataProperty(const char* name, const char* value) { auto _ret = SDL_SetAppMetadataProperty(name, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetAppMetadataProperty(const char* name, const char* value) { auto _ret = SDL_SetAppMetadataProperty(name, value); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetAppMetadataProperty()
 inline const char* GetAppMetadataProperty(const char* name) { return SDL_GetAppMetadataProperty(name); }
@@ -3131,55 +3128,55 @@ inline SDL_SharedObject* LoadObject(const char* sofile) { auto _ret = SDL_LoadOb
 inline SDL_FunctionPointer LoadFunction(SDL_SharedObject* handle, const char* name) { auto _ret = SDL_LoadFunction(handle, name); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_UnloadObject()
-inline void UnloadObject(SDL_SharedObject* handle) {  SDL_UnloadObject(handle); }
+inline void UnloadObject(SDL_SharedObject* handle) { SDL_UnloadObject(handle); }
 
 //! @copydoc SDL_GetPreferredLocales()
 inline SDL_Locale** GetPreferredLocales(int* count) { auto _ret = SDL_GetPreferredLocales(count); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_SetLogPriorities()
-inline void SetLogPriorities(SDL_LogPriority priority) {  SDL_SetLogPriorities(priority); }
+inline void SetLogPriorities(SDL_LogPriority priority) { SDL_SetLogPriorities(priority); }
 
 //! @copydoc SDL_SetLogPriority()
-inline void SetLogPriority(int category, SDL_LogPriority priority) {  SDL_SetLogPriority(category, priority); }
+inline void SetLogPriority(int category, SDL_LogPriority priority) { SDL_SetLogPriority(category, priority); }
 
 //! @copydoc SDL_GetLogPriority()
 inline SDL_LogPriority GetLogPriority(int category) { return SDL_GetLogPriority(category); }
 
 //! @copydoc SDL_ResetLogPriorities()
-inline void ResetLogPriorities() {  SDL_ResetLogPriorities(); }
+inline void ResetLogPriorities() { SDL_ResetLogPriorities(); }
 
 //! @copydoc SDL_SetLogPriorityPrefix()
-inline bool SetLogPriorityPrefix(SDL_LogPriority priority, const char* prefix) { auto _ret = SDL_SetLogPriorityPrefix(priority, prefix); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetLogPriorityPrefix(SDL_LogPriority priority, const char* prefix) { auto _ret = SDL_SetLogPriorityPrefix(priority, prefix); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_LogMessageV()
-inline void LogMessageV(int category, SDL_LogPriority priority, const char* fmt, va_list ap) {  SDL_LogMessageV(category, priority, fmt, ap); }
+inline void LogMessageV(int category, SDL_LogPriority priority, const char* fmt, va_list ap) { SDL_LogMessageV(category, priority, fmt, ap); }
 
 //! @copydoc SDL_GetDefaultLogOutputFunction()
 inline SDL_LogOutputFunction GetDefaultLogOutputFunction() { return SDL_GetDefaultLogOutputFunction(); }
 
 //! @copydoc SDL_GetLogOutputFunction()
-inline void GetLogOutputFunction(SDL_LogOutputFunction* callback, void** userdata) {  SDL_GetLogOutputFunction(callback, userdata); }
+inline void GetLogOutputFunction(SDL_LogOutputFunction* callback, void** userdata) { SDL_GetLogOutputFunction(callback, userdata); }
 
 //! @copydoc SDL_SetLogOutputFunction()
-inline void SetLogOutputFunction(SDL_LogOutputFunction callback, void* userdata) {  SDL_SetLogOutputFunction(callback, userdata); }
+inline void SetLogOutputFunction(SDL_LogOutputFunction callback, void* userdata) { SDL_SetLogOutputFunction(callback, userdata); }
 
 //! @copydoc SDL_ShowMessageBox()
-inline bool ShowMessageBox(const SDL_MessageBoxData* messageboxdata, int* buttonid) { auto _ret = SDL_ShowMessageBox(messageboxdata, buttonid); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void ShowMessageBox(const SDL_MessageBoxData* messageboxdata, int* buttonid) { auto _ret = SDL_ShowMessageBox(messageboxdata, buttonid); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_ShowSimpleMessageBox()
-inline bool ShowSimpleMessageBox(SDL::MessageBoxFlags flags, const char* title, const char* message, SDL_Window* window) { auto _ret = SDL_ShowSimpleMessageBox(flags, title, message, window); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void ShowSimpleMessageBox(SDL::MessageBoxFlags flags, const char* title, const char* message, SDL_Window* window) { auto _ret = SDL_ShowSimpleMessageBox(flags, title, message, window); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_Metal_CreateView()
 inline SDL_MetalView Metal_CreateView(SDL_Window* window) { return SDL_Metal_CreateView(window); }
 
 //! @copydoc SDL_Metal_DestroyView()
-inline void Metal_DestroyView(SDL_MetalView view) {  SDL_Metal_DestroyView(view); }
+inline void Metal_DestroyView(SDL_MetalView view) { SDL_Metal_DestroyView(view); }
 
 //! @copydoc SDL_Metal_GetLayer()
 inline void* Metal_GetLayer(SDL_MetalView view) { return SDL_Metal_GetLayer(view); }
 
 //! @copydoc SDL_OpenURL()
-inline bool OpenURL(const char* url) { auto _ret = SDL_OpenURL(url); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void OpenURL(const char* url) { auto _ret = SDL_OpenURL(url); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetPlatform()
 inline const char* GetPlatform() { return SDL_GetPlatform(); }
@@ -3203,13 +3200,13 @@ inline SDL_IOStream* GetProcessInput(SDL_Process* process) { auto _ret = SDL_Get
 inline SDL_IOStream* GetProcessOutput(SDL_Process* process) { auto _ret = SDL_GetProcessOutput(process); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_KillProcess()
-inline bool KillProcess(SDL_Process* process, bool force) { auto _ret = SDL_KillProcess(process, force); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void KillProcess(SDL_Process* process, bool force) { auto _ret = SDL_KillProcess(process, force); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_WaitProcess()
 inline bool WaitProcess(SDL_Process* process, bool block, int* exitcode) { return SDL_WaitProcess(process, block, exitcode); }
 
 //! @copydoc SDL_DestroyProcess()
-inline void DestroyProcess(SDL_Process* process) {  SDL_DestroyProcess(process); }
+inline void DestroyProcess(SDL_Process* process) { SDL_DestroyProcess(process); }
 
 //! @copydoc SDL_GetNumRenderDrivers()
 inline int GetNumRenderDrivers() { return SDL_GetNumRenderDrivers(); }
@@ -3218,7 +3215,7 @@ inline int GetNumRenderDrivers() { return SDL_GetNumRenderDrivers(); }
 inline const char* GetRenderDriver(int index) { return SDL_GetRenderDriver(index); }
 
 //! @copydoc SDL_CreateWindowAndRenderer()
-inline bool CreateWindowAndRenderer(const char* title, int width, int height, SDL::WindowFlags window_flags, SDL_Window** window, SDL_Renderer** renderer) { auto _ret = SDL_CreateWindowAndRenderer(title, width, height, window_flags, window, renderer); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void CreateWindowAndRenderer(const char* title, int width, int height, SDL::WindowFlags window_flags, SDL_Window** window, SDL_Renderer** renderer) { auto _ret = SDL_CreateWindowAndRenderer(title, width, height, window_flags, window, renderer); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_CreateRenderer()
 inline SDL_Renderer* CreateRenderer(SDL_Window* window, const char* name) { auto _ret = SDL_CreateRenderer(window, name); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
@@ -3242,10 +3239,10 @@ inline const char* GetRendererName(SDL_Renderer* renderer) { auto _ret = SDL_Get
 inline SDL_PropertiesID GetRendererProperties(SDL_Renderer* renderer) { auto _ret = SDL_GetRendererProperties(renderer); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_GetRenderOutputSize()
-inline bool GetRenderOutputSize(SDL_Renderer* renderer, int* w, int* h) { auto _ret = SDL_GetRenderOutputSize(renderer, w, h); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetRenderOutputSize(SDL_Renderer* renderer, int* w, int* h) { auto _ret = SDL_GetRenderOutputSize(renderer, w, h); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetCurrentRenderOutputSize()
-inline bool GetCurrentRenderOutputSize(SDL_Renderer* renderer, int* w, int* h) { auto _ret = SDL_GetCurrentRenderOutputSize(renderer, w, h); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetCurrentRenderOutputSize(SDL_Renderer* renderer, int* w, int* h) { auto _ret = SDL_GetCurrentRenderOutputSize(renderer, w, h); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_CreateTexture()
 inline SDL_Texture* CreateTexture(SDL_Renderer* renderer, SDL_PixelFormat format, SDL_TextureAccess access, int w, int h) { auto _ret = SDL_CreateTexture(renderer, format, access, w, h); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
@@ -3263,199 +3260,199 @@ inline SDL_PropertiesID GetTextureProperties(SDL_Texture* texture) { auto _ret =
 inline SDL_Renderer* GetRendererFromTexture(SDL_Texture* texture) { auto _ret = SDL_GetRendererFromTexture(texture); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_GetTextureSize()
-inline bool GetTextureSize(SDL_Texture* texture, float* w, float* h) { auto _ret = SDL_GetTextureSize(texture, w, h); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetTextureSize(SDL_Texture* texture, float* w, float* h) { auto _ret = SDL_GetTextureSize(texture, w, h); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetTextureColorMod()
-inline bool SetTextureColorMod(SDL_Texture* texture, Uint8 r, Uint8 g, Uint8 b) { auto _ret = SDL_SetTextureColorMod(texture, r, g, b); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetTextureColorMod(SDL_Texture* texture, Uint8 r, Uint8 g, Uint8 b) { auto _ret = SDL_SetTextureColorMod(texture, r, g, b); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetTextureColorModFloat()
-inline bool SetTextureColorModFloat(SDL_Texture* texture, float r, float g, float b) { auto _ret = SDL_SetTextureColorModFloat(texture, r, g, b); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetTextureColorModFloat(SDL_Texture* texture, float r, float g, float b) { auto _ret = SDL_SetTextureColorModFloat(texture, r, g, b); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetTextureColorMod()
-inline bool GetTextureColorMod(SDL_Texture* texture, Uint8* r, Uint8* g, Uint8* b) { auto _ret = SDL_GetTextureColorMod(texture, r, g, b); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetTextureColorMod(SDL_Texture* texture, Uint8* r, Uint8* g, Uint8* b) { auto _ret = SDL_GetTextureColorMod(texture, r, g, b); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetTextureColorModFloat()
-inline bool GetTextureColorModFloat(SDL_Texture* texture, float* r, float* g, float* b) { auto _ret = SDL_GetTextureColorModFloat(texture, r, g, b); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetTextureColorModFloat(SDL_Texture* texture, float* r, float* g, float* b) { auto _ret = SDL_GetTextureColorModFloat(texture, r, g, b); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetTextureAlphaMod()
-inline bool SetTextureAlphaMod(SDL_Texture* texture, Uint8 alpha) { auto _ret = SDL_SetTextureAlphaMod(texture, alpha); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetTextureAlphaMod(SDL_Texture* texture, Uint8 alpha) { auto _ret = SDL_SetTextureAlphaMod(texture, alpha); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetTextureAlphaModFloat()
-inline bool SetTextureAlphaModFloat(SDL_Texture* texture, float alpha) { auto _ret = SDL_SetTextureAlphaModFloat(texture, alpha); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetTextureAlphaModFloat(SDL_Texture* texture, float alpha) { auto _ret = SDL_SetTextureAlphaModFloat(texture, alpha); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetTextureAlphaMod()
-inline bool GetTextureAlphaMod(SDL_Texture* texture, Uint8* alpha) { auto _ret = SDL_GetTextureAlphaMod(texture, alpha); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetTextureAlphaMod(SDL_Texture* texture, Uint8* alpha) { auto _ret = SDL_GetTextureAlphaMod(texture, alpha); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetTextureAlphaModFloat()
-inline bool GetTextureAlphaModFloat(SDL_Texture* texture, float* alpha) { auto _ret = SDL_GetTextureAlphaModFloat(texture, alpha); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetTextureAlphaModFloat(SDL_Texture* texture, float* alpha) { auto _ret = SDL_GetTextureAlphaModFloat(texture, alpha); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetTextureBlendMode()
-inline bool SetTextureBlendMode(SDL_Texture* texture, SDL_BlendMode blendMode) { auto _ret = SDL_SetTextureBlendMode(texture, blendMode); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetTextureBlendMode(SDL_Texture* texture, SDL_BlendMode blendMode) { auto _ret = SDL_SetTextureBlendMode(texture, blendMode); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetTextureBlendMode()
-inline bool GetTextureBlendMode(SDL_Texture* texture, SDL_BlendMode* blendMode) { auto _ret = SDL_GetTextureBlendMode(texture, blendMode); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetTextureBlendMode(SDL_Texture* texture, SDL_BlendMode* blendMode) { auto _ret = SDL_GetTextureBlendMode(texture, blendMode); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetTextureScaleMode()
-inline bool SetTextureScaleMode(SDL_Texture* texture, SDL_ScaleMode scaleMode) { auto _ret = SDL_SetTextureScaleMode(texture, scaleMode); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetTextureScaleMode(SDL_Texture* texture, SDL_ScaleMode scaleMode) { auto _ret = SDL_SetTextureScaleMode(texture, scaleMode); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetTextureScaleMode()
-inline bool GetTextureScaleMode(SDL_Texture* texture, SDL_ScaleMode* scaleMode) { auto _ret = SDL_GetTextureScaleMode(texture, scaleMode); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetTextureScaleMode(SDL_Texture* texture, SDL_ScaleMode* scaleMode) { auto _ret = SDL_GetTextureScaleMode(texture, scaleMode); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_UpdateTexture()
-inline bool UpdateTexture(SDL_Texture* texture, const SDL_Rect* rect, const void* pixels, int pitch) { auto _ret = SDL_UpdateTexture(texture, rect, pixels, pitch); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void UpdateTexture(SDL_Texture* texture, const SDL_Rect* rect, const void* pixels, int pitch) { auto _ret = SDL_UpdateTexture(texture, rect, pixels, pitch); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_UpdateYUVTexture()
-inline bool UpdateYUVTexture(SDL_Texture* texture, const SDL_Rect* rect, const Uint8* Yplane, int Ypitch, const Uint8* Uplane, int Upitch, const Uint8* Vplane, int Vpitch) { auto _ret = SDL_UpdateYUVTexture(texture, rect, Yplane, Ypitch, Uplane, Upitch, Vplane, Vpitch); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void UpdateYUVTexture(SDL_Texture* texture, const SDL_Rect* rect, const Uint8* Yplane, int Ypitch, const Uint8* Uplane, int Upitch, const Uint8* Vplane, int Vpitch) { auto _ret = SDL_UpdateYUVTexture(texture, rect, Yplane, Ypitch, Uplane, Upitch, Vplane, Vpitch); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_UpdateNVTexture()
-inline bool UpdateNVTexture(SDL_Texture* texture, const SDL_Rect* rect, const Uint8* Yplane, int Ypitch, const Uint8* UVplane, int UVpitch) { auto _ret = SDL_UpdateNVTexture(texture, rect, Yplane, Ypitch, UVplane, UVpitch); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void UpdateNVTexture(SDL_Texture* texture, const SDL_Rect* rect, const Uint8* Yplane, int Ypitch, const Uint8* UVplane, int UVpitch) { auto _ret = SDL_UpdateNVTexture(texture, rect, Yplane, Ypitch, UVplane, UVpitch); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_LockTexture()
-inline bool LockTexture(SDL_Texture* texture, const SDL_Rect* rect, void** pixels, int* pitch) { auto _ret = SDL_LockTexture(texture, rect, pixels, pitch); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void LockTexture(SDL_Texture* texture, const SDL_Rect* rect, void** pixels, int* pitch) { auto _ret = SDL_LockTexture(texture, rect, pixels, pitch); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_LockTextureToSurface()
-inline bool LockTextureToSurface(SDL_Texture* texture, const SDL_Rect* rect, SDL_Surface** surface) { auto _ret = SDL_LockTextureToSurface(texture, rect, surface); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void LockTextureToSurface(SDL_Texture* texture, const SDL_Rect* rect, SDL_Surface** surface) { auto _ret = SDL_LockTextureToSurface(texture, rect, surface); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_UnlockTexture()
-inline void UnlockTexture(SDL_Texture* texture) {  SDL_UnlockTexture(texture); }
+inline void UnlockTexture(SDL_Texture* texture) { SDL_UnlockTexture(texture); }
 
 //! @copydoc SDL_SetRenderTarget()
-inline bool SetRenderTarget(SDL_Renderer* renderer, SDL_Texture* texture) { auto _ret = SDL_SetRenderTarget(renderer, texture); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetRenderTarget(SDL_Renderer* renderer, SDL_Texture* texture) { auto _ret = SDL_SetRenderTarget(renderer, texture); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetRenderTarget()
 inline SDL_Texture* GetRenderTarget(SDL_Renderer* renderer) { return SDL_GetRenderTarget(renderer); }
 
 //! @copydoc SDL_SetRenderLogicalPresentation()
-inline bool SetRenderLogicalPresentation(SDL_Renderer* renderer, int w, int h, SDL_RendererLogicalPresentation mode) { auto _ret = SDL_SetRenderLogicalPresentation(renderer, w, h, mode); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetRenderLogicalPresentation(SDL_Renderer* renderer, int w, int h, SDL_RendererLogicalPresentation mode) { auto _ret = SDL_SetRenderLogicalPresentation(renderer, w, h, mode); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetRenderLogicalPresentation()
-inline bool GetRenderLogicalPresentation(SDL_Renderer* renderer, int* w, int* h, SDL_RendererLogicalPresentation* mode) { auto _ret = SDL_GetRenderLogicalPresentation(renderer, w, h, mode); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetRenderLogicalPresentation(SDL_Renderer* renderer, int* w, int* h, SDL_RendererLogicalPresentation* mode) { auto _ret = SDL_GetRenderLogicalPresentation(renderer, w, h, mode); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetRenderLogicalPresentationRect()
-inline bool GetRenderLogicalPresentationRect(SDL_Renderer* renderer, SDL_FRect* rect) { auto _ret = SDL_GetRenderLogicalPresentationRect(renderer, rect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetRenderLogicalPresentationRect(SDL_Renderer* renderer, SDL_FRect* rect) { auto _ret = SDL_GetRenderLogicalPresentationRect(renderer, rect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_RenderCoordinatesFromWindow()
-inline bool RenderCoordinatesFromWindow(SDL_Renderer* renderer, float window_x, float window_y, float* x, float* y) { auto _ret = SDL_RenderCoordinatesFromWindow(renderer, window_x, window_y, x, y); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void RenderCoordinatesFromWindow(SDL_Renderer* renderer, float window_x, float window_y, float* x, float* y) { auto _ret = SDL_RenderCoordinatesFromWindow(renderer, window_x, window_y, x, y); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_RenderCoordinatesToWindow()
-inline bool RenderCoordinatesToWindow(SDL_Renderer* renderer, float x, float y, float* window_x, float* window_y) { auto _ret = SDL_RenderCoordinatesToWindow(renderer, x, y, window_x, window_y); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void RenderCoordinatesToWindow(SDL_Renderer* renderer, float x, float y, float* window_x, float* window_y) { auto _ret = SDL_RenderCoordinatesToWindow(renderer, x, y, window_x, window_y); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_ConvertEventToRenderCoordinates()
-inline bool ConvertEventToRenderCoordinates(SDL_Renderer* renderer, SDL_Event* event) { auto _ret = SDL_ConvertEventToRenderCoordinates(renderer, event); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void ConvertEventToRenderCoordinates(SDL_Renderer* renderer, SDL_Event* event) { auto _ret = SDL_ConvertEventToRenderCoordinates(renderer, event); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetRenderViewport()
-inline bool SetRenderViewport(SDL_Renderer* renderer, const SDL_Rect* rect) { auto _ret = SDL_SetRenderViewport(renderer, rect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetRenderViewport(SDL_Renderer* renderer, const SDL_Rect* rect) { auto _ret = SDL_SetRenderViewport(renderer, rect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetRenderViewport()
-inline bool GetRenderViewport(SDL_Renderer* renderer, SDL_Rect* rect) { auto _ret = SDL_GetRenderViewport(renderer, rect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetRenderViewport(SDL_Renderer* renderer, SDL_Rect* rect) { auto _ret = SDL_GetRenderViewport(renderer, rect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_RenderViewportSet()
 inline bool RenderViewportSet(SDL_Renderer* renderer) { return SDL_RenderViewportSet(renderer); }
 
 //! @copydoc SDL_GetRenderSafeArea()
-inline bool GetRenderSafeArea(SDL_Renderer* renderer, SDL_Rect* rect) { auto _ret = SDL_GetRenderSafeArea(renderer, rect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetRenderSafeArea(SDL_Renderer* renderer, SDL_Rect* rect) { auto _ret = SDL_GetRenderSafeArea(renderer, rect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetRenderClipRect()
-inline bool SetRenderClipRect(SDL_Renderer* renderer, const SDL_Rect* rect) { auto _ret = SDL_SetRenderClipRect(renderer, rect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetRenderClipRect(SDL_Renderer* renderer, const SDL_Rect* rect) { auto _ret = SDL_SetRenderClipRect(renderer, rect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetRenderClipRect()
-inline bool GetRenderClipRect(SDL_Renderer* renderer, SDL_Rect* rect) { auto _ret = SDL_GetRenderClipRect(renderer, rect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetRenderClipRect(SDL_Renderer* renderer, SDL_Rect* rect) { auto _ret = SDL_GetRenderClipRect(renderer, rect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_RenderClipEnabled()
-inline bool RenderClipEnabled(SDL_Renderer* renderer) { auto _ret = SDL_RenderClipEnabled(renderer); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void RenderClipEnabled(SDL_Renderer* renderer) { auto _ret = SDL_RenderClipEnabled(renderer); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetRenderScale()
-inline bool SetRenderScale(SDL_Renderer* renderer, float scaleX, float scaleY) { auto _ret = SDL_SetRenderScale(renderer, scaleX, scaleY); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetRenderScale(SDL_Renderer* renderer, float scaleX, float scaleY) { auto _ret = SDL_SetRenderScale(renderer, scaleX, scaleY); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetRenderScale()
-inline bool GetRenderScale(SDL_Renderer* renderer, float* scaleX, float* scaleY) { auto _ret = SDL_GetRenderScale(renderer, scaleX, scaleY); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetRenderScale(SDL_Renderer* renderer, float* scaleX, float* scaleY) { auto _ret = SDL_GetRenderScale(renderer, scaleX, scaleY); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetRenderDrawColor()
-inline bool SetRenderDrawColor(SDL_Renderer* renderer, Uint8 r, Uint8 g, Uint8 b, Uint8 a) { auto _ret = SDL_SetRenderDrawColor(renderer, r, g, b, a); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetRenderDrawColor(SDL_Renderer* renderer, Uint8 r, Uint8 g, Uint8 b, Uint8 a) { auto _ret = SDL_SetRenderDrawColor(renderer, r, g, b, a); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetRenderDrawColorFloat()
-inline bool SetRenderDrawColorFloat(SDL_Renderer* renderer, float r, float g, float b, float a) { auto _ret = SDL_SetRenderDrawColorFloat(renderer, r, g, b, a); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetRenderDrawColorFloat(SDL_Renderer* renderer, float r, float g, float b, float a) { auto _ret = SDL_SetRenderDrawColorFloat(renderer, r, g, b, a); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetRenderDrawColor()
-inline bool GetRenderDrawColor(SDL_Renderer* renderer, Uint8* r, Uint8* g, Uint8* b, Uint8* a) { auto _ret = SDL_GetRenderDrawColor(renderer, r, g, b, a); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetRenderDrawColor(SDL_Renderer* renderer, Uint8* r, Uint8* g, Uint8* b, Uint8* a) { auto _ret = SDL_GetRenderDrawColor(renderer, r, g, b, a); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetRenderDrawColorFloat()
-inline bool GetRenderDrawColorFloat(SDL_Renderer* renderer, float* r, float* g, float* b, float* a) { auto _ret = SDL_GetRenderDrawColorFloat(renderer, r, g, b, a); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetRenderDrawColorFloat(SDL_Renderer* renderer, float* r, float* g, float* b, float* a) { auto _ret = SDL_GetRenderDrawColorFloat(renderer, r, g, b, a); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetRenderColorScale()
-inline bool SetRenderColorScale(SDL_Renderer* renderer, float scale) { auto _ret = SDL_SetRenderColorScale(renderer, scale); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetRenderColorScale(SDL_Renderer* renderer, float scale) { auto _ret = SDL_SetRenderColorScale(renderer, scale); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetRenderColorScale()
-inline bool GetRenderColorScale(SDL_Renderer* renderer, float* scale) { auto _ret = SDL_GetRenderColorScale(renderer, scale); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetRenderColorScale(SDL_Renderer* renderer, float* scale) { auto _ret = SDL_GetRenderColorScale(renderer, scale); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetRenderDrawBlendMode()
-inline bool SetRenderDrawBlendMode(SDL_Renderer* renderer, SDL_BlendMode blendMode) { auto _ret = SDL_SetRenderDrawBlendMode(renderer, blendMode); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetRenderDrawBlendMode(SDL_Renderer* renderer, SDL_BlendMode blendMode) { auto _ret = SDL_SetRenderDrawBlendMode(renderer, blendMode); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetRenderDrawBlendMode()
-inline bool GetRenderDrawBlendMode(SDL_Renderer* renderer, SDL_BlendMode* blendMode) { auto _ret = SDL_GetRenderDrawBlendMode(renderer, blendMode); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetRenderDrawBlendMode(SDL_Renderer* renderer, SDL_BlendMode* blendMode) { auto _ret = SDL_GetRenderDrawBlendMode(renderer, blendMode); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_RenderClear()
-inline bool RenderClear(SDL_Renderer* renderer) { auto _ret = SDL_RenderClear(renderer); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void RenderClear(SDL_Renderer* renderer) { auto _ret = SDL_RenderClear(renderer); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_RenderPoint()
-inline bool RenderPoint(SDL_Renderer* renderer, float x, float y) { auto _ret = SDL_RenderPoint(renderer, x, y); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void RenderPoint(SDL_Renderer* renderer, float x, float y) { auto _ret = SDL_RenderPoint(renderer, x, y); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_RenderPoints()
-inline bool RenderPoints(SDL_Renderer* renderer, const SDL_FPoint* points, int count) { auto _ret = SDL_RenderPoints(renderer, points, count); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void RenderPoints(SDL_Renderer* renderer, const SDL_FPoint* points, int count) { auto _ret = SDL_RenderPoints(renderer, points, count); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_RenderLine()
-inline bool RenderLine(SDL_Renderer* renderer, float x1, float y1, float x2, float y2) { auto _ret = SDL_RenderLine(renderer, x1, y1, x2, y2); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void RenderLine(SDL_Renderer* renderer, float x1, float y1, float x2, float y2) { auto _ret = SDL_RenderLine(renderer, x1, y1, x2, y2); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_RenderLines()
-inline bool RenderLines(SDL_Renderer* renderer, const SDL_FPoint* points, int count) { auto _ret = SDL_RenderLines(renderer, points, count); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void RenderLines(SDL_Renderer* renderer, const SDL_FPoint* points, int count) { auto _ret = SDL_RenderLines(renderer, points, count); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_RenderRect()
-inline bool RenderRect(SDL_Renderer* renderer, const SDL_FRect* rect) { auto _ret = SDL_RenderRect(renderer, rect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void RenderRect(SDL_Renderer* renderer, const SDL_FRect* rect) { auto _ret = SDL_RenderRect(renderer, rect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_RenderRects()
-inline bool RenderRects(SDL_Renderer* renderer, const SDL_FRect* rects, int count) { auto _ret = SDL_RenderRects(renderer, rects, count); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void RenderRects(SDL_Renderer* renderer, const SDL_FRect* rects, int count) { auto _ret = SDL_RenderRects(renderer, rects, count); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_RenderFillRect()
-inline bool RenderFillRect(SDL_Renderer* renderer, const SDL_FRect* rect) { auto _ret = SDL_RenderFillRect(renderer, rect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void RenderFillRect(SDL_Renderer* renderer, const SDL_FRect* rect) { auto _ret = SDL_RenderFillRect(renderer, rect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_RenderFillRects()
-inline bool RenderFillRects(SDL_Renderer* renderer, const SDL_FRect* rects, int count) { auto _ret = SDL_RenderFillRects(renderer, rects, count); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void RenderFillRects(SDL_Renderer* renderer, const SDL_FRect* rects, int count) { auto _ret = SDL_RenderFillRects(renderer, rects, count); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_RenderTexture()
-inline bool RenderTexture(SDL_Renderer* renderer, SDL_Texture* texture, const SDL_FRect* srcrect, const SDL_FRect* dstrect) { auto _ret = SDL_RenderTexture(renderer, texture, srcrect, dstrect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void RenderTexture(SDL_Renderer* renderer, SDL_Texture* texture, const SDL_FRect* srcrect, const SDL_FRect* dstrect) { auto _ret = SDL_RenderTexture(renderer, texture, srcrect, dstrect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_RenderTextureRotated()
-inline bool RenderTextureRotated(SDL_Renderer* renderer, SDL_Texture* texture, const SDL_FRect* srcrect, const SDL_FRect* dstrect, double angle, const SDL_FPoint* center, SDL_FlipMode flip) { auto _ret = SDL_RenderTextureRotated(renderer, texture, srcrect, dstrect, angle, center, flip); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void RenderTextureRotated(SDL_Renderer* renderer, SDL_Texture* texture, const SDL_FRect* srcrect, const SDL_FRect* dstrect, double angle, const SDL_FPoint* center, SDL_FlipMode flip) { auto _ret = SDL_RenderTextureRotated(renderer, texture, srcrect, dstrect, angle, center, flip); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_RenderTextureAffine()
-inline bool RenderTextureAffine(SDL_Renderer* renderer, SDL_Texture* texture, const SDL_FRect* srcrect, const SDL_FPoint* origin, const SDL_FPoint* right, const SDL_FPoint* down) { auto _ret = SDL_RenderTextureAffine(renderer, texture, srcrect, origin, right, down); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void RenderTextureAffine(SDL_Renderer* renderer, SDL_Texture* texture, const SDL_FRect* srcrect, const SDL_FPoint* origin, const SDL_FPoint* right, const SDL_FPoint* down) { auto _ret = SDL_RenderTextureAffine(renderer, texture, srcrect, origin, right, down); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_RenderTextureTiled()
-inline bool RenderTextureTiled(SDL_Renderer* renderer, SDL_Texture* texture, const SDL_FRect* srcrect, float scale, const SDL_FRect* dstrect) { auto _ret = SDL_RenderTextureTiled(renderer, texture, srcrect, scale, dstrect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void RenderTextureTiled(SDL_Renderer* renderer, SDL_Texture* texture, const SDL_FRect* srcrect, float scale, const SDL_FRect* dstrect) { auto _ret = SDL_RenderTextureTiled(renderer, texture, srcrect, scale, dstrect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_RenderTexture9Grid()
-inline bool RenderTexture9Grid(SDL_Renderer* renderer, SDL_Texture* texture, const SDL_FRect* srcrect, float left_width, float right_width, float top_height, float bottom_height, float scale, const SDL_FRect* dstrect) { auto _ret = SDL_RenderTexture9Grid(renderer, texture, srcrect, left_width, right_width, top_height, bottom_height, scale, dstrect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void RenderTexture9Grid(SDL_Renderer* renderer, SDL_Texture* texture, const SDL_FRect* srcrect, float left_width, float right_width, float top_height, float bottom_height, float scale, const SDL_FRect* dstrect) { auto _ret = SDL_RenderTexture9Grid(renderer, texture, srcrect, left_width, right_width, top_height, bottom_height, scale, dstrect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_RenderGeometry()
-inline bool RenderGeometry(SDL_Renderer* renderer, SDL_Texture* texture, const SDL_Vertex* vertices, int num_vertices, const int* indices, int num_indices) { auto _ret = SDL_RenderGeometry(renderer, texture, vertices, num_vertices, indices, num_indices); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void RenderGeometry(SDL_Renderer* renderer, SDL_Texture* texture, const SDL_Vertex* vertices, int num_vertices, const int* indices, int num_indices) { auto _ret = SDL_RenderGeometry(renderer, texture, vertices, num_vertices, indices, num_indices); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_RenderGeometryRaw()
-inline bool RenderGeometryRaw(SDL_Renderer* renderer, SDL_Texture* texture, const float* xy, int xy_stride, const SDL_FColor* color, int color_stride, const float* uv, int uv_stride, int num_vertices, const void* indices, int num_indices, int size_indices) { auto _ret = SDL_RenderGeometryRaw(renderer, texture, xy, xy_stride, color, color_stride, uv, uv_stride, num_vertices, indices, num_indices, size_indices); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void RenderGeometryRaw(SDL_Renderer* renderer, SDL_Texture* texture, const float* xy, int xy_stride, const SDL_FColor* color, int color_stride, const float* uv, int uv_stride, int num_vertices, const void* indices, int num_indices, int size_indices) { auto _ret = SDL_RenderGeometryRaw(renderer, texture, xy, xy_stride, color, color_stride, uv, uv_stride, num_vertices, indices, num_indices, size_indices); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_RenderReadPixels()
 inline SDL_Surface* RenderReadPixels(SDL_Renderer* renderer, const SDL_Rect* rect) { auto _ret = SDL_RenderReadPixels(renderer, rect); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_RenderPresent()
-inline bool RenderPresent(SDL_Renderer* renderer) { auto _ret = SDL_RenderPresent(renderer); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void RenderPresent(SDL_Renderer* renderer) { auto _ret = SDL_RenderPresent(renderer); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_DestroyTexture()
-inline void DestroyTexture(SDL_Texture* texture) {  SDL_DestroyTexture(texture); }
+inline void DestroyTexture(SDL_Texture* texture) { SDL_DestroyTexture(texture); }
 
 //! @copydoc SDL_DestroyRenderer()
-inline void DestroyRenderer(SDL_Renderer* renderer) {  SDL_DestroyRenderer(renderer); }
+inline void DestroyRenderer(SDL_Renderer* renderer) { SDL_DestroyRenderer(renderer); }
 
 //! @copydoc SDL_FlushRenderer()
-inline bool FlushRenderer(SDL_Renderer* renderer) { auto _ret = SDL_FlushRenderer(renderer); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void FlushRenderer(SDL_Renderer* renderer) { auto _ret = SDL_FlushRenderer(renderer); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetRenderMetalLayer()
 inline void* GetRenderMetalLayer(SDL_Renderer* renderer) { return SDL_GetRenderMetalLayer(renderer); }
@@ -3464,16 +3461,16 @@ inline void* GetRenderMetalLayer(SDL_Renderer* renderer) { return SDL_GetRenderM
 inline void* GetRenderMetalCommandEncoder(SDL_Renderer* renderer) { return SDL_GetRenderMetalCommandEncoder(renderer); }
 
 //! @copydoc SDL_AddVulkanRenderSemaphores()
-inline bool AddVulkanRenderSemaphores(SDL_Renderer* renderer, Uint32 wait_stage_mask, Sint64 wait_semaphore, Sint64 signal_semaphore) { auto _ret = SDL_AddVulkanRenderSemaphores(renderer, wait_stage_mask, wait_semaphore, signal_semaphore); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void AddVulkanRenderSemaphores(SDL_Renderer* renderer, Uint32 wait_stage_mask, Sint64 wait_semaphore, Sint64 signal_semaphore) { auto _ret = SDL_AddVulkanRenderSemaphores(renderer, wait_stage_mask, wait_semaphore, signal_semaphore); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_SetRenderVSync()
-inline bool SetRenderVSync(SDL_Renderer* renderer, int vsync) { auto _ret = SDL_SetRenderVSync(renderer, vsync); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetRenderVSync(SDL_Renderer* renderer, int vsync) { auto _ret = SDL_SetRenderVSync(renderer, vsync); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetRenderVSync()
-inline bool GetRenderVSync(SDL_Renderer* renderer, int* vsync) { auto _ret = SDL_GetRenderVSync(renderer, vsync); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetRenderVSync(SDL_Renderer* renderer, int* vsync) { auto _ret = SDL_GetRenderVSync(renderer, vsync); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_RenderDebugText()
-inline bool RenderDebugText(SDL_Renderer* renderer, float x, float y, const char* str) { auto _ret = SDL_RenderDebugText(renderer, x, y, str); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void RenderDebugText(SDL_Renderer* renderer, float x, float y, const char* str) { auto _ret = SDL_RenderDebugText(renderer, x, y, str); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_OpenTitleStorage()
 inline SDL_Storage* OpenTitleStorage(const char* override, SDL_PropertiesID props) { auto _ret = SDL_OpenTitleStorage(override, props); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
@@ -3488,37 +3485,37 @@ inline SDL_Storage* OpenFileStorage(const char* path) { auto _ret = SDL_OpenFile
 inline SDL_Storage* OpenStorage(const SDL_StorageInterface* iface, void* userdata) { auto _ret = SDL_OpenStorage(iface, userdata); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_CloseStorage()
-inline bool CloseStorage(SDL_Storage* storage) { auto _ret = SDL_CloseStorage(storage); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void CloseStorage(SDL_Storage* storage) { auto _ret = SDL_CloseStorage(storage); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_StorageReady()
 inline bool StorageReady(SDL_Storage* storage) { return SDL_StorageReady(storage); }
 
 //! @copydoc SDL_GetStorageFileSize()
-inline bool GetStorageFileSize(SDL_Storage* storage, const char* path, Uint64* length) { auto _ret = SDL_GetStorageFileSize(storage, path, length); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetStorageFileSize(SDL_Storage* storage, const char* path, Uint64* length) { auto _ret = SDL_GetStorageFileSize(storage, path, length); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_ReadStorageFile()
-inline bool ReadStorageFile(SDL_Storage* storage, const char* path, void* destination, Uint64 length) { auto _ret = SDL_ReadStorageFile(storage, path, destination, length); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void ReadStorageFile(SDL_Storage* storage, const char* path, void* destination, Uint64 length) { auto _ret = SDL_ReadStorageFile(storage, path, destination, length); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_WriteStorageFile()
-inline bool WriteStorageFile(SDL_Storage* storage, const char* path, const void* source, Uint64 length) { auto _ret = SDL_WriteStorageFile(storage, path, source, length); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void WriteStorageFile(SDL_Storage* storage, const char* path, const void* source, Uint64 length) { auto _ret = SDL_WriteStorageFile(storage, path, source, length); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_CreateStorageDirectory()
-inline bool CreateStorageDirectory(SDL_Storage* storage, const char* path) { auto _ret = SDL_CreateStorageDirectory(storage, path); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void CreateStorageDirectory(SDL_Storage* storage, const char* path) { auto _ret = SDL_CreateStorageDirectory(storage, path); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_EnumerateStorageDirectory()
-inline bool EnumerateStorageDirectory(SDL_Storage* storage, const char* path, SDL_EnumerateDirectoryCallback callback, void* userdata) { auto _ret = SDL_EnumerateStorageDirectory(storage, path, callback, userdata); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void EnumerateStorageDirectory(SDL_Storage* storage, const char* path, SDL_EnumerateDirectoryCallback callback, void* userdata) { auto _ret = SDL_EnumerateStorageDirectory(storage, path, callback, userdata); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_RemoveStoragePath()
-inline bool RemoveStoragePath(SDL_Storage* storage, const char* path) { auto _ret = SDL_RemoveStoragePath(storage, path); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void RemoveStoragePath(SDL_Storage* storage, const char* path) { auto _ret = SDL_RemoveStoragePath(storage, path); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_RenameStoragePath()
-inline bool RenameStoragePath(SDL_Storage* storage, const char* oldpath, const char* newpath) { auto _ret = SDL_RenameStoragePath(storage, oldpath, newpath); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void RenameStoragePath(SDL_Storage* storage, const char* oldpath, const char* newpath) { auto _ret = SDL_RenameStoragePath(storage, oldpath, newpath); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_CopyStorageFile()
-inline bool CopyStorageFile(SDL_Storage* storage, const char* oldpath, const char* newpath) { auto _ret = SDL_CopyStorageFile(storage, oldpath, newpath); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void CopyStorageFile(SDL_Storage* storage, const char* oldpath, const char* newpath) { auto _ret = SDL_CopyStorageFile(storage, oldpath, newpath); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetStoragePathInfo()
-inline bool GetStoragePathInfo(SDL_Storage* storage, const char* path, SDL_PathInfo* info) { auto _ret = SDL_GetStoragePathInfo(storage, path, info); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetStoragePathInfo(SDL_Storage* storage, const char* path, SDL_PathInfo* info) { auto _ret = SDL_GetStoragePathInfo(storage, path, info); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetStorageSpaceRemaining()
 inline Uint64 GetStorageSpaceRemaining(SDL_Storage* storage) { return SDL_GetStorageSpaceRemaining(storage); }
@@ -3527,13 +3524,7 @@ inline Uint64 GetStorageSpaceRemaining(SDL_Storage* storage) { return SDL_GetSto
 inline char** GlobStorageDirectory(SDL_Storage* storage, const char* path, const char* pattern, SDL::GlobFlags flags, int* count) { auto _ret = SDL_GlobStorageDirectory(storage, path, pattern, flags, count); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_SetX11EventHook()
-inline void SetX11EventHook(SDL_X11EventHook callback, void* userdata) {  SDL_SetX11EventHook(callback, userdata); }
-
-//! @copydoc SDL_SetLinuxThreadPriority()
-inline bool SetLinuxThreadPriority(Sint64 threadID, int priority) { auto _ret = SDL_SetLinuxThreadPriority(threadID, priority); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
-
-//! @copydoc SDL_SetLinuxThreadPriorityAndPolicy()
-inline bool SetLinuxThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy) { auto _ret = SDL_SetLinuxThreadPriorityAndPolicy(threadID, sdlPriority, schedPolicy); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void SetX11EventHook(SDL_X11EventHook callback, void* userdata) { SDL_SetX11EventHook(callback, userdata); }
 
 //! @copydoc SDL_IsTablet()
 inline bool IsTablet() { return SDL_IsTablet(); }
@@ -3545,37 +3536,37 @@ inline bool IsTV() { return SDL_IsTV(); }
 inline SDL_Sandbox GetSandbox() { return SDL_GetSandbox(); }
 
 //! @copydoc SDL_OnApplicationWillTerminate()
-inline void OnApplicationWillTerminate() {  SDL_OnApplicationWillTerminate(); }
+inline void OnApplicationWillTerminate() { SDL_OnApplicationWillTerminate(); }
 
 //! @copydoc SDL_OnApplicationDidReceiveMemoryWarning()
-inline void OnApplicationDidReceiveMemoryWarning() {  SDL_OnApplicationDidReceiveMemoryWarning(); }
+inline void OnApplicationDidReceiveMemoryWarning() { SDL_OnApplicationDidReceiveMemoryWarning(); }
 
 //! @copydoc SDL_OnApplicationWillEnterBackground()
-inline void OnApplicationWillEnterBackground() {  SDL_OnApplicationWillEnterBackground(); }
+inline void OnApplicationWillEnterBackground() { SDL_OnApplicationWillEnterBackground(); }
 
 //! @copydoc SDL_OnApplicationDidEnterBackground()
-inline void OnApplicationDidEnterBackground() {  SDL_OnApplicationDidEnterBackground(); }
+inline void OnApplicationDidEnterBackground() { SDL_OnApplicationDidEnterBackground(); }
 
 //! @copydoc SDL_OnApplicationWillEnterForeground()
-inline void OnApplicationWillEnterForeground() {  SDL_OnApplicationWillEnterForeground(); }
+inline void OnApplicationWillEnterForeground() { SDL_OnApplicationWillEnterForeground(); }
 
 //! @copydoc SDL_OnApplicationDidEnterForeground()
-inline void OnApplicationDidEnterForeground() {  SDL_OnApplicationDidEnterForeground(); }
+inline void OnApplicationDidEnterForeground() { SDL_OnApplicationDidEnterForeground(); }
 
 //! @copydoc SDL_GetDateTimeLocalePreferences()
-inline bool GetDateTimeLocalePreferences(SDL_DateFormat* dateFormat, SDL_TimeFormat* timeFormat) { auto _ret = SDL_GetDateTimeLocalePreferences(dateFormat, timeFormat); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetDateTimeLocalePreferences(SDL_DateFormat* dateFormat, SDL_TimeFormat* timeFormat) { auto _ret = SDL_GetDateTimeLocalePreferences(dateFormat, timeFormat); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_GetCurrentTime()
-inline bool GetCurrentTime(SDL_Time* ticks) { auto _ret = SDL_GetCurrentTime(ticks); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void GetCurrentTime(SDL_Time* ticks) { auto _ret = SDL_GetCurrentTime(ticks); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_TimeToDateTime()
-inline bool TimeToDateTime(SDL_Time ticks, SDL_DateTime* dt, bool localTime) { auto _ret = SDL_TimeToDateTime(ticks, dt, localTime); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void TimeToDateTime(SDL_Time ticks, SDL_DateTime* dt, bool localTime) { auto _ret = SDL_TimeToDateTime(ticks, dt, localTime); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_DateTimeToTime()
-inline bool DateTimeToTime(const SDL_DateTime* dt, SDL_Time* ticks) { auto _ret = SDL_DateTimeToTime(dt, ticks); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void DateTimeToTime(const SDL_DateTime* dt, SDL_Time* ticks) { auto _ret = SDL_DateTimeToTime(dt, ticks); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_TimeToWindows()
-inline void TimeToWindows(SDL_Time ticks, Uint32* dwLowDateTime, Uint32* dwHighDateTime) {  SDL_TimeToWindows(ticks, dwLowDateTime, dwHighDateTime); }
+inline void TimeToWindows(SDL_Time ticks, Uint32* dwLowDateTime, Uint32* dwHighDateTime) { SDL_TimeToWindows(ticks, dwLowDateTime, dwHighDateTime); }
 
 //! @copydoc SDL_TimeFromWindows()
 inline SDL_Time TimeFromWindows(Uint32 dwLowDateTime, Uint32 dwHighDateTime) { return SDL_TimeFromWindows(dwLowDateTime, dwHighDateTime); }
@@ -3602,13 +3593,13 @@ inline Uint64 GetPerformanceCounter() { return SDL_GetPerformanceCounter(); }
 inline Uint64 GetPerformanceFrequency() { return SDL_GetPerformanceFrequency(); }
 
 //! @copydoc SDL_Delay()
-inline void Delay(Uint32 ms) {  SDL_Delay(ms); }
+inline void Delay(Uint32 ms) { SDL_Delay(ms); }
 
 //! @copydoc SDL_DelayNS()
-inline void DelayNS(Uint64 ns) {  SDL_DelayNS(ns); }
+inline void DelayNS(Uint64 ns) { SDL_DelayNS(ns); }
 
 //! @copydoc SDL_DelayPrecise()
-inline void DelayPrecise(Uint64 ns) {  SDL_DelayPrecise(ns); }
+inline void DelayPrecise(Uint64 ns) { SDL_DelayPrecise(ns); }
 
 //! @copydoc SDL_AddTimer()
 inline SDL_TimerID AddTimer(Uint32 interval, SDL_TimerCallback callback, void* userdata) { auto _ret = SDL_AddTimer(interval, callback, userdata); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
@@ -3617,16 +3608,16 @@ inline SDL_TimerID AddTimer(Uint32 interval, SDL_TimerCallback callback, void* u
 inline SDL_TimerID AddTimerNS(Uint64 interval, SDL_NSTimerCallback callback, void* userdata) { auto _ret = SDL_AddTimerNS(interval, callback, userdata); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
 
 //! @copydoc SDL_RemoveTimer()
-inline bool RemoveTimer(SDL_TimerID id) { auto _ret = SDL_RemoveTimer(id); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
+inline void RemoveTimer(SDL_TimerID id) { auto _ret = SDL_RemoveTimer(id); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
 
 //! @copydoc SDL_CreateTray()
 inline SDL_Tray* CreateTray(SDL_Surface* icon, const char* tooltip) { return SDL_CreateTray(icon, tooltip); }
 
 //! @copydoc SDL_SetTrayIcon()
-inline void SetTrayIcon(SDL_Tray* tray, SDL_Surface* icon) {  SDL_SetTrayIcon(tray, icon); }
+inline void SetTrayIcon(SDL_Tray* tray, SDL_Surface* icon) { SDL_SetTrayIcon(tray, icon); }
 
 //! @copydoc SDL_SetTrayTooltip()
-inline void SetTrayTooltip(SDL_Tray* tray, const char* tooltip) {  SDL_SetTrayTooltip(tray, tooltip); }
+inline void SetTrayTooltip(SDL_Tray* tray, const char* tooltip) { SDL_SetTrayTooltip(tray, tooltip); }
 
 //! @copydoc SDL_CreateTrayMenu()
 inline SDL_TrayMenu* CreateTrayMenu(SDL_Tray* tray) { return SDL_CreateTrayMenu(tray); }
@@ -3644,37 +3635,37 @@ inline SDL_TrayMenu* GetTraySubmenu(SDL_TrayEntry* entry) { return SDL_GetTraySu
 inline const SDL_TrayEntry** GetTrayEntries(SDL_TrayMenu* menu, int* size) { return SDL_GetTrayEntries(menu, size); }
 
 //! @copydoc SDL_RemoveTrayEntry()
-inline void RemoveTrayEntry(SDL_TrayEntry* entry) {  SDL_RemoveTrayEntry(entry); }
+inline void RemoveTrayEntry(SDL_TrayEntry* entry) { SDL_RemoveTrayEntry(entry); }
 
 //! @copydoc SDL_InsertTrayEntryAt()
 inline SDL_TrayEntry* InsertTrayEntryAt(SDL_TrayMenu* menu, int pos, const char* label, SDL::TrayEntryFlags flags) { return SDL_InsertTrayEntryAt(menu, pos, label, flags); }
 
 //! @copydoc SDL_SetTrayEntryLabel()
-inline void SetTrayEntryLabel(SDL_TrayEntry* entry, const char* label) {  SDL_SetTrayEntryLabel(entry, label); }
+inline void SetTrayEntryLabel(SDL_TrayEntry* entry, const char* label) { SDL_SetTrayEntryLabel(entry, label); }
 
 //! @copydoc SDL_GetTrayEntryLabel()
 inline const char* GetTrayEntryLabel(SDL_TrayEntry* entry) { return SDL_GetTrayEntryLabel(entry); }
 
 //! @copydoc SDL_SetTrayEntryChecked()
-inline void SetTrayEntryChecked(SDL_TrayEntry* entry, bool checked) {  SDL_SetTrayEntryChecked(entry, checked); }
+inline void SetTrayEntryChecked(SDL_TrayEntry* entry, bool checked) { SDL_SetTrayEntryChecked(entry, checked); }
 
 //! @copydoc SDL_GetTrayEntryChecked()
 inline bool GetTrayEntryChecked(SDL_TrayEntry* entry) { return SDL_GetTrayEntryChecked(entry); }
 
 //! @copydoc SDL_SetTrayEntryEnabled()
-inline void SetTrayEntryEnabled(SDL_TrayEntry* entry, bool enabled) {  SDL_SetTrayEntryEnabled(entry, enabled); }
+inline void SetTrayEntryEnabled(SDL_TrayEntry* entry, bool enabled) { SDL_SetTrayEntryEnabled(entry, enabled); }
 
 //! @copydoc SDL_GetTrayEntryEnabled()
 inline bool GetTrayEntryEnabled(SDL_TrayEntry* entry) { return SDL_GetTrayEntryEnabled(entry); }
 
 //! @copydoc SDL_SetTrayEntryCallback()
-inline void SetTrayEntryCallback(SDL_TrayEntry* entry, SDL_TrayCallback callback, void* userdata) {  SDL_SetTrayEntryCallback(entry, callback, userdata); }
+inline void SetTrayEntryCallback(SDL_TrayEntry* entry, SDL_TrayCallback callback, void* userdata) { SDL_SetTrayEntryCallback(entry, callback, userdata); }
 
 //! @copydoc SDL_ClickTrayEntry()
-inline void ClickTrayEntry(SDL_TrayEntry* entry) {  SDL_ClickTrayEntry(entry); }
+inline void ClickTrayEntry(SDL_TrayEntry* entry) { SDL_ClickTrayEntry(entry); }
 
 //! @copydoc SDL_DestroyTray()
-inline void DestroyTray(SDL_Tray* tray) {  SDL_DestroyTray(tray); }
+inline void DestroyTray(SDL_Tray* tray) { SDL_DestroyTray(tray); }
 
 //! @copydoc SDL_GetTrayEntryParent()
 inline SDL_TrayMenu* GetTrayEntryParent(SDL_TrayEntry* entry) { return SDL_GetTrayEntryParent(entry); }
@@ -3686,7 +3677,7 @@ inline SDL_TrayEntry* GetTrayMenuParentEntry(SDL_TrayMenu* menu) { return SDL_Ge
 inline SDL_Tray* GetTrayMenuParentTray(SDL_TrayMenu* menu) { return SDL_GetTrayMenuParentTray(menu); }
 
 //! @copydoc SDL_UpdateTrays()
-inline void UpdateTrays() {  SDL_UpdateTrays(); }
+inline void UpdateTrays() { SDL_UpdateTrays(); }
 
 //! @copydoc SDL_GetVersion()
 inline int GetVersion() { return SDL_GetVersion(); }
@@ -3699,19 +3690,297 @@ inline const char* GetRevision() { return SDL_GetRevision(); }
 class Window
 {
     SDL_Window* _ptr;
+    Window(SDL_Window* ptr) : _ptr(ptr) { }
 public:
-    Window(const std::string& title, int w, int h, SDL::WindowFlags flags) { _ptr = SDL::raw::CreateWindow(title.c_str(), w, h, flags); }
+    static inline std::shared_ptr<Window> Create(std::string& title, int w, int h, SDL::WindowFlags flags) { return get(SDL::raw::CreateWindow(title.c_str(), w, h, flags)); }
+
+    Window(const Window&) = delete;
+    ~Window() { SDL::raw::DestroyWindow(_ptr); }
+    Window& operator=(const Window&) = delete;
+
+    inline SDL_DisplayID GetDisplayFor() const { return SDL::raw::GetDisplayForWindow(get()); }
+    inline float GetPixelDensity() const { return SDL::raw::GetWindowPixelDensity(get()); }
+    inline float GetDisplayScale() const { return SDL::raw::GetWindowDisplayScale(get()); }
+    inline void SetFullscreenMode(const SDL_DisplayMode* mode) const { SDL::raw::SetWindowFullscreenMode(get(), mode); }
+    inline const SDL_DisplayMode* GetFullscreenMode() const { return SDL::raw::GetWindowFullscreenMode(get()); }
+    inline void* GetICCProfile(size_t* size) const { return SDL::raw::GetWindowICCProfile(get(), size); }
+    inline SDL_PixelFormat GetPixelFormat() const { return SDL::raw::GetWindowPixelFormat(get()); }
+    inline std::shared_ptr<SDL::Window> CreatePopup(int offset_x, int offset_y, int w, int h, SDL::WindowFlags flags) const { return SDL::Window::get(SDL::raw::CreatePopupWindow(get(), offset_x, offset_y, w, h, flags)); }
+    inline SDL_WindowID GetID() const { return SDL::raw::GetWindowID(get()); }
+    inline std::shared_ptr<SDL::Window> GetParent() const { return SDL::Window::get(SDL::raw::GetWindowParent(get())); }
+    inline SDL_PropertiesID GetProperties() const { return SDL::raw::GetWindowProperties(get()); }
+    inline SDL::WindowFlags GetFlags() const { return (SDL::WindowFlags) SDL::raw::GetWindowFlags(get()); }
+    inline void SetTitle(std::string& title) const { SDL::raw::SetWindowTitle(get(), title.c_str()); }
+    inline std::string GetTitle() const { return SDL::raw::GetWindowTitle(get()); }
+    inline void SetIcon(std::shared_ptr<SDL::Surface> icon) const { SDL::raw::SetWindowIcon(get(), icon->get()); }
+    inline void SetPosition(int x, int y) const { SDL::raw::SetWindowPosition(get(), x, y); }
+    inline void GetPosition(int* x, int* y) const { SDL::raw::GetWindowPosition(get(), x, y); }
+    inline void SetSize(int w, int h) const { SDL::raw::SetWindowSize(get(), w, h); }
+    inline void GetSize(int* w, int* h) const { SDL::raw::GetWindowSize(get(), w, h); }
+    inline void GetSafeArea(SDL_Rect* rect) const { SDL::raw::GetWindowSafeArea(get(), rect); }
+    inline void SetAspectRatio(float min_aspect, float max_aspect) const { SDL::raw::SetWindowAspectRatio(get(), min_aspect, max_aspect); }
+    inline void GetAspectRatio(float* min_aspect, float* max_aspect) const { SDL::raw::GetWindowAspectRatio(get(), min_aspect, max_aspect); }
+    inline void GetBordersSize(int* top, int* left, int* bottom, int* right) const { SDL::raw::GetWindowBordersSize(get(), top, left, bottom, right); }
+    inline void GetSizeInPixels(int* w, int* h) const { SDL::raw::GetWindowSizeInPixels(get(), w, h); }
+    inline void SetMinimumSize(int min_w, int min_h) const { SDL::raw::SetWindowMinimumSize(get(), min_w, min_h); }
+    inline void GetMinimumSize(int* w, int* h) const { SDL::raw::GetWindowMinimumSize(get(), w, h); }
+    inline void SetMaximumSize(int max_w, int max_h) const { SDL::raw::SetWindowMaximumSize(get(), max_w, max_h); }
+    inline void GetMaximumSize(int* w, int* h) const { SDL::raw::GetWindowMaximumSize(get(), w, h); }
+    inline void SetBordered(bool bordered) const { SDL::raw::SetWindowBordered(get(), bordered); }
+    inline void SetResizable(bool resizable) const { SDL::raw::SetWindowResizable(get(), resizable); }
+    inline void SetAlwaysOnTop(bool on_top) const { SDL::raw::SetWindowAlwaysOnTop(get(), on_top); }
+    inline void Show() const { SDL::raw::ShowWindow(get()); }
+    inline void Hide() const { SDL::raw::HideWindow(get()); }
+    inline void Raise() const { SDL::raw::RaiseWindow(get()); }
+    inline void Maximize() const { SDL::raw::MaximizeWindow(get()); }
+    inline void Minimize() const { SDL::raw::MinimizeWindow(get()); }
+    inline void Restore() const { SDL::raw::RestoreWindow(get()); }
+    inline void SetFullscreen(bool fullscreen) const { SDL::raw::SetWindowFullscreen(get(), fullscreen); }
+    inline bool Sync() const { return SDL::raw::SyncWindow(get()); }
+    inline bool HasSurface() const { return SDL::raw::WindowHasSurface(get()); }
+    inline std::shared_ptr<SDL::Surface> GetSurface() const { return SDL::Surface::get(SDL::raw::GetWindowSurface(get())); }
+    inline void SetSurfaceVSync(int vsync) const { SDL::raw::SetWindowSurfaceVSync(get(), vsync); }
+    inline void GetSurfaceVSync(int* vsync) const { SDL::raw::GetWindowSurfaceVSync(get(), vsync); }
+    inline void UpdateSurface() const { SDL::raw::UpdateWindowSurface(get()); }
+    inline void UpdateSurfaceRects(const SDL_Rect* rects, int numrects) const { SDL::raw::UpdateWindowSurfaceRects(get(), rects, numrects); }
+    inline void DestroySurface() const { SDL::raw::DestroyWindowSurface(get()); }
+    inline void SetKeyboardGrab(bool grabbed) const { SDL::raw::SetWindowKeyboardGrab(get(), grabbed); }
+    inline void SetMouseGrab(bool grabbed) const { SDL::raw::SetWindowMouseGrab(get(), grabbed); }
+    inline bool GetKeyboardGrab() const { return SDL::raw::GetWindowKeyboardGrab(get()); }
+    inline bool GetMouseGrab() const { return SDL::raw::GetWindowMouseGrab(get()); }
+    inline void SetMouseRect(const SDL_Rect* rect) const { SDL::raw::SetWindowMouseRect(get(), rect); }
+    inline const SDL_Rect* GetMouseRect() const { return SDL::raw::GetWindowMouseRect(get()); }
+    inline void SetOpacity(float opacity) const { SDL::raw::SetWindowOpacity(get(), opacity); }
+    inline float GetOpacity() const { return SDL::raw::GetWindowOpacity(get()); }
+    inline void SetParent(std::shared_ptr<SDL::Window> parent) const { SDL::raw::SetWindowParent(get(), parent->get()); }
+    inline void SetModal(bool modal) const { SDL::raw::SetWindowModal(get(), modal); }
+    inline void SetFocusable(bool focusable) const { SDL::raw::SetWindowFocusable(get(), focusable); }
+    inline void ShowSystemMenu(int x, int y) const { SDL::raw::ShowWindowSystemMenu(get(), x, y); }
+    inline void SetHitTest(SDL_HitTest callback, void* callback_data) const { SDL::raw::SetWindowHitTest(get(), callback, callback_data); }
+    inline void SetShape(std::shared_ptr<SDL::Surface> shape) const { SDL::raw::SetWindowShape(get(), shape->get()); }
+    inline void Flash(SDL_FlashOperation operation) const { SDL::raw::FlashWindow(get(), operation); }
+    inline SDL_GLContext GL_CreateContext() const { return SDL::raw::GL_CreateContext(get()); }
+    inline void GL_MakeCurrent(SDL_GLContext context) const { SDL::raw::GL_MakeCurrent(get(), context); }
+    inline SDL_EGLSurface EGL_GetSurface() const { return SDL::raw::EGL_GetWindowSurface(get()); }
+    inline void GL_Swap() const { SDL::raw::GL_SwapWindow(get()); }
+    inline void StartTextInput() const { SDL::raw::StartTextInput(get()); }
+    inline void StartTextInputWithProperties(SDL_PropertiesID props) const { SDL::raw::StartTextInputWithProperties(get(), props); }
+    inline bool TextInputActive() const { return SDL::raw::TextInputActive(get()); }
+    inline void StopTextInput() const { SDL::raw::StopTextInput(get()); }
+    inline void ClearComposition() const { SDL::raw::ClearComposition(get()); }
+    inline void SetTextInputArea(const SDL_Rect* rect, int cursor) const { SDL::raw::SetTextInputArea(get(), rect, cursor); }
+    inline void GetTextInputArea(SDL_Rect* rect, int* cursor) const { SDL::raw::GetTextInputArea(get(), rect, cursor); }
+    inline bool ScreenKeyboardShown() const { return SDL::raw::ScreenKeyboardShown(get()); }
+    inline void WarpMouseIn(float x, float y) const { SDL::raw::WarpMouseInWindow(get(), x, y); }
+    inline void SetRelativeMouseMode(bool enabled) const { SDL::raw::SetWindowRelativeMouseMode(get(), enabled); }
+    inline bool GetRelativeMouseMode() const { return SDL::raw::GetWindowRelativeMouseMode(get()); }
+    inline SDL_MetalView Metal_CreateView() const { return SDL::raw::Metal_CreateView(get()); }
+    inline std::shared_ptr<SDL::Renderer> CreateRenderer(std::string& name) const { return SDL::Renderer::get(SDL::raw::CreateRenderer(get(), name.c_str())); }
+    inline std::shared_ptr<SDL::Renderer> GetRenderer() const { return SDL::Renderer::get(SDL::raw::GetRenderer(get())); }
 
     inline SDL_Window* get() const { return _ptr; }
+
+    static inline std::shared_ptr<Window> get(SDL_Window* ptr)
+    {
+        auto& entry = _ptrs[ptr];
+        if (!entry.expired()) return entry.lock();
+        std::shared_ptr<Window> obj(new Window(ptr));
+        entry = obj;
+        return obj;
+    }
+private:
+    static std::unordered_map<SDL_Window*, std::weak_ptr<Window>> _ptrs;
 };
 
 class Renderer
 {
     SDL_Renderer* _ptr;
+    Renderer(SDL_Renderer* ptr) : _ptr(ptr) { }
 public:
-    Renderer(SDL::Window* window, const std::string& name) { _ptr = SDL::raw::CreateRenderer(window->get(), name.c_str()); }
+    static inline std::shared_ptr<Renderer> Create(std::shared_ptr<SDL::Window> window, std::string& name) { return get(SDL::raw::CreateRenderer(window->get(), name.c_str())); }
+
+    Renderer(const Renderer&) = delete;
+    ~Renderer() { SDL::raw::DestroyRenderer(_ptr); }
+    Renderer& operator=(const Renderer&) = delete;
+
+    inline std::shared_ptr<SDL::Window> GetWindow() const { return SDL::Window::get(SDL::raw::GetRenderWindow(get())); }
+    inline std::string GeterName() const { return SDL::raw::GetRendererName(get()); }
+    inline SDL_PropertiesID GeterProperties() const { return SDL::raw::GetRendererProperties(get()); }
+    inline void GetOutputSize(int* w, int* h) const { SDL::raw::GetRenderOutputSize(get(), w, h); }
+    inline void GetCurrentOutputSize(int* w, int* h) const { SDL::raw::GetCurrentRenderOutputSize(get(), w, h); }
+    inline SDL_Texture* CreateTexture(SDL_PixelFormat format, SDL_TextureAccess access, int w, int h) const { return SDL::raw::CreateTexture(get(), format, access, w, h); }
+    inline SDL_Texture* CreateTextureFromSurface(std::shared_ptr<SDL::Surface> surface) const { return SDL::raw::CreateTextureFromSurface(get(), surface->get()); }
+    inline SDL_Texture* CreateTextureWithProperties(SDL_PropertiesID props) const { return SDL::raw::CreateTextureWithProperties(get(), props); }
+    inline void SetTarget(SDL_Texture* texture) const { SDL::raw::SetRenderTarget(get(), texture); }
+    inline SDL_Texture* GetTarget() const { return SDL::raw::GetRenderTarget(get()); }
+    inline void SetLogicalPresentation(int w, int h, SDL_RendererLogicalPresentation mode) const { SDL::raw::SetRenderLogicalPresentation(get(), w, h, mode); }
+    inline void GetLogicalPresentation(int* w, int* h, SDL_RendererLogicalPresentation* mode) const { SDL::raw::GetRenderLogicalPresentation(get(), w, h, mode); }
+    inline void GetLogicalPresentationRect(SDL_FRect* rect) const { SDL::raw::GetRenderLogicalPresentationRect(get(), rect); }
+    inline void CoordinatesFromWindow(float window_x, float window_y, float* x, float* y) const { SDL::raw::RenderCoordinatesFromWindow(get(), window_x, window_y, x, y); }
+    inline void CoordinatesToWindow(float x, float y, float* window_x, float* window_y) const { SDL::raw::RenderCoordinatesToWindow(get(), x, y, window_x, window_y); }
+    inline void ConvertEventToCoordinates(SDL_Event* event) const { SDL::raw::ConvertEventToRenderCoordinates(get(), event); }
+    inline void SetViewport(const SDL_Rect* rect) const { SDL::raw::SetRenderViewport(get(), rect); }
+    inline void GetViewport(SDL_Rect* rect) const { SDL::raw::GetRenderViewport(get(), rect); }
+    inline bool ViewportSet() const { return SDL::raw::RenderViewportSet(get()); }
+    inline void GetSafeArea(SDL_Rect* rect) const { SDL::raw::GetRenderSafeArea(get(), rect); }
+    inline void SetClipRect(const SDL_Rect* rect) const { SDL::raw::SetRenderClipRect(get(), rect); }
+    inline void GetClipRect(SDL_Rect* rect) const { SDL::raw::GetRenderClipRect(get(), rect); }
+    inline void ClipEnabled() const { SDL::raw::RenderClipEnabled(get()); }
+    inline void SetScale(float scaleX, float scaleY) const { SDL::raw::SetRenderScale(get(), scaleX, scaleY); }
+    inline void GetScale(float* scaleX, float* scaleY) const { SDL::raw::GetRenderScale(get(), scaleX, scaleY); }
+    inline void SetDrawColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a) const { SDL::raw::SetRenderDrawColor(get(), r, g, b, a); }
+    inline void SetDrawColorFloat(float r, float g, float b, float a) const { SDL::raw::SetRenderDrawColorFloat(get(), r, g, b, a); }
+    inline void GetDrawColor(Uint8* r, Uint8* g, Uint8* b, Uint8* a) const { SDL::raw::GetRenderDrawColor(get(), r, g, b, a); }
+    inline void GetDrawColorFloat(float* r, float* g, float* b, float* a) const { SDL::raw::GetRenderDrawColorFloat(get(), r, g, b, a); }
+    inline void SetColorScale(float scale) const { SDL::raw::SetRenderColorScale(get(), scale); }
+    inline void GetColorScale(float* scale) const { SDL::raw::GetRenderColorScale(get(), scale); }
+    inline void SetDrawBlendMode(SDL_BlendMode blendMode) const { SDL::raw::SetRenderDrawBlendMode(get(), blendMode); }
+    inline void GetDrawBlendMode(SDL_BlendMode* blendMode) const { SDL::raw::GetRenderDrawBlendMode(get(), blendMode); }
+    inline void Clear() const { SDL::raw::RenderClear(get()); }
+    inline void Point(float x, float y) const { SDL::raw::RenderPoint(get(), x, y); }
+    inline void Points(const SDL_FPoint* points, int count) const { SDL::raw::RenderPoints(get(), points, count); }
+    inline void Line(float x1, float y1, float x2, float y2) const { SDL::raw::RenderLine(get(), x1, y1, x2, y2); }
+    inline void Lines(const SDL_FPoint* points, int count) const { SDL::raw::RenderLines(get(), points, count); }
+    inline void Rect(const SDL_FRect* rect) const { SDL::raw::RenderRect(get(), rect); }
+    inline void Rects(const SDL_FRect* rects, int count) const { SDL::raw::RenderRects(get(), rects, count); }
+    inline void FillRect(const SDL_FRect* rect) const { SDL::raw::RenderFillRect(get(), rect); }
+    inline void FillRects(const SDL_FRect* rects, int count) const { SDL::raw::RenderFillRects(get(), rects, count); }
+    inline void Texture(SDL_Texture* texture, const SDL_FRect* srcrect, const SDL_FRect* dstrect) const { SDL::raw::RenderTexture(get(), texture, srcrect, dstrect); }
+    inline void TextureRotated(SDL_Texture* texture, const SDL_FRect* srcrect, const SDL_FRect* dstrect, double angle, const SDL_FPoint* center, SDL_FlipMode flip) const { SDL::raw::RenderTextureRotated(get(), texture, srcrect, dstrect, angle, center, flip); }
+    inline void TextureAffine(SDL_Texture* texture, const SDL_FRect* srcrect, const SDL_FPoint* origin, const SDL_FPoint* right, const SDL_FPoint* down) const { SDL::raw::RenderTextureAffine(get(), texture, srcrect, origin, right, down); }
+    inline void TextureTiled(SDL_Texture* texture, const SDL_FRect* srcrect, float scale, const SDL_FRect* dstrect) const { SDL::raw::RenderTextureTiled(get(), texture, srcrect, scale, dstrect); }
+    inline void Texture9Grid(SDL_Texture* texture, const SDL_FRect* srcrect, float left_width, float right_width, float top_height, float bottom_height, float scale, const SDL_FRect* dstrect) const { SDL::raw::RenderTexture9Grid(get(), texture, srcrect, left_width, right_width, top_height, bottom_height, scale, dstrect); }
+    inline void Geometry(SDL_Texture* texture, const SDL_Vertex* vertices, int num_vertices, const int* indices, int num_indices) const { SDL::raw::RenderGeometry(get(), texture, vertices, num_vertices, indices, num_indices); }
+    inline void GeometryRaw(SDL_Texture* texture, const float* xy, int xy_stride, const SDL_FColor* color, int color_stride, const float* uv, int uv_stride, int num_vertices, const void* indices, int num_indices, int size_indices) const { SDL::raw::RenderGeometryRaw(get(), texture, xy, xy_stride, color, color_stride, uv, uv_stride, num_vertices, indices, num_indices, size_indices); }
+    inline std::shared_ptr<SDL::Surface> ReadPixels(const SDL_Rect* rect) const { return SDL::Surface::get(SDL::raw::RenderReadPixels(get(), rect)); }
+    inline void Present() const { SDL::raw::RenderPresent(get()); }
+    inline void Flusher() const { SDL::raw::FlushRenderer(get()); }
+    inline void* GetMetalLayer() const { return SDL::raw::GetRenderMetalLayer(get()); }
+    inline void* GetMetalCommandEncoder() const { return SDL::raw::GetRenderMetalCommandEncoder(get()); }
+    inline void AddVulkanSemaphores(Uint32 wait_stage_mask, Sint64 wait_semaphore, Sint64 signal_semaphore) const { SDL::raw::AddVulkanRenderSemaphores(get(), wait_stage_mask, wait_semaphore, signal_semaphore); }
+    inline void SetVSync(int vsync) const { SDL::raw::SetRenderVSync(get(), vsync); }
+    inline void GetVSync(int* vsync) const { SDL::raw::GetRenderVSync(get(), vsync); }
+    inline void DebugText(float x, float y, std::string& str) const { SDL::raw::RenderDebugText(get(), x, y, str.c_str()); }
 
     inline SDL_Renderer* get() const { return _ptr; }
+
+    static inline std::shared_ptr<Renderer> get(SDL_Renderer* ptr)
+    {
+        auto& entry = _ptrs[ptr];
+        if (!entry.expired()) return entry.lock();
+        std::shared_ptr<Renderer> obj(new Renderer(ptr));
+        entry = obj;
+        return obj;
+    }
+private:
+    static std::unordered_map<SDL_Renderer*, std::weak_ptr<Renderer>> _ptrs;
+};
+
+class Surface
+{
+    SDL_Surface* _ptr;
+    Surface(SDL_Surface* ptr) : _ptr(ptr) { }
+public:
+    static inline std::shared_ptr<Surface> Create(int width, int height, SDL_PixelFormat format) { return get(SDL::raw::CreateSurface(width, height, format)); }
+    static inline std::shared_ptr<Surface> Create(int width, int height, SDL_PixelFormat format, void* pixels, int pitch) { return get(SDL::raw::CreateSurfaceFrom(width, height, format, pixels, pitch)); }
+
+    Surface(const Surface&) = delete;
+    ~Surface() { SDL::raw::DestroySurface(_ptr); }
+    Surface& operator=(const Surface&) = delete;
+
+    inline SDL_PropertiesID GetSurfaceProperties() const { return SDL::raw::GetSurfaceProperties(get()); }
+    inline void SetSurfaceColorspace(SDL_Colorspace colorspace) const { SDL::raw::SetSurfaceColorspace(get(), colorspace); }
+    inline SDL_Colorspace GetSurfaceColorspace() const { return SDL::raw::GetSurfaceColorspace(get()); }
+    inline std::shared_ptr<SDL::Palette> CreateSurfacePalette() const { return SDL::Palette::get(SDL::raw::CreateSurfacePalette(get())); }
+    inline void SetSurfacePalette(std::shared_ptr<SDL::Palette> palette) const { SDL::raw::SetSurfacePalette(get(), palette->get()); }
+    inline std::shared_ptr<SDL::Palette> GetSurfacePalette() const { return SDL::Palette::get(SDL::raw::GetSurfacePalette(get())); }
+    inline void AddSurfaceAlternateImage(std::shared_ptr<SDL::Surface> image) const { SDL::raw::AddSurfaceAlternateImage(get(), image->get()); }
+    inline bool SurfaceHasAlternateImages() const { return SDL::raw::SurfaceHasAlternateImages(get()); }
+    inline std::vector<std::shared_ptr<SDL::Surface>> GetSurfaceImages() const { int count; std::vector<std::shared_ptr<SDL::Surface>> items; auto ret = SDL::raw::GetSurfaceImages(get(), &count); for (int i = 0; i < count; i++) items.push_back(SDL::Surface::get(ret[i])); return items; }
+    inline void RemoveSurfaceAlternateImages() const { SDL::raw::RemoveSurfaceAlternateImages(get()); }
+    inline void LockSurface() const { SDL::raw::LockSurface(get()); }
+    inline void UnlockSurface() const { SDL::raw::UnlockSurface(get()); }
+    inline void SaveBMP_IO(SDL_IOStream* dst, bool closeio) const { SDL::raw::SaveBMP_IO(get(), dst, closeio); }
+    inline void SaveBMP(std::string& file) const { SDL::raw::SaveBMP(get(), file.c_str()); }
+    inline void SetSurfaceRLE(bool enabled) const { SDL::raw::SetSurfaceRLE(get(), enabled); }
+    inline bool SurfaceHasRLE() const { return SDL::raw::SurfaceHasRLE(get()); }
+    inline void SetSurfaceColorKey(bool enabled, Uint32 key) const { SDL::raw::SetSurfaceColorKey(get(), enabled, key); }
+    inline bool SurfaceHasColorKey() const { return SDL::raw::SurfaceHasColorKey(get()); }
+    inline void GetSurfaceColorKey(Uint32* key) const { SDL::raw::GetSurfaceColorKey(get(), key); }
+    inline void SetSurfaceColorMod(Uint8 r, Uint8 g, Uint8 b) const { SDL::raw::SetSurfaceColorMod(get(), r, g, b); }
+    inline void GetSurfaceColorMod(Uint8* r, Uint8* g, Uint8* b) const { SDL::raw::GetSurfaceColorMod(get(), r, g, b); }
+    inline void SetSurfaceAlphaMod(Uint8 alpha) const { SDL::raw::SetSurfaceAlphaMod(get(), alpha); }
+    inline void GetSurfaceAlphaMod(Uint8* alpha) const { SDL::raw::GetSurfaceAlphaMod(get(), alpha); }
+    inline void SetSurfaceBlendMode(SDL_BlendMode blendMode) const { SDL::raw::SetSurfaceBlendMode(get(), blendMode); }
+    inline void GetSurfaceBlendMode(SDL_BlendMode* blendMode) const { SDL::raw::GetSurfaceBlendMode(get(), blendMode); }
+    inline bool SetSurfaceClipRect(const SDL_Rect* rect) const { return SDL::raw::SetSurfaceClipRect(get(), rect); }
+    inline void GetSurfaceClipRect(SDL_Rect* rect) const { SDL::raw::GetSurfaceClipRect(get(), rect); }
+    inline void FlipSurface(SDL_FlipMode flip) const { SDL::raw::FlipSurface(get(), flip); }
+    inline std::shared_ptr<SDL::Surface> DuplicateSurface() const { return SDL::Surface::get(SDL::raw::DuplicateSurface(get())); }
+    inline std::shared_ptr<SDL::Surface> ScaleSurface(int width, int height, SDL_ScaleMode scaleMode) const { return SDL::Surface::get(SDL::raw::ScaleSurface(get(), width, height, scaleMode)); }
+    inline std::shared_ptr<SDL::Surface> ConvertSurface(SDL_PixelFormat format) const { return SDL::Surface::get(SDL::raw::ConvertSurface(get(), format)); }
+    inline std::shared_ptr<SDL::Surface> ConvertSurfaceAndColorspace(SDL_PixelFormat format, std::shared_ptr<SDL::Palette> palette, SDL_Colorspace colorspace, SDL_PropertiesID props) const { return SDL::Surface::get(SDL::raw::ConvertSurfaceAndColorspace(get(), format, palette->get(), colorspace, props)); }
+    inline void PremultiplySurfaceAlpha(bool linear) const { SDL::raw::PremultiplySurfaceAlpha(get(), linear); }
+    inline void ClearSurface(float r, float g, float b, float a) const { SDL::raw::ClearSurface(get(), r, g, b, a); }
+    inline void FillSurfaceRect(const SDL_Rect* rect, Uint32 color) const { SDL::raw::FillSurfaceRect(get(), rect, color); }
+    inline void FillSurfaceRects(const SDL_Rect* rects, int count, Uint32 color) const { SDL::raw::FillSurfaceRects(get(), rects, count, color); }
+    inline void BlitSurface(const SDL_Rect* srcrect, std::shared_ptr<SDL::Surface> dst, const SDL_Rect* dstrect) const { SDL::raw::BlitSurface(get(), srcrect, dst->get(), dstrect); }
+    inline void BlitSurfaceUnchecked(const SDL_Rect* srcrect, std::shared_ptr<SDL::Surface> dst, const SDL_Rect* dstrect) const { SDL::raw::BlitSurfaceUnchecked(get(), srcrect, dst->get(), dstrect); }
+    inline void BlitSurfaceScaled(const SDL_Rect* srcrect, std::shared_ptr<SDL::Surface> dst, const SDL_Rect* dstrect, SDL_ScaleMode scaleMode) const { SDL::raw::BlitSurfaceScaled(get(), srcrect, dst->get(), dstrect, scaleMode); }
+    inline void BlitSurfaceUncheckedScaled(const SDL_Rect* srcrect, std::shared_ptr<SDL::Surface> dst, const SDL_Rect* dstrect, SDL_ScaleMode scaleMode) const { SDL::raw::BlitSurfaceUncheckedScaled(get(), srcrect, dst->get(), dstrect, scaleMode); }
+    inline void BlitSurfaceTiled(const SDL_Rect* srcrect, std::shared_ptr<SDL::Surface> dst, const SDL_Rect* dstrect) const { SDL::raw::BlitSurfaceTiled(get(), srcrect, dst->get(), dstrect); }
+    inline void BlitSurfaceTiledWithScale(const SDL_Rect* srcrect, float scale, SDL_ScaleMode scaleMode, std::shared_ptr<SDL::Surface> dst, const SDL_Rect* dstrect) const { SDL::raw::BlitSurfaceTiledWithScale(get(), srcrect, scale, scaleMode, dst->get(), dstrect); }
+    inline void BlitSurface9Grid(const SDL_Rect* srcrect, int left_width, int right_width, int top_height, int bottom_height, float scale, SDL_ScaleMode scaleMode, std::shared_ptr<SDL::Surface> dst, const SDL_Rect* dstrect) const { SDL::raw::BlitSurface9Grid(get(), srcrect, left_width, right_width, top_height, bottom_height, scale, scaleMode, dst->get(), dstrect); }
+    inline Uint32 MapSurfaceRGB(Uint8 r, Uint8 g, Uint8 b) const { return SDL::raw::MapSurfaceRGB(get(), r, g, b); }
+    inline Uint32 MapSurfaceRGBA(Uint8 r, Uint8 g, Uint8 b, Uint8 a) const { return SDL::raw::MapSurfaceRGBA(get(), r, g, b, a); }
+    inline void ReadSurfacePixel(int x, int y, Uint8* r, Uint8* g, Uint8* b, Uint8* a) const { SDL::raw::ReadSurfacePixel(get(), x, y, r, g, b, a); }
+    inline void ReadSurfacePixelFloat(int x, int y, float* r, float* g, float* b, float* a) const { SDL::raw::ReadSurfacePixelFloat(get(), x, y, r, g, b, a); }
+    inline void WriteSurfacePixel(int x, int y, Uint8 r, Uint8 g, Uint8 b, Uint8 a) const { SDL::raw::WriteSurfacePixel(get(), x, y, r, g, b, a); }
+    inline void WriteSurfacePixelFloat(int x, int y, float r, float g, float b, float a) const { SDL::raw::WriteSurfacePixelFloat(get(), x, y, r, g, b, a); }
+    inline SDL_Cursor* CreateColorCursor(int hot_x, int hot_y) const { return SDL::raw::CreateColorCursor(get(), hot_x, hot_y); }
+    inline std::shared_ptr<SDL::Renderer> CreateSoftwareRenderer() const { return SDL::Renderer::get(SDL::raw::CreateSoftwareRenderer(get())); }
+    inline SDL_Tray* CreateTray(std::string& tooltip) const { return SDL::raw::CreateTray(get(), tooltip.c_str()); }
+
+    inline SDL_Surface* get() const { return _ptr; }
+
+    static inline std::shared_ptr<Surface> get(SDL_Surface* ptr)
+    {
+        auto& entry = _ptrs[ptr];
+        if (!entry.expired()) return entry.lock();
+        std::shared_ptr<Surface> obj(new Surface(ptr));
+        entry = obj;
+        return obj;
+    }
+private:
+    static std::unordered_map<SDL_Surface*, std::weak_ptr<Surface>> _ptrs;
+};
+
+class Palette
+{
+    SDL_Palette* _ptr;
+    Palette(SDL_Palette* ptr) : _ptr(ptr) { }
+public:
+    static inline std::shared_ptr<Palette> Create(int ncolors) { return get(SDL::raw::CreatePalette(ncolors)); }
+    static inline std::shared_ptr<Palette> Create(std::shared_ptr<SDL::Surface> surface) { return get(SDL::raw::CreateSurfacePalette(surface->get())); }
+
+    Palette(const Palette&) = delete;
+    ~Palette() { SDL::raw::DestroyPalette(_ptr); }
+    Palette& operator=(const Palette&) = delete;
+
+    inline void SetColors(const SDL_Color* colors, int firstcolor, int ncolors) const { SDL::raw::SetPaletteColors(get(), colors, firstcolor, ncolors); }
+
+    inline SDL_Palette* get() const { return _ptr; }
+
+    static inline std::shared_ptr<Palette> get(SDL_Palette* ptr)
+    {
+        auto& entry = _ptrs[ptr];
+        if (!entry.expired()) return entry.lock();
+        std::shared_ptr<Palette> obj(new Palette(ptr));
+        entry = obj;
+        return obj;
+    }
+private:
+    static std::unordered_map<SDL_Palette*, std::weak_ptr<Palette>> _ptrs;
 };
 
 }

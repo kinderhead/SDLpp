@@ -9,6 +9,9 @@ objects: dict[str, Any] = {}
 class Arg(NamedTuple):
     type: str
     name: str
+    
+    def __eq__(self, other):
+        return self.type == other.type and self.name == other.name
 
 class FuncDef(NamedTuple):
     ret: str
@@ -17,16 +20,22 @@ class FuncDef(NamedTuple):
     
     file: str
     line: int
+    
+    err: bool
+    get_list: bool
 
 class FuncDefVisitor(c_ast.NodeVisitor):
     funcs: list[FuncDef] = []
     
     def visit_Decl(self, node: c_ast.Decl):
-        if not str(node.name).startswith("SDL_"):
+        if not str(node.name).startswith("SDL_") or "linux" in str(node.name).lower() or "builtin" in str(node.name).lower():
             return
         if type(node.type) == c_ast.FuncDecl and type(node.type.args) == c_ast.ParamList:
             args: list[Arg] = []
             ret_type = get_type(node.type.type)
+            err = has_err(node.name, node.coord.file, node.coord.line) # type: ignore
+            if err and ret_type == "bool":
+                ret_type = "void"
             for i in node.type.args.params:
                 if type(i) == c_ast.EllipsisParam:
                     return
@@ -34,7 +43,13 @@ class FuncDefVisitor(c_ast.NodeVisitor):
                 else:
                     if (i.name is not None):
                         args.append(Arg(get_type(i.type), i.name))
-            self.funcs.append(FuncDef(ret_type, node.name, args, node.coord.file, node.coord.line)) # type: ignore
+            
+            get_list = False
+            if len(args) != 0 and args[-1] == Arg("int*", "count"):
+                args.pop()
+                get_list = True
+                        
+            self.funcs.append(FuncDef(ret_type, node.name, args, node.coord.file, node.coord.line, err, get_list)) # type: ignore
 
 
 def get_macros():
@@ -57,15 +72,15 @@ def get_type(t: c_ast.TypeDecl):
     else:
         raise Exception()
     
-def has_err(func: FuncDef):
-    if func.name == "SDL_GetError" or func.name.endswith("builtin") or func.name in ["SDL_Swap16", "SDL_Swap32", "SDL_Swap64"]:
+def has_err(name: str, file: str, line: int):
+    if name == "SDL_GetError" or name.endswith("builtin") or name in ["SDL_Swap16", "SDL_Swap32", "SDL_Swap64"]:
         return False
     
-    with open(func.file, "r") as f:
+    with open(file, "r") as f:
         data = f.readlines()
-        assert data[func.line - 2] == " */\n"
+        assert data[line - 2] == " */\n"
         
-        x = func.line - 3
+        x = line - 3
         while True:
             if "/**" in data[x]:
                 return False
@@ -78,23 +93,27 @@ def get_raw_ns(funcs: list[FuncDef]):
     
     for i in funcs:
         txt += f"//! @copydoc {i.name}()\n"
-        txt += f"inline {i.ret} {i.name.split("SDL_")[1]}({', '.join(map(lambda e: e.type + " " + e.name, i.args))}) {{ "
         
-        ret = "return"
+        args = list(i.args)
+        if i.get_list:
+            args.append(Arg("int*", "count"))
+        
+        txt += f"inline {i.ret} {i.name.split('SDL_')[1]}({', '.join(map(lambda e: e.type + ' ' + e.name, args))}) {{ "
+        
+        ret = "return "
         if i.ret == "void":
             ret = ""
         elif "::" in i.ret:
-            ret = f"return ({i.ret})"
-            
-        err = has_err(i)
-        func_call = f"{i.name}({', '.join(map(lambda e: e.name, i.args))});"
+            ret = f"return ({i.ret}) "
         
-        if not err:
-            txt += f"{ret} {func_call}"
+        func_call = f"{i.name}({', '.join(map(lambda e: e.name, args))});"
+        
+        if not i.err:
+            txt += f"{ret}{func_call}"
         elif ret == "":
-            raise Exception()
+            txt += f"auto _ret = {func_call} if (!_ret) throw SDL::Error(SDL::raw::GetError());"
         else:
-            txt += f"auto _ret = {func_call} if (!_ret) throw SDL::Error(SDL::raw::GetError()); {ret} _ret;"
+            txt += f"auto _ret = {func_call} if (!_ret) throw SDL::Error(SDL::raw::GetError()); {ret}_ret;"
             
         txt += f" }}\n\n" # f string because it makes vscode happy
     
@@ -107,7 +126,7 @@ def get_enums():
         if v == False:
             continue
         
-        txt += f"enum {k.split("SDL_")[1]}\n{{\n"
+        txt += f"enum {k.split('SDL_')[1]}\n{{\n"
         
         for k2, v2 in macros.items():
             if k2.startswith(v):
@@ -117,18 +136,21 @@ def get_enums():
     
     return txt
 
-def sanitize_type(type: str, returning = False):
+def sanitize_type(type: str, returning = False, as_list = False):
+    if as_list:
+        return f"std::vector<{sanitize_type(type, returning)}>"
+    
     if type.strip("*") in objects.keys():
-        return type.replace("SDL_", "SDL::")
-    elif type == "const char*" and returning:
-        return "const std::string"
-    elif type == "const char*":
-        return "const std::string&"
+        return f"std::shared_ptr<{type.replace('SDL_', 'SDL::').replace('*', '')}>"
+    elif "char*" in type and returning:
+        return "std::string"
+    elif "char*" in type:
+        return "std::string&"
     else:
         return type
 
 def sanitize_args(args: list[Arg]):
-    return ", ".join([sanitize_type(i.type) for i in args])
+    return ", ".join([sanitize_type(i.type) + " " + i.name for i in args])
 
 def sanitize_call(args: list[Arg]):
     clean: list[str] = []
@@ -136,7 +158,7 @@ def sanitize_call(args: list[Arg]):
     for i in args:
         if i.type.strip("*") in objects.keys():
             clean.append(f"{i.name}->get()")
-        elif i.type == "const char*":
+        elif "char*" in i.type and "**" not in i.type:
             clean.append(f"{i.name}.c_str()")
         else:
             clean.append(f"{i.name}")
@@ -145,8 +167,23 @@ def sanitize_call(args: list[Arg]):
 
 def sanitize_return(type: str, expr: str):
     if type.strip("*") in objects.keys():
-        return f"{type.replace("SDL_", "SDL::")}({expr})"
+        return f"{type.replace('SDL_', 'SDL::').replace('*', '')}::get({expr})"
     return expr
+
+def gen_func_body(func: FuncDef, this = False):
+    ret = "return "
+    if func.ret == "void":
+        ret = ""
+    elif "::" in func.ret:
+        ret = f"return ({func.ret}) "
+    
+    end_type = sanitize_type(func.ret)
+    called = f'{get_func(func.name)}({sanitize_call([Arg("this", "get()")] + func.args[1:])}'
+    
+    if func.get_list:
+        return f"""int count; std::vector<{end_type}> items; auto ret = {called}, &count); for (int i = 0; i < count; i++) items.push_back({sanitize_return(func.ret, 'ret[i]')}); return items;"""
+    else:
+        return f"""{ret}{sanitize_return(func.ret, called)});"""
 
 def get_func(func: str):
     return func.replace("SDL_", "SDL::raw::")
@@ -155,20 +192,43 @@ def get_classes(funcs: list[FuncDef]):
     txt = "\n\n"
     
     for cls, info in objects.items():
-        name = cls.split("SDL_")[1]
-        constructor = [i for i in funcs if i.name == info["init"]][0]
+        def replaced_name(func: str):
+            for i in info["remove"]:
+                func = func.replace(i, "")
+            return func.replace("SDL_", "")
         
+        name = cls.split("SDL_")[1]
+
         txt += f"class {name}\n{{\n"
         
-        txt += f"    {cls}* _ptr;\npublic:\n"
-        txt += f"    {name}({cls}* ptr) : _ptr(ptr) {{ }}\n"
-        txt += f"    {name}({sanitize_args(constructor.args)}) {{ _ptr = {get_func(constructor.name)}({sanitize_call(constructor.args)}); }}\n"
+        txt += f"    {cls}* _ptr;\n"
+        txt += f"    {name}({cls}* ptr) : _ptr(ptr) {{ }}\npublic:\n"
+        
+        for c in info["init"]:
+            constructor = [i for i in funcs if i.name == c][0]
+            txt += f"    static inline std::shared_ptr<{name}> Create({sanitize_args(constructor.args)}) {{ return get({get_func(constructor.name)}({sanitize_call(constructor.args)})); }}\n"
+        
+        txt += f"\n    {name}(const {name}&) = delete;\n    ~{name}() {{ {get_func(info['destroy'])}(_ptr); }}\n    {name}& operator=(const {name}&) = delete;\n\n"
         
         for i in funcs:
-            if i.args[0].type == f"{cls}*":
-                txt += f"    inline {sanitize_type(i.ret, True)} "
+            if i.name == info['destroy']:
+                continue
+            if len(i.args) != 0 and i.args[0].type == f"{cls}*":
+                txt += f"""    inline {sanitize_type(i.ret, True, i.get_list)} {replaced_name(i.name)}({sanitize_args(i.args[1:])}) const {{ {gen_func_body(i, True)} }}\n"""
         
-        txt += f"    inline {cls}* get() const {{ return _ptr; }}\n"
+        txt += f"\n    inline {cls}* get() const {{ return _ptr; }}\n"
+        txt += f"""\n    static inline std::shared_ptr<{name}> get({cls}* ptr)
+    {{
+        auto& entry = _ptrs[ptr];
+        if (!entry.expired()) return entry.lock();
+        std::shared_ptr<{name}> obj(new {name}(ptr));
+        entry = obj;
+        return obj;
+    }}\n"""
+        
+        txt += f"""private:
+    static std::unordered_map<{cls}*, std::weak_ptr<{name}>> _ptrs;
+"""
         
         txt += f"}};\n\n"  # make vscode happy again
     
@@ -182,7 +242,7 @@ with open("flags.json", "r") as f:
 with open("objects.json", "r") as f:
     objects = json.load(f)
 
-ast = parse_file("SDL/include/SDL3/SDL.h", use_cpp=True, cpp_args=[r'-Ipycparser/utils/fake_libc_include', r'-DSDL_MALLOC=', r'-DSDL_DECLSPEC=', r'-DSDL_ALLOC_SIZE2(a,b)=', r'-DSDL_ALLOC_SIZE(a)=', r'-U__GNUC__', r'-U__x86_64__'])  # type: ignore
+ast = parse_file("SDL/include/SDL3/SDL.h", use_cpp=True, cpp_args=[r'-Ipycparser/utils/fake_libc_include', r'-ISDL/include/', r'-DSDL_MALLOC=', r'-DSDL_DECLSPEC=', r'-DSDL_ALLOC_SIZE2(a,b)=', r'-DSDL_ALLOC_SIZE(a)=', r'-U__GNUC__', r'-U__x86_64__'])  # type: ignore
 v = FuncDefVisitor()
 v.visit(ast)
 
@@ -192,6 +252,9 @@ header_begin = """#pragma once
 #include <SDL3/SDL.h>
 #include <exception>
 #include <string>
+#include <unordered_map>
+#include <memory>
+#include <vector>
 
 namespace SDL {
 
