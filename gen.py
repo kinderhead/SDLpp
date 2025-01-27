@@ -5,6 +5,8 @@ import json
 
 flags: dict[str, str | Literal[False]] = {}
 objects: dict[str, Any] = {}
+built_funcs: list[str] = []
+# pointerless = ["SDL_Rect"]
 
 class Arg(NamedTuple):
     type: str
@@ -23,12 +25,22 @@ class FuncDef(NamedTuple):
     
     err: bool
     get_list: bool
+    get_obj: Arg | None
+    get_point: bool
+    get_rect: bool
+    get_fpoint: bool
+    get_frect: bool
+    
+    def get_ret_type(self):
+        if self.get_obj is not None:
+            return self.get_obj.type[:-1]
+        return self.ret
 
 class FuncDefVisitor(c_ast.NodeVisitor):
     funcs: list[FuncDef] = []
     
     def visit_Decl(self, node: c_ast.Decl):
-        if not str(node.name).startswith("SDL_") or "linux" in str(node.name).lower() or "builtin" in str(node.name).lower():
+        if not str(node.name).startswith("SDL_") or "linux" in str(node.name).lower() or "builtin" in str(node.name).lower() or node.coord.file.endswith("SDL_stdinc.h"): # type: ignore
             return
         if type(node.type) == c_ast.FuncDecl and type(node.type.args) == c_ast.ParamList:
             args: list[Arg] = []
@@ -45,11 +57,43 @@ class FuncDefVisitor(c_ast.NodeVisitor):
                         args.append(Arg(get_type(i.type), i.name))
             
             get_list = False
-            if len(args) != 0 and args[-1] == Arg("int*", "count"):
-                args.pop()
-                get_list = True
+            get_obj = None
+            get_point = False
+            get_rect = False
+            get_fpoint = False
+            get_frect = False
+            if len(args) != 0:
+                if args[-1] == Arg("int*", "count"):
+                    args.pop()
+                    get_list = True
+                elif str(node.name).startswith("SDL_Get") and ret_type == "void":
+                    last_is_ptr = True
+                    for idex, i in enumerate(args):
+                        if i.type[:-1] in objects.keys() or idex == len(args) - 1:
+                            continue
+                        if "*" in i.type:
+                            last_is_ptr = False
+                            break
+                    if "*" in args[-1].type and last_is_ptr:
+                        get_obj = args.pop()
+                    elif len(args) == 2 and args[0].type == "int*" and args[1].type == "int*":
+                        get_point = True
+                    elif len(args) == 3 and args[0].type[:-1] in objects.keys() and args[1].type == "int*" and args[2].type == "int*":
+                        get_point = True
+                    elif len(args) == 4 and args[0].type == "int*" and args[1].type == "int*" and args[2].type == "int*" and args[3].type == "int*":
+                        get_rect = True
+                    elif len(args) == 5 and args[0].type[:-1] in objects.keys() and args[1].type == "int*" and args[2].type == "int*" and args[3].type == "int*" and args[4].type == "int*":
+                        get_rect = True
+                    elif len(args) == 2 and args[0].type == "float*" and args[1].type == "float*":
+                        get_fpoint = True
+                    elif len(args) == 3 and args[0].type[:-1] in objects.keys() and args[1].type == "float*" and args[2].type == "float*":
+                        get_fpoint = True
+                    elif len(args) == 4 and args[0].type == "float*" and args[1].type == "float*" and args[2].type == "float*" and args[3].type == "float*":
+                        get_frect = True
+                    elif len(args) == 5 and args[0].type[:-1] in objects.keys() and args[1].type == "float*" and args[2].type == "float*" and args[3].type == "float*" and args[4].type == "float*":
+                        get_frect = True
                         
-            self.funcs.append(FuncDef(ret_type, node.name, args, node.coord.file, node.coord.line, err, get_list)) # type: ignore
+            self.funcs.append(FuncDef(ret_type, node.name, args, node.coord.file, node.coord.line, err, get_list, get_obj, get_point, get_rect, get_fpoint, get_frect)) # type: ignore
 
 
 def get_macros():
@@ -97,6 +141,8 @@ def get_raw_ns(funcs: list[FuncDef]):
         args = list(i.args)
         if i.get_list:
             args.append(Arg("int*", "count"))
+        elif i.get_obj is not None:
+            args.append(i.get_obj)
         
         txt += f"inline {i.ret} {i.name.split('SDL_')[1]}({', '.join(map(lambda e: e.type + ' ' + e.name, args))}) {{ "
         
@@ -136,9 +182,15 @@ def get_enums():
     
     return txt
 
+def should_replace_ptr(type: str):
+    return "SDL_Rect" in type or "SDL_FRect" in type or "SDL_Point" in type or "SDL_FPoint" in type
+
 def sanitize_type(type: str, returning = False, as_list = False):
     if as_list:
-        return f"std::vector<{sanitize_type(type, returning)}>"
+        if type.strip("*") in objects.keys() or "char*" in type:
+            return f"std::vector<{sanitize_type(type, returning)}>"
+        else:
+            return f"std::vector<{sanitize_type(type, returning)[:-1]}>"
     
     if type.strip("*") in objects.keys():
         return f"std::shared_ptr<{type.replace('SDL_', 'SDL::').replace('*', '')}>"
@@ -146,8 +198,13 @@ def sanitize_type(type: str, returning = False, as_list = False):
         return "std::string"
     elif "char*" in type:
         return "std::string&"
-    else:
-        return type
+    elif should_replace_ptr(type):
+        type = type.replace('SDL_', 'SDL::').replace("*", "&")
+        # if "const" in type:
+        #     return type.replace("const ", "").replace("*", "")
+        # elif "*" in type:
+        #     return type.replace("*", "&")
+    return type
 
 def sanitize_args(args: list[Arg]):
     return ", ".join([sanitize_type(i.type) + " " + i.name for i in args])
@@ -160,14 +217,18 @@ def sanitize_call(args: list[Arg]):
             clean.append(f"{i.name}->get()")
         elif "char*" in i.type and "**" not in i.type:
             clean.append(f"{i.name}.c_str()")
+        elif should_replace_ptr(i.type):
+            clean.append(f"&{i.name}")
         else:
             clean.append(f"{i.name}")
 
     return ", ".join(clean)
 
-def sanitize_return(type: str, expr: str):
+def sanitize_return(type: str, expr: str, guarantee_not_ptr = False):
     if type.strip("*") in objects.keys():
         return f"{type.replace('SDL_', 'SDL::').replace('*', '')}::get({expr})"
+    if not guarantee_not_ptr and should_replace_ptr(type):
+        return f"*{expr}"
     return expr
 
 def gen_func_body(func: FuncDef, this = False):
@@ -177,16 +238,63 @@ def gen_func_body(func: FuncDef, this = False):
     elif "::" in func.ret:
         ret = f"return ({func.ret}) "
     
-    end_type = sanitize_type(func.ret)
-    called = f'{get_func(func.name)}({sanitize_call([Arg("this", "get()")] + func.args[1:])}'
+    end_type = sanitize_type(func.ret, True)
+    called = ""
+    
+    if this:
+        called = f'{get_func(func.name)}({sanitize_call([Arg("this", "_ptr")] + func.args[1:])}'
+    else:
+        called = f'{get_func(func.name)}({sanitize_call(func.args)}'
     
     if func.get_list:
-        return f"""int count; std::vector<{end_type}> items; auto ret = {called}, &count); for (int i = 0; i < count; i++) items.push_back({sanitize_return(func.ret, 'ret[i]')}); return items;"""
+        if end_type.endswith("*"):
+            end_type = end_type[:-1]
+        return f"""int _count; std::vector<{end_type}> _items; auto _ret = {called}, &_count); for (int i = 0; i < _count; i++) _items.push_back({sanitize_return(func.ret, '_ret[i]')}); return _items;""".replace("(, ", "(")
+    elif func.get_obj is not None:
+        return f"""{func.get_obj.type[:-1]} _out; {called}, &_out); return {sanitize_return(func.get_obj.type, "_out", True)};""".replace("(, ", "(")
     else:
         return f"""{ret}{sanitize_return(func.ret, called)});"""
 
 def get_func(func: str):
     return func.replace("SDL_", "SDL::raw::")
+
+def build_func_def(func: FuncDef, name: str | None, this: bool):
+    if name is None:
+        name = func.name.replace("SDL_", "")
+        
+    if this:
+        caller = f"{get_func(func.name)}(_ptr, "
+    else:
+        caller = f"{get_func(func.name)}("
+    
+    if func.get_point:
+        ret = "SDL::Point"
+        args = ""
+        body = f"""SDL::Point _p = {{}}; {caller}&_p.x, &_p.y); return _p;"""
+    elif func.get_rect:
+        ret = "SDL::Rect"
+        args = ""
+        body = f"""SDL::Rect _r = {{}}; {caller}&_r.x, &_r.y, &_r.w, &_r.h); return _r;"""
+    elif func.get_fpoint:
+        ret = "SDL::FPoint"
+        args = ""
+        body = f"""SDL::FPoint _p = {{}}; {caller}&_p.x, &_p.y); return _p;"""
+    elif func.get_frect:
+        ret = "SDL::FRect"
+        args = ""
+        body = f"""SDL::FRect _r = {{}}; {caller}&_r.x, &_r.y, &_r.w, &_r.h); return _r;"""
+    else:
+        ret = sanitize_type(func.get_ret_type(), True, func.get_list)
+        if this:
+            args = sanitize_args(func.args[1:])
+        else:
+            args = sanitize_args(func.args)
+        body = gen_func_body(func, this)
+    
+    if this:
+        return f"""inline {ret} {name}({args}) const {{ {body} }}"""
+    else:
+        return f"""inline {ret} {name}({args}) {{ {body} }}"""
 
 def get_classes(funcs: list[FuncDef]):
     txt = "\n\n"
@@ -202,26 +310,34 @@ def get_classes(funcs: list[FuncDef]):
         txt += f"class {name}\n{{\n"
         
         txt += f"    {cls}* _ptr;\n"
-        txt += f"    {name}({cls}* ptr) : _ptr(ptr) {{ }}\npublic:\n"
+        txt += f"    bool _block_destroy;\n"
+        txt += f"    {name}({cls}* ptr, bool block_destroy) : _ptr(ptr), _block_destroy(block_destroy) {{ }}\npublic:\n"
         
         for c in info["init"]:
             constructor = [i for i in funcs if i.name == c][0]
             txt += f"    static inline std::shared_ptr<{name}> Create({sanitize_args(constructor.args)}) {{ return get({get_func(constructor.name)}({sanitize_call(constructor.args)})); }}\n"
         
-        txt += f"\n    {name}(const {name}&) = delete;\n    ~{name}() {{ {get_func(info['destroy'])}(_ptr); }}\n    {name}& operator=(const {name}&) = delete;\n\n"
+        txt += f"\n    {name}(const {name}&) = delete;"
+        if info["destroy"] != "":
+            txt += f"\n    ~{name}() {{ if (!_block_destroy) {get_func(info['destroy'])}(_ptr); }}"
+        txt += f"\n    {name}& operator=(const {name}&) = delete;\n\n"
         
         for i in funcs:
             if i.name == info['destroy']:
                 continue
-            if len(i.args) != 0 and i.args[0].type == f"{cls}*":
-                txt += f"""    inline {sanitize_type(i.ret, True, i.get_list)} {replaced_name(i.name)}({sanitize_args(i.args[1:])}) const {{ {gen_func_body(i, True)} }}\n"""
+            if "patches" in info and i.name in info['patches']:
+                txt += f"    {info['patches'][i.name]}\n"
+                built_funcs.append(i.name)
+            elif len(i.args) != 0 and i.args[0].type == f"{cls}*":
+                txt += f"""    {build_func_def(i, replaced_name(i.name), True)}\n"""
+                built_funcs.append(i.name)
         
         txt += f"\n    inline {cls}* get() const {{ return _ptr; }}\n"
-        txt += f"""\n    static inline std::shared_ptr<{name}> get({cls}* ptr)
+        txt += f"""\n    static inline std::shared_ptr<{name}> get({cls}* ptr, bool block_destroy = false)
     {{
         auto& entry = _ptrs[ptr];
         if (!entry.expired()) return entry.lock();
-        std::shared_ptr<{name}> obj(new {name}(ptr));
+        std::shared_ptr<{name}> obj(new {name}(ptr, block_destroy));
         entry = obj;
         return obj;
     }}\n"""
@@ -231,6 +347,17 @@ def get_classes(funcs: list[FuncDef]):
 """
         
         txt += f"}};\n\n"  # make vscode happy again
+    
+    return txt[:-1]
+
+def get_extra_funcs(funcs: list[FuncDef]):
+    txt = ""
+    
+    for i in funcs:
+        if i.name in built_funcs:
+            continue
+        
+        txt += f"{build_func_def(i, None, False)}\n"
     
     return txt[:-1]
 
@@ -275,10 +402,15 @@ bool operator!(SDL_GUID id)
     return true;
 }
 
+using Rect = SDL_Rect;
+using FRect = SDL_FRect;
+using Point = SDL_Point;
+using FPoint = SDL_FPoint;
+
 """
 
 header_end = """
 }"""
 
 with open("SDL++/SDL++.hpp", "w+") as f:
-    f.write(header_begin + get_enums() + get_raw_ns(v.funcs) + get_classes(v.funcs) + header_end)
+    f.write(header_begin + get_enums() + get_raw_ns(v.funcs) + get_classes(v.funcs) + get_extra_funcs(v.funcs) + header_end)

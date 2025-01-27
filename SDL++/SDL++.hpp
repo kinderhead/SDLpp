@@ -27,6 +27,11 @@ bool operator!(SDL_GUID id)
     return true;
 }
 
+using Rect = SDL_Rect;
+using FRect = SDL_FRect;
+using Point = SDL_Point;
+using FPoint = SDL_FPoint;
+
 enum WindowFlags
 {
     UTILITY = SDL_UINT64_C(0x0000000000020000),
@@ -106,498 +111,6 @@ enum TrayEntryFlags
 
 namespace raw
 {
-//! @copydoc SDL_malloc()
-inline void* malloc(size_t size) { return SDL_malloc(size); }
-
-//! @copydoc SDL_calloc()
-inline void* calloc(size_t nmemb, size_t size) { return SDL_calloc(nmemb, size); }
-
-//! @copydoc SDL_realloc()
-inline void* realloc(void* mem, size_t size) { return SDL_realloc(mem, size); }
-
-//! @copydoc SDL_free()
-inline void free(void* mem) { SDL_free(mem); }
-
-//! @copydoc SDL_GetOriginalMemoryFunctions()
-inline void GetOriginalMemoryFunctions(SDL_malloc_func* malloc_func, SDL_calloc_func* calloc_func, SDL_realloc_func* realloc_func, SDL_free_func* free_func) { SDL_GetOriginalMemoryFunctions(malloc_func, calloc_func, realloc_func, free_func); }
-
-//! @copydoc SDL_GetMemoryFunctions()
-inline void GetMemoryFunctions(SDL_malloc_func* malloc_func, SDL_calloc_func* calloc_func, SDL_realloc_func* realloc_func, SDL_free_func* free_func) { SDL_GetMemoryFunctions(malloc_func, calloc_func, realloc_func, free_func); }
-
-//! @copydoc SDL_SetMemoryFunctions()
-inline void SetMemoryFunctions(SDL_malloc_func malloc_func, SDL_calloc_func calloc_func, SDL_realloc_func realloc_func, SDL_free_func free_func) { auto _ret = SDL_SetMemoryFunctions(malloc_func, calloc_func, realloc_func, free_func); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
-
-//! @copydoc SDL_aligned_alloc()
-inline void* aligned_alloc(size_t alignment, size_t size) { return SDL_aligned_alloc(alignment, size); }
-
-//! @copydoc SDL_aligned_free()
-inline void aligned_free(void* mem) { SDL_aligned_free(mem); }
-
-//! @copydoc SDL_GetNumAllocations()
-inline int GetNumAllocations() { return SDL_GetNumAllocations(); }
-
-//! @copydoc SDL_GetEnvironment()
-inline SDL_Environment* GetEnvironment() { auto _ret = SDL_GetEnvironment(); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
-
-//! @copydoc SDL_CreateEnvironment()
-inline SDL_Environment* CreateEnvironment(bool populated) { auto _ret = SDL_CreateEnvironment(populated); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
-
-//! @copydoc SDL_GetEnvironmentVariable()
-inline const char* GetEnvironmentVariable(SDL_Environment* env, const char* name) { return SDL_GetEnvironmentVariable(env, name); }
-
-//! @copydoc SDL_GetEnvironmentVariables()
-inline char** GetEnvironmentVariables(SDL_Environment* env) { auto _ret = SDL_GetEnvironmentVariables(env); if (!_ret) throw SDL::Error(SDL::raw::GetError()); return _ret; }
-
-//! @copydoc SDL_SetEnvironmentVariable()
-inline void SetEnvironmentVariable(SDL_Environment* env, const char* name, const char* value, bool overwrite) { auto _ret = SDL_SetEnvironmentVariable(env, name, value, overwrite); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
-
-//! @copydoc SDL_UnsetEnvironmentVariable()
-inline void UnsetEnvironmentVariable(SDL_Environment* env, const char* name) { auto _ret = SDL_UnsetEnvironmentVariable(env, name); if (!_ret) throw SDL::Error(SDL::raw::GetError()); }
-
-//! @copydoc SDL_DestroyEnvironment()
-inline void DestroyEnvironment(SDL_Environment* env) { SDL_DestroyEnvironment(env); }
-
-//! @copydoc SDL_getenv()
-inline const char* getenv(const char* name) { return SDL_getenv(name); }
-
-//! @copydoc SDL_getenv_unsafe()
-inline const char* getenv_unsafe(const char* name) { return SDL_getenv_unsafe(name); }
-
-//! @copydoc SDL_setenv_unsafe()
-inline int setenv_unsafe(const char* name, const char* value, int overwrite) { return SDL_setenv_unsafe(name, value, overwrite); }
-
-//! @copydoc SDL_unsetenv_unsafe()
-inline int unsetenv_unsafe(const char* name) { return SDL_unsetenv_unsafe(name); }
-
-//! @copydoc SDL_qsort()
-inline void qsort(void* base, size_t nmemb, size_t size, SDL_CompareCallback compare) { SDL_qsort(base, nmemb, size, compare); }
-
-//! @copydoc SDL_bsearch()
-inline void* bsearch(const void* key, const void* base, size_t nmemb, size_t size, SDL_CompareCallback compare) { return SDL_bsearch(key, base, nmemb, size, compare); }
-
-//! @copydoc SDL_qsort_r()
-inline void qsort_r(void* base, size_t nmemb, size_t size, SDL_CompareCallback_r compare, void* userdata) { SDL_qsort_r(base, nmemb, size, compare, userdata); }
-
-//! @copydoc SDL_bsearch_r()
-inline void* bsearch_r(const void* key, const void* base, size_t nmemb, size_t size, SDL_CompareCallback_r compare, void* userdata) { return SDL_bsearch_r(key, base, nmemb, size, compare, userdata); }
-
-//! @copydoc SDL_abs()
-inline int abs(int x) { return SDL_abs(x); }
-
-//! @copydoc SDL_isalpha()
-inline int isalpha(int x) { return SDL_isalpha(x); }
-
-//! @copydoc SDL_isalnum()
-inline int isalnum(int x) { return SDL_isalnum(x); }
-
-//! @copydoc SDL_isblank()
-inline int isblank(int x) { return SDL_isblank(x); }
-
-//! @copydoc SDL_iscntrl()
-inline int iscntrl(int x) { return SDL_iscntrl(x); }
-
-//! @copydoc SDL_isdigit()
-inline int isdigit(int x) { return SDL_isdigit(x); }
-
-//! @copydoc SDL_isxdigit()
-inline int isxdigit(int x) { return SDL_isxdigit(x); }
-
-//! @copydoc SDL_ispunct()
-inline int ispunct(int x) { return SDL_ispunct(x); }
-
-//! @copydoc SDL_isspace()
-inline int isspace(int x) { return SDL_isspace(x); }
-
-//! @copydoc SDL_isupper()
-inline int isupper(int x) { return SDL_isupper(x); }
-
-//! @copydoc SDL_islower()
-inline int islower(int x) { return SDL_islower(x); }
-
-//! @copydoc SDL_isprint()
-inline int isprint(int x) { return SDL_isprint(x); }
-
-//! @copydoc SDL_isgraph()
-inline int isgraph(int x) { return SDL_isgraph(x); }
-
-//! @copydoc SDL_toupper()
-inline int toupper(int x) { return SDL_toupper(x); }
-
-//! @copydoc SDL_tolower()
-inline int tolower(int x) { return SDL_tolower(x); }
-
-//! @copydoc SDL_crc16()
-inline Uint16 crc16(Uint16 crc, const void* data, size_t len) { return SDL_crc16(crc, data, len); }
-
-//! @copydoc SDL_crc32()
-inline Uint32 crc32(Uint32 crc, const void* data, size_t len) { return SDL_crc32(crc, data, len); }
-
-//! @copydoc SDL_murmur3_32()
-inline Uint32 murmur3_32(const void* data, size_t len, Uint32 seed) { return SDL_murmur3_32(data, len, seed); }
-
-//! @copydoc SDL_memcpy()
-inline void* memcpy(void* dst, const void* src, size_t len) { return SDL_memcpy(dst, src, len); }
-
-//! @copydoc SDL_memmove()
-inline void* memmove(void* dst, const void* src, size_t len) { return SDL_memmove(dst, src, len); }
-
-//! @copydoc SDL_memset()
-inline void* memset(void* dst, int c, size_t len) { return SDL_memset(dst, c, len); }
-
-//! @copydoc SDL_memset4()
-inline void* memset4(void* dst, Uint32 val, size_t dwords) { return SDL_memset4(dst, val, dwords); }
-
-//! @copydoc SDL_memcmp()
-inline int memcmp(const void* s1, const void* s2, size_t len) { return SDL_memcmp(s1, s2, len); }
-
-//! @copydoc SDL_wcslen()
-inline size_t wcslen(const wchar_t* wstr) { return SDL_wcslen(wstr); }
-
-//! @copydoc SDL_wcsnlen()
-inline size_t wcsnlen(const wchar_t* wstr, size_t maxlen) { return SDL_wcsnlen(wstr, maxlen); }
-
-//! @copydoc SDL_wcslcpy()
-inline size_t wcslcpy(wchar_t* dst, const wchar_t* src, size_t maxlen) { return SDL_wcslcpy(dst, src, maxlen); }
-
-//! @copydoc SDL_wcslcat()
-inline size_t wcslcat(wchar_t* dst, const wchar_t* src, size_t maxlen) { return SDL_wcslcat(dst, src, maxlen); }
-
-//! @copydoc SDL_wcsdup()
-inline wchar_t* wcsdup(const wchar_t* wstr) { return SDL_wcsdup(wstr); }
-
-//! @copydoc SDL_wcsstr()
-inline wchar_t* wcsstr(const wchar_t* haystack, const wchar_t* needle) { return SDL_wcsstr(haystack, needle); }
-
-//! @copydoc SDL_wcsnstr()
-inline wchar_t* wcsnstr(const wchar_t* haystack, const wchar_t* needle, size_t maxlen) { return SDL_wcsnstr(haystack, needle, maxlen); }
-
-//! @copydoc SDL_wcscmp()
-inline int wcscmp(const wchar_t* str1, const wchar_t* str2) { return SDL_wcscmp(str1, str2); }
-
-//! @copydoc SDL_wcsncmp()
-inline int wcsncmp(const wchar_t* str1, const wchar_t* str2, size_t maxlen) { return SDL_wcsncmp(str1, str2, maxlen); }
-
-//! @copydoc SDL_wcscasecmp()
-inline int wcscasecmp(const wchar_t* str1, const wchar_t* str2) { return SDL_wcscasecmp(str1, str2); }
-
-//! @copydoc SDL_wcsncasecmp()
-inline int wcsncasecmp(const wchar_t* str1, const wchar_t* str2, size_t maxlen) { return SDL_wcsncasecmp(str1, str2, maxlen); }
-
-//! @copydoc SDL_wcstol()
-inline long wcstol(const wchar_t* str, wchar_t** endp, int base) { return SDL_wcstol(str, endp, base); }
-
-//! @copydoc SDL_strlen()
-inline size_t strlen(const char* str) { return SDL_strlen(str); }
-
-//! @copydoc SDL_strnlen()
-inline size_t strnlen(const char* str, size_t maxlen) { return SDL_strnlen(str, maxlen); }
-
-//! @copydoc SDL_strlcpy()
-inline size_t strlcpy(char* dst, const char* src, size_t maxlen) { return SDL_strlcpy(dst, src, maxlen); }
-
-//! @copydoc SDL_utf8strlcpy()
-inline size_t utf8strlcpy(char* dst, const char* src, size_t dst_bytes) { return SDL_utf8strlcpy(dst, src, dst_bytes); }
-
-//! @copydoc SDL_strlcat()
-inline size_t strlcat(char* dst, const char* src, size_t maxlen) { return SDL_strlcat(dst, src, maxlen); }
-
-//! @copydoc SDL_strdup()
-inline char* strdup(const char* str) { return SDL_strdup(str); }
-
-//! @copydoc SDL_strndup()
-inline char* strndup(const char* str, size_t maxlen) { return SDL_strndup(str, maxlen); }
-
-//! @copydoc SDL_strrev()
-inline char* strrev(char* str) { return SDL_strrev(str); }
-
-//! @copydoc SDL_strupr()
-inline char* strupr(char* str) { return SDL_strupr(str); }
-
-//! @copydoc SDL_strlwr()
-inline char* strlwr(char* str) { return SDL_strlwr(str); }
-
-//! @copydoc SDL_strchr()
-inline char* strchr(const char* str, int c) { return SDL_strchr(str, c); }
-
-//! @copydoc SDL_strrchr()
-inline char* strrchr(const char* str, int c) { return SDL_strrchr(str, c); }
-
-//! @copydoc SDL_strstr()
-inline char* strstr(const char* haystack, const char* needle) { return SDL_strstr(haystack, needle); }
-
-//! @copydoc SDL_strnstr()
-inline char* strnstr(const char* haystack, const char* needle, size_t maxlen) { return SDL_strnstr(haystack, needle, maxlen); }
-
-//! @copydoc SDL_strcasestr()
-inline char* strcasestr(const char* haystack, const char* needle) { return SDL_strcasestr(haystack, needle); }
-
-//! @copydoc SDL_strtok_r()
-inline char* strtok_r(char* str, const char* delim, char** saveptr) { return SDL_strtok_r(str, delim, saveptr); }
-
-//! @copydoc SDL_utf8strlen()
-inline size_t utf8strlen(const char* str) { return SDL_utf8strlen(str); }
-
-//! @copydoc SDL_utf8strnlen()
-inline size_t utf8strnlen(const char* str, size_t bytes) { return SDL_utf8strnlen(str, bytes); }
-
-//! @copydoc SDL_itoa()
-inline char* itoa(int value, char* str, int radix) { return SDL_itoa(value, str, radix); }
-
-//! @copydoc SDL_uitoa()
-inline char* uitoa(unsigned int value, char* str, int radix) { return SDL_uitoa(value, str, radix); }
-
-//! @copydoc SDL_ltoa()
-inline char* ltoa(long value, char* str, int radix) { return SDL_ltoa(value, str, radix); }
-
-//! @copydoc SDL_ultoa()
-inline char* ultoa(unsigned long value, char* str, int radix) { return SDL_ultoa(value, str, radix); }
-
-//! @copydoc SDL_lltoa()
-inline char* lltoa(long long value, char* str, int radix) { return SDL_lltoa(value, str, radix); }
-
-//! @copydoc SDL_ulltoa()
-inline char* ulltoa(unsigned long long value, char* str, int radix) { return SDL_ulltoa(value, str, radix); }
-
-//! @copydoc SDL_atoi()
-inline int atoi(const char* str) { return SDL_atoi(str); }
-
-//! @copydoc SDL_atof()
-inline double atof(const char* str) { return SDL_atof(str); }
-
-//! @copydoc SDL_strtol()
-inline long strtol(const char* str, char** endp, int base) { return SDL_strtol(str, endp, base); }
-
-//! @copydoc SDL_strtoul()
-inline unsigned long strtoul(const char* str, char** endp, int base) { return SDL_strtoul(str, endp, base); }
-
-//! @copydoc SDL_strtoll()
-inline long long strtoll(const char* str, char** endp, int base) { return SDL_strtoll(str, endp, base); }
-
-//! @copydoc SDL_strtoull()
-inline unsigned long long strtoull(const char* str, char** endp, int base) { return SDL_strtoull(str, endp, base); }
-
-//! @copydoc SDL_strtod()
-inline double strtod(const char* str, char** endp) { return SDL_strtod(str, endp); }
-
-//! @copydoc SDL_strcmp()
-inline int strcmp(const char* str1, const char* str2) { return SDL_strcmp(str1, str2); }
-
-//! @copydoc SDL_strncmp()
-inline int strncmp(const char* str1, const char* str2, size_t maxlen) { return SDL_strncmp(str1, str2, maxlen); }
-
-//! @copydoc SDL_strcasecmp()
-inline int strcasecmp(const char* str1, const char* str2) { return SDL_strcasecmp(str1, str2); }
-
-//! @copydoc SDL_strncasecmp()
-inline int strncasecmp(const char* str1, const char* str2, size_t maxlen) { return SDL_strncasecmp(str1, str2, maxlen); }
-
-//! @copydoc SDL_strpbrk()
-inline char* strpbrk(const char* str, const char* breakset) { return SDL_strpbrk(str, breakset); }
-
-//! @copydoc SDL_StepUTF8()
-inline Uint32 StepUTF8(const char** pstr, size_t* pslen) { return SDL_StepUTF8(pstr, pslen); }
-
-//! @copydoc SDL_StepBackUTF8()
-inline Uint32 StepBackUTF8(const char* start, const char** pstr) { return SDL_StepBackUTF8(start, pstr); }
-
-//! @copydoc SDL_UCS4ToUTF8()
-inline char* UCS4ToUTF8(Uint32 codepoint, char* dst) { return SDL_UCS4ToUTF8(codepoint, dst); }
-
-//! @copydoc SDL_vsscanf()
-inline int vsscanf(const char* text, const char* fmt, va_list ap) { return SDL_vsscanf(text, fmt, ap); }
-
-//! @copydoc SDL_vsnprintf()
-inline int vsnprintf(char* text, size_t maxlen, const char* fmt, va_list ap) { return SDL_vsnprintf(text, maxlen, fmt, ap); }
-
-//! @copydoc SDL_vswprintf()
-inline int vswprintf(wchar_t* text, size_t maxlen, const wchar_t* fmt, va_list ap) { return SDL_vswprintf(text, maxlen, fmt, ap); }
-
-//! @copydoc SDL_vasprintf()
-inline int vasprintf(char** strp, const char* fmt, va_list ap) { return SDL_vasprintf(strp, fmt, ap); }
-
-//! @copydoc SDL_srand()
-inline void srand(Uint64 seed) { SDL_srand(seed); }
-
-//! @copydoc SDL_rand()
-inline Sint32 rand(Sint32 n) { return SDL_rand(n); }
-
-//! @copydoc SDL_randf()
-inline float randf() { return SDL_randf(); }
-
-//! @copydoc SDL_rand_bits()
-inline Uint32 rand_bits() { return SDL_rand_bits(); }
-
-//! @copydoc SDL_rand_r()
-inline Sint32 rand_r(Uint64* state, Sint32 n) { return SDL_rand_r(state, n); }
-
-//! @copydoc SDL_randf_r()
-inline float randf_r(Uint64* state) { return SDL_randf_r(state); }
-
-//! @copydoc SDL_rand_bits_r()
-inline Uint32 rand_bits_r(Uint64* state) { return SDL_rand_bits_r(state); }
-
-//! @copydoc SDL_acos()
-inline double acos(double x) { return SDL_acos(x); }
-
-//! @copydoc SDL_acosf()
-inline float acosf(float x) { return SDL_acosf(x); }
-
-//! @copydoc SDL_asin()
-inline double asin(double x) { return SDL_asin(x); }
-
-//! @copydoc SDL_asinf()
-inline float asinf(float x) { return SDL_asinf(x); }
-
-//! @copydoc SDL_atan()
-inline double atan(double x) { return SDL_atan(x); }
-
-//! @copydoc SDL_atanf()
-inline float atanf(float x) { return SDL_atanf(x); }
-
-//! @copydoc SDL_atan2()
-inline double atan2(double y, double x) { return SDL_atan2(y, x); }
-
-//! @copydoc SDL_atan2f()
-inline float atan2f(float y, float x) { return SDL_atan2f(y, x); }
-
-//! @copydoc SDL_ceil()
-inline double ceil(double x) { return SDL_ceil(x); }
-
-//! @copydoc SDL_ceilf()
-inline float ceilf(float x) { return SDL_ceilf(x); }
-
-//! @copydoc SDL_copysign()
-inline double copysign(double x, double y) { return SDL_copysign(x, y); }
-
-//! @copydoc SDL_copysignf()
-inline float copysignf(float x, float y) { return SDL_copysignf(x, y); }
-
-//! @copydoc SDL_cos()
-inline double cos(double x) { return SDL_cos(x); }
-
-//! @copydoc SDL_cosf()
-inline float cosf(float x) { return SDL_cosf(x); }
-
-//! @copydoc SDL_exp()
-inline double exp(double x) { return SDL_exp(x); }
-
-//! @copydoc SDL_expf()
-inline float expf(float x) { return SDL_expf(x); }
-
-//! @copydoc SDL_fabs()
-inline double fabs(double x) { return SDL_fabs(x); }
-
-//! @copydoc SDL_fabsf()
-inline float fabsf(float x) { return SDL_fabsf(x); }
-
-//! @copydoc SDL_floor()
-inline double floor(double x) { return SDL_floor(x); }
-
-//! @copydoc SDL_floorf()
-inline float floorf(float x) { return SDL_floorf(x); }
-
-//! @copydoc SDL_trunc()
-inline double trunc(double x) { return SDL_trunc(x); }
-
-//! @copydoc SDL_truncf()
-inline float truncf(float x) { return SDL_truncf(x); }
-
-//! @copydoc SDL_fmod()
-inline double fmod(double x, double y) { return SDL_fmod(x, y); }
-
-//! @copydoc SDL_fmodf()
-inline float fmodf(float x, float y) { return SDL_fmodf(x, y); }
-
-//! @copydoc SDL_isinf()
-inline int isinf(double x) { return SDL_isinf(x); }
-
-//! @copydoc SDL_isinff()
-inline int isinff(float x) { return SDL_isinff(x); }
-
-//! @copydoc SDL_isnan()
-inline int isnan(double x) { return SDL_isnan(x); }
-
-//! @copydoc SDL_isnanf()
-inline int isnanf(float x) { return SDL_isnanf(x); }
-
-//! @copydoc SDL_log()
-inline double log(double x) { return SDL_log(x); }
-
-//! @copydoc SDL_logf()
-inline float logf(float x) { return SDL_logf(x); }
-
-//! @copydoc SDL_log10()
-inline double log10(double x) { return SDL_log10(x); }
-
-//! @copydoc SDL_log10f()
-inline float log10f(float x) { return SDL_log10f(x); }
-
-//! @copydoc SDL_modf()
-inline double modf(double x, double* y) { return SDL_modf(x, y); }
-
-//! @copydoc SDL_modff()
-inline float modff(float x, float* y) { return SDL_modff(x, y); }
-
-//! @copydoc SDL_pow()
-inline double pow(double x, double y) { return SDL_pow(x, y); }
-
-//! @copydoc SDL_powf()
-inline float powf(float x, float y) { return SDL_powf(x, y); }
-
-//! @copydoc SDL_round()
-inline double round(double x) { return SDL_round(x); }
-
-//! @copydoc SDL_roundf()
-inline float roundf(float x) { return SDL_roundf(x); }
-
-//! @copydoc SDL_lround()
-inline long lround(double x) { return SDL_lround(x); }
-
-//! @copydoc SDL_lroundf()
-inline long lroundf(float x) { return SDL_lroundf(x); }
-
-//! @copydoc SDL_scalbn()
-inline double scalbn(double x, int n) { return SDL_scalbn(x, n); }
-
-//! @copydoc SDL_scalbnf()
-inline float scalbnf(float x, int n) { return SDL_scalbnf(x, n); }
-
-//! @copydoc SDL_sin()
-inline double sin(double x) { return SDL_sin(x); }
-
-//! @copydoc SDL_sinf()
-inline float sinf(float x) { return SDL_sinf(x); }
-
-//! @copydoc SDL_sqrt()
-inline double sqrt(double x) { return SDL_sqrt(x); }
-
-//! @copydoc SDL_sqrtf()
-inline float sqrtf(float x) { return SDL_sqrtf(x); }
-
-//! @copydoc SDL_tan()
-inline double tan(double x) { return SDL_tan(x); }
-
-//! @copydoc SDL_tanf()
-inline float tanf(float x) { return SDL_tanf(x); }
-
-//! @copydoc SDL_iconv_open()
-inline SDL_iconv_t iconv_open(const char* tocode, const char* fromcode) { return SDL_iconv_open(tocode, fromcode); }
-
-//! @copydoc SDL_iconv_close()
-inline int iconv_close(SDL_iconv_t cd) { return SDL_iconv_close(cd); }
-
-//! @copydoc SDL_iconv()
-inline size_t iconv(SDL_iconv_t cd, const char** inbuf, size_t* inbytesleft, char** outbuf, size_t* outbytesleft) { return SDL_iconv(cd, inbuf, inbytesleft, outbuf, outbytesleft); }
-
-//! @copydoc SDL_iconv_string()
-inline char* iconv_string(const char* tocode, const char* fromcode, const char* inbuf, size_t inbytesleft) { return SDL_iconv_string(tocode, fromcode, inbuf, inbytesleft); }
-
-//! @copydoc SDL_size_mul_check_overflow()
-inline bool size_mul_check_overflow(size_t a, size_t b, size_t* ret) { return SDL_size_mul_check_overflow(a, b, ret); }
-
-//! @copydoc SDL_size_add_check_overflow()
-inline bool size_add_check_overflow(size_t a, size_t b, size_t* ret) { return SDL_size_add_check_overflow(a, b, ret); }
-
 //! @copydoc SDL_ReportAssertion()
 inline SDL_AssertState ReportAssertion(SDL_AssertData* data, const char* func, const char* file, int line) { return SDL_ReportAssertion(data, func, file, line); }
 
@@ -3690,101 +3203,102 @@ inline const char* GetRevision() { return SDL_GetRevision(); }
 class Window
 {
     SDL_Window* _ptr;
-    Window(SDL_Window* ptr) : _ptr(ptr) { }
+    bool _block_destroy;
+    Window(SDL_Window* ptr, bool block_destroy) : _ptr(ptr), _block_destroy(block_destroy) { }
 public:
     static inline std::shared_ptr<Window> Create(std::string& title, int w, int h, SDL::WindowFlags flags) { return get(SDL::raw::CreateWindow(title.c_str(), w, h, flags)); }
 
     Window(const Window&) = delete;
-    ~Window() { SDL::raw::DestroyWindow(_ptr); }
+    ~Window() { if (!_block_destroy) SDL::raw::DestroyWindow(_ptr); }
     Window& operator=(const Window&) = delete;
 
-    inline SDL_DisplayID GetDisplayFor() const { return SDL::raw::GetDisplayForWindow(get()); }
-    inline float GetPixelDensity() const { return SDL::raw::GetWindowPixelDensity(get()); }
-    inline float GetDisplayScale() const { return SDL::raw::GetWindowDisplayScale(get()); }
-    inline void SetFullscreenMode(const SDL_DisplayMode* mode) const { SDL::raw::SetWindowFullscreenMode(get(), mode); }
-    inline const SDL_DisplayMode* GetFullscreenMode() const { return SDL::raw::GetWindowFullscreenMode(get()); }
-    inline void* GetICCProfile(size_t* size) const { return SDL::raw::GetWindowICCProfile(get(), size); }
-    inline SDL_PixelFormat GetPixelFormat() const { return SDL::raw::GetWindowPixelFormat(get()); }
-    inline std::shared_ptr<SDL::Window> CreatePopup(int offset_x, int offset_y, int w, int h, SDL::WindowFlags flags) const { return SDL::Window::get(SDL::raw::CreatePopupWindow(get(), offset_x, offset_y, w, h, flags)); }
-    inline SDL_WindowID GetID() const { return SDL::raw::GetWindowID(get()); }
-    inline std::shared_ptr<SDL::Window> GetParent() const { return SDL::Window::get(SDL::raw::GetWindowParent(get())); }
-    inline SDL_PropertiesID GetProperties() const { return SDL::raw::GetWindowProperties(get()); }
-    inline SDL::WindowFlags GetFlags() const { return (SDL::WindowFlags) SDL::raw::GetWindowFlags(get()); }
-    inline void SetTitle(std::string& title) const { SDL::raw::SetWindowTitle(get(), title.c_str()); }
-    inline std::string GetTitle() const { return SDL::raw::GetWindowTitle(get()); }
-    inline void SetIcon(std::shared_ptr<SDL::Surface> icon) const { SDL::raw::SetWindowIcon(get(), icon->get()); }
-    inline void SetPosition(int x, int y) const { SDL::raw::SetWindowPosition(get(), x, y); }
-    inline void GetPosition(int* x, int* y) const { SDL::raw::GetWindowPosition(get(), x, y); }
-    inline void SetSize(int w, int h) const { SDL::raw::SetWindowSize(get(), w, h); }
-    inline void GetSize(int* w, int* h) const { SDL::raw::GetWindowSize(get(), w, h); }
-    inline void GetSafeArea(SDL_Rect* rect) const { SDL::raw::GetWindowSafeArea(get(), rect); }
-    inline void SetAspectRatio(float min_aspect, float max_aspect) const { SDL::raw::SetWindowAspectRatio(get(), min_aspect, max_aspect); }
-    inline void GetAspectRatio(float* min_aspect, float* max_aspect) const { SDL::raw::GetWindowAspectRatio(get(), min_aspect, max_aspect); }
-    inline void GetBordersSize(int* top, int* left, int* bottom, int* right) const { SDL::raw::GetWindowBordersSize(get(), top, left, bottom, right); }
-    inline void GetSizeInPixels(int* w, int* h) const { SDL::raw::GetWindowSizeInPixels(get(), w, h); }
-    inline void SetMinimumSize(int min_w, int min_h) const { SDL::raw::SetWindowMinimumSize(get(), min_w, min_h); }
-    inline void GetMinimumSize(int* w, int* h) const { SDL::raw::GetWindowMinimumSize(get(), w, h); }
-    inline void SetMaximumSize(int max_w, int max_h) const { SDL::raw::SetWindowMaximumSize(get(), max_w, max_h); }
-    inline void GetMaximumSize(int* w, int* h) const { SDL::raw::GetWindowMaximumSize(get(), w, h); }
-    inline void SetBordered(bool bordered) const { SDL::raw::SetWindowBordered(get(), bordered); }
-    inline void SetResizable(bool resizable) const { SDL::raw::SetWindowResizable(get(), resizable); }
-    inline void SetAlwaysOnTop(bool on_top) const { SDL::raw::SetWindowAlwaysOnTop(get(), on_top); }
-    inline void Show() const { SDL::raw::ShowWindow(get()); }
-    inline void Hide() const { SDL::raw::HideWindow(get()); }
-    inline void Raise() const { SDL::raw::RaiseWindow(get()); }
-    inline void Maximize() const { SDL::raw::MaximizeWindow(get()); }
-    inline void Minimize() const { SDL::raw::MinimizeWindow(get()); }
-    inline void Restore() const { SDL::raw::RestoreWindow(get()); }
-    inline void SetFullscreen(bool fullscreen) const { SDL::raw::SetWindowFullscreen(get(), fullscreen); }
-    inline bool Sync() const { return SDL::raw::SyncWindow(get()); }
-    inline bool HasSurface() const { return SDL::raw::WindowHasSurface(get()); }
-    inline std::shared_ptr<SDL::Surface> GetSurface() const { return SDL::Surface::get(SDL::raw::GetWindowSurface(get())); }
-    inline void SetSurfaceVSync(int vsync) const { SDL::raw::SetWindowSurfaceVSync(get(), vsync); }
-    inline void GetSurfaceVSync(int* vsync) const { SDL::raw::GetWindowSurfaceVSync(get(), vsync); }
-    inline void UpdateSurface() const { SDL::raw::UpdateWindowSurface(get()); }
-    inline void UpdateSurfaceRects(const SDL_Rect* rects, int numrects) const { SDL::raw::UpdateWindowSurfaceRects(get(), rects, numrects); }
-    inline void DestroySurface() const { SDL::raw::DestroyWindowSurface(get()); }
-    inline void SetKeyboardGrab(bool grabbed) const { SDL::raw::SetWindowKeyboardGrab(get(), grabbed); }
-    inline void SetMouseGrab(bool grabbed) const { SDL::raw::SetWindowMouseGrab(get(), grabbed); }
-    inline bool GetKeyboardGrab() const { return SDL::raw::GetWindowKeyboardGrab(get()); }
-    inline bool GetMouseGrab() const { return SDL::raw::GetWindowMouseGrab(get()); }
-    inline void SetMouseRect(const SDL_Rect* rect) const { SDL::raw::SetWindowMouseRect(get(), rect); }
-    inline const SDL_Rect* GetMouseRect() const { return SDL::raw::GetWindowMouseRect(get()); }
-    inline void SetOpacity(float opacity) const { SDL::raw::SetWindowOpacity(get(), opacity); }
-    inline float GetOpacity() const { return SDL::raw::GetWindowOpacity(get()); }
-    inline void SetParent(std::shared_ptr<SDL::Window> parent) const { SDL::raw::SetWindowParent(get(), parent->get()); }
-    inline void SetModal(bool modal) const { SDL::raw::SetWindowModal(get(), modal); }
-    inline void SetFocusable(bool focusable) const { SDL::raw::SetWindowFocusable(get(), focusable); }
-    inline void ShowSystemMenu(int x, int y) const { SDL::raw::ShowWindowSystemMenu(get(), x, y); }
-    inline void SetHitTest(SDL_HitTest callback, void* callback_data) const { SDL::raw::SetWindowHitTest(get(), callback, callback_data); }
-    inline void SetShape(std::shared_ptr<SDL::Surface> shape) const { SDL::raw::SetWindowShape(get(), shape->get()); }
-    inline void Flash(SDL_FlashOperation operation) const { SDL::raw::FlashWindow(get(), operation); }
-    inline SDL_GLContext GL_CreateContext() const { return SDL::raw::GL_CreateContext(get()); }
-    inline void GL_MakeCurrent(SDL_GLContext context) const { SDL::raw::GL_MakeCurrent(get(), context); }
-    inline SDL_EGLSurface EGL_GetSurface() const { return SDL::raw::EGL_GetWindowSurface(get()); }
-    inline void GL_Swap() const { SDL::raw::GL_SwapWindow(get()); }
-    inline void StartTextInput() const { SDL::raw::StartTextInput(get()); }
-    inline void StartTextInputWithProperties(SDL_PropertiesID props) const { SDL::raw::StartTextInputWithProperties(get(), props); }
-    inline bool TextInputActive() const { return SDL::raw::TextInputActive(get()); }
-    inline void StopTextInput() const { SDL::raw::StopTextInput(get()); }
-    inline void ClearComposition() const { SDL::raw::ClearComposition(get()); }
-    inline void SetTextInputArea(const SDL_Rect* rect, int cursor) const { SDL::raw::SetTextInputArea(get(), rect, cursor); }
-    inline void GetTextInputArea(SDL_Rect* rect, int* cursor) const { SDL::raw::GetTextInputArea(get(), rect, cursor); }
-    inline bool ScreenKeyboardShown() const { return SDL::raw::ScreenKeyboardShown(get()); }
-    inline void WarpMouseIn(float x, float y) const { SDL::raw::WarpMouseInWindow(get(), x, y); }
-    inline void SetRelativeMouseMode(bool enabled) const { SDL::raw::SetWindowRelativeMouseMode(get(), enabled); }
-    inline bool GetRelativeMouseMode() const { return SDL::raw::GetWindowRelativeMouseMode(get()); }
-    inline SDL_MetalView Metal_CreateView() const { return SDL::raw::Metal_CreateView(get()); }
-    inline std::shared_ptr<SDL::Renderer> CreateRenderer(std::string& name) const { return SDL::Renderer::get(SDL::raw::CreateRenderer(get(), name.c_str())); }
-    inline std::shared_ptr<SDL::Renderer> GetRenderer() const { return SDL::Renderer::get(SDL::raw::GetRenderer(get())); }
+    inline SDL_DisplayID GetDisplayFor() const { return SDL::raw::GetDisplayForWindow(_ptr); }
+    inline float GetPixelDensity() const { return SDL::raw::GetWindowPixelDensity(_ptr); }
+    inline float GetDisplayScale() const { return SDL::raw::GetWindowDisplayScale(_ptr); }
+    inline void SetFullscreenMode(const SDL_DisplayMode* mode) const { SDL::raw::SetWindowFullscreenMode(_ptr, mode); }
+    inline const SDL_DisplayMode* GetFullscreenMode() const { return SDL::raw::GetWindowFullscreenMode(_ptr); }
+    inline void* GetICCProfile(size_t* size) const { return SDL::raw::GetWindowICCProfile(_ptr, size); }
+    inline SDL_PixelFormat GetPixelFormat() const { return SDL::raw::GetWindowPixelFormat(_ptr); }
+    inline std::shared_ptr<SDL::Window> CreatePopup(int offset_x, int offset_y, int w, int h, SDL::WindowFlags flags) const { return SDL::Window::get(SDL::raw::CreatePopupWindow(_ptr, offset_x, offset_y, w, h, flags)); }
+    inline SDL_WindowID GetID() const { return SDL::raw::GetWindowID(_ptr); }
+    inline std::shared_ptr<SDL::Window> GetParent() const { return SDL::Window::get(SDL::raw::GetWindowParent(_ptr)); }
+    inline SDL_PropertiesID GetProperties() const { return SDL::raw::GetWindowProperties(_ptr); }
+    inline SDL::WindowFlags GetFlags() const { return (SDL::WindowFlags) SDL::raw::GetWindowFlags(_ptr); }
+    inline void SetTitle(std::string& title) const { SDL::raw::SetWindowTitle(_ptr, title.c_str()); }
+    inline std::string GetTitle() const { return SDL::raw::GetWindowTitle(_ptr); }
+    inline void SetIcon(std::shared_ptr<SDL::Surface> icon) const { SDL::raw::SetWindowIcon(_ptr, icon->get()); }
+    inline void SetPosition(int x, int y) const { SDL::raw::SetWindowPosition(_ptr, x, y); }
+    inline SDL::Point GetPosition() const { SDL::Point _p = {}; SDL::raw::GetWindowPosition(_ptr, &_p.x, &_p.y); return _p; }
+    inline void SetSize(int w, int h) const { SDL::raw::SetWindowSize(_ptr, w, h); }
+    inline SDL::Point GetSize() const { SDL::Point _p = {}; SDL::raw::GetWindowSize(_ptr, &_p.x, &_p.y); return _p; }
+    inline SDL::Rect GetSafeArea() const { SDL_Rect _out; SDL::raw::GetWindowSafeArea(_ptr, &_out); return _out; }
+    inline void SetAspectRatio(float min_aspect, float max_aspect) const { SDL::raw::SetWindowAspectRatio(_ptr, min_aspect, max_aspect); }
+    inline SDL::FPoint GetAspectRatio() const { SDL::FPoint _p = {}; SDL::raw::GetWindowAspectRatio(_ptr, &_p.x, &_p.y); return _p; }
+    inline SDL::Rect GetBordersSize() const { SDL::Rect _r = {}; SDL::raw::GetWindowBordersSize(_ptr, &_r.x, &_r.y, &_r.w, &_r.h); return _r; }
+    inline SDL::Point GetSizeInPixels() const { SDL::Point _p = {}; SDL::raw::GetWindowSizeInPixels(_ptr, &_p.x, &_p.y); return _p; }
+    inline void SetMinimumSize(int min_w, int min_h) const { SDL::raw::SetWindowMinimumSize(_ptr, min_w, min_h); }
+    inline SDL::Point GetMinimumSize() const { SDL::Point _p = {}; SDL::raw::GetWindowMinimumSize(_ptr, &_p.x, &_p.y); return _p; }
+    inline void SetMaximumSize(int max_w, int max_h) const { SDL::raw::SetWindowMaximumSize(_ptr, max_w, max_h); }
+    inline SDL::Point GetMaximumSize() const { SDL::Point _p = {}; SDL::raw::GetWindowMaximumSize(_ptr, &_p.x, &_p.y); return _p; }
+    inline void SetBordered(bool bordered) const { SDL::raw::SetWindowBordered(_ptr, bordered); }
+    inline void SetResizable(bool resizable) const { SDL::raw::SetWindowResizable(_ptr, resizable); }
+    inline void SetAlwaysOnTop(bool on_top) const { SDL::raw::SetWindowAlwaysOnTop(_ptr, on_top); }
+    inline void Show() const { SDL::raw::ShowWindow(_ptr); }
+    inline void Hide() const { SDL::raw::HideWindow(_ptr); }
+    inline void Raise() const { SDL::raw::RaiseWindow(_ptr); }
+    inline void Maximize() const { SDL::raw::MaximizeWindow(_ptr); }
+    inline void Minimize() const { SDL::raw::MinimizeWindow(_ptr); }
+    inline void Restore() const { SDL::raw::RestoreWindow(_ptr); }
+    inline void SetFullscreen(bool fullscreen) const { SDL::raw::SetWindowFullscreen(_ptr, fullscreen); }
+    inline bool Sync() const { return SDL::raw::SyncWindow(_ptr); }
+    inline bool HasSurface() const { return SDL::raw::WindowHasSurface(_ptr); }
+    inline std::shared_ptr<SDL::Surface> GetSurface() const { return SDL::Surface::get(SDL::raw::GetWindowSurface(_ptr)); }
+    inline void SetSurfaceVSync(int vsync) const { SDL::raw::SetWindowSurfaceVSync(_ptr, vsync); }
+    inline int GetSurfaceVSync() const { int _out; SDL::raw::GetWindowSurfaceVSync(_ptr, &_out); return _out; }
+    inline void UpdateSurface() const { SDL::raw::UpdateWindowSurface(_ptr); }
+    inline void UpdateSurfaceRects(const SDL::Rect& rects, int numrects) const { SDL::raw::UpdateWindowSurfaceRects(_ptr, &rects, numrects); }
+    inline void DestroySurface() const { SDL::raw::DestroyWindowSurface(_ptr); }
+    inline void SetKeyboardGrab(bool grabbed) const { SDL::raw::SetWindowKeyboardGrab(_ptr, grabbed); }
+    inline void SetMouseGrab(bool grabbed) const { SDL::raw::SetWindowMouseGrab(_ptr, grabbed); }
+    inline bool GetKeyboardGrab() const { return SDL::raw::GetWindowKeyboardGrab(_ptr); }
+    inline bool GetMouseGrab() const { return SDL::raw::GetWindowMouseGrab(_ptr); }
+    inline void SetMouseRect(const SDL::Rect& rect) const { SDL::raw::SetWindowMouseRect(_ptr, &rect); }
+    inline const SDL::Rect& GetMouseRect() const { return *SDL::raw::GetWindowMouseRect(_ptr); }
+    inline void SetOpacity(float opacity) const { SDL::raw::SetWindowOpacity(_ptr, opacity); }
+    inline float GetOpacity() const { return SDL::raw::GetWindowOpacity(_ptr); }
+    inline void SetParent(std::shared_ptr<SDL::Window> parent) const { SDL::raw::SetWindowParent(_ptr, parent->get()); }
+    inline void SetModal(bool modal) const { SDL::raw::SetWindowModal(_ptr, modal); }
+    inline void SetFocusable(bool focusable) const { SDL::raw::SetWindowFocusable(_ptr, focusable); }
+    inline void ShowSystemMenu(int x, int y) const { SDL::raw::ShowWindowSystemMenu(_ptr, x, y); }
+    inline void SetHitTest(SDL_HitTest callback, void* callback_data) const { SDL::raw::SetWindowHitTest(_ptr, callback, callback_data); }
+    inline void SetShape(std::shared_ptr<SDL::Surface> shape) const { SDL::raw::SetWindowShape(_ptr, shape->get()); }
+    inline void Flash(SDL_FlashOperation operation) const { SDL::raw::FlashWindow(_ptr, operation); }
+    inline SDL_GLContext GL_CreateContext() const { return SDL::raw::GL_CreateContext(_ptr); }
+    inline void GL_MakeCurrent(SDL_GLContext context) const { SDL::raw::GL_MakeCurrent(_ptr, context); }
+    inline SDL_EGLSurface EGL_GetSurface() const { return SDL::raw::EGL_GetWindowSurface(_ptr); }
+    inline void GL_Swap() const { SDL::raw::GL_SwapWindow(_ptr); }
+    inline void StartTextInput() const { SDL::raw::StartTextInput(_ptr); }
+    inline void StartTextInputWithProperties(SDL_PropertiesID props) const { SDL::raw::StartTextInputWithProperties(_ptr, props); }
+    inline bool TextInputActive() const { return SDL::raw::TextInputActive(_ptr); }
+    inline void StopTextInput() const { SDL::raw::StopTextInput(_ptr); }
+    inline void ClearComposition() const { SDL::raw::ClearComposition(_ptr); }
+    inline void SetTextInputArea(const SDL::Rect& rect, int cursor) const { SDL::raw::SetTextInputArea(_ptr, &rect, cursor); }
+    inline void GetTextInputArea(SDL::Rect& rect, int* cursor) const { SDL::raw::GetTextInputArea(_ptr, &rect, cursor); }
+    inline bool ScreenKeyboardShown() const { return SDL::raw::ScreenKeyboardShown(_ptr); }
+    inline void WarpMouseIn(float x, float y) const { SDL::raw::WarpMouseInWindow(_ptr, x, y); }
+    inline void SetRelativeMouseMode(bool enabled) const { SDL::raw::SetWindowRelativeMouseMode(_ptr, enabled); }
+    inline bool GetRelativeMouseMode() const { return SDL::raw::GetWindowRelativeMouseMode(_ptr); }
+    inline SDL_MetalView Metal_CreateView() const { return SDL::raw::Metal_CreateView(_ptr); }
+    inline std::shared_ptr<SDL::Renderer> CreateRenderer(std::string& name) const { return SDL::Renderer::get(SDL::raw::CreateRenderer(_ptr, name.c_str())); }
+    inline std::shared_ptr<SDL::Renderer> GetRenderer() const { return SDL::Renderer::get(SDL::raw::GetRenderer(_ptr)); }
 
     inline SDL_Window* get() const { return _ptr; }
 
-    static inline std::shared_ptr<Window> get(SDL_Window* ptr)
+    static inline std::shared_ptr<Window> get(SDL_Window* ptr, bool block_destroy = false)
     {
         auto& entry = _ptrs[ptr];
         if (!entry.expired()) return entry.lock();
-        std::shared_ptr<Window> obj(new Window(ptr));
+        std::shared_ptr<Window> obj(new Window(ptr, block_destroy));
         entry = obj;
         return obj;
     }
@@ -3795,80 +3309,81 @@ private:
 class Renderer
 {
     SDL_Renderer* _ptr;
-    Renderer(SDL_Renderer* ptr) : _ptr(ptr) { }
+    bool _block_destroy;
+    Renderer(SDL_Renderer* ptr, bool block_destroy) : _ptr(ptr), _block_destroy(block_destroy) { }
 public:
     static inline std::shared_ptr<Renderer> Create(std::shared_ptr<SDL::Window> window, std::string& name) { return get(SDL::raw::CreateRenderer(window->get(), name.c_str())); }
 
     Renderer(const Renderer&) = delete;
-    ~Renderer() { SDL::raw::DestroyRenderer(_ptr); }
+    ~Renderer() { if (!_block_destroy) SDL::raw::DestroyRenderer(_ptr); }
     Renderer& operator=(const Renderer&) = delete;
 
-    inline std::shared_ptr<SDL::Window> GetWindow() const { return SDL::Window::get(SDL::raw::GetRenderWindow(get())); }
-    inline std::string GeterName() const { return SDL::raw::GetRendererName(get()); }
-    inline SDL_PropertiesID GeterProperties() const { return SDL::raw::GetRendererProperties(get()); }
-    inline void GetOutputSize(int* w, int* h) const { SDL::raw::GetRenderOutputSize(get(), w, h); }
-    inline void GetCurrentOutputSize(int* w, int* h) const { SDL::raw::GetCurrentRenderOutputSize(get(), w, h); }
-    inline SDL_Texture* CreateTexture(SDL_PixelFormat format, SDL_TextureAccess access, int w, int h) const { return SDL::raw::CreateTexture(get(), format, access, w, h); }
-    inline SDL_Texture* CreateTextureFromSurface(std::shared_ptr<SDL::Surface> surface) const { return SDL::raw::CreateTextureFromSurface(get(), surface->get()); }
-    inline SDL_Texture* CreateTextureWithProperties(SDL_PropertiesID props) const { return SDL::raw::CreateTextureWithProperties(get(), props); }
-    inline void SetTarget(SDL_Texture* texture) const { SDL::raw::SetRenderTarget(get(), texture); }
-    inline SDL_Texture* GetTarget() const { return SDL::raw::GetRenderTarget(get()); }
-    inline void SetLogicalPresentation(int w, int h, SDL_RendererLogicalPresentation mode) const { SDL::raw::SetRenderLogicalPresentation(get(), w, h, mode); }
-    inline void GetLogicalPresentation(int* w, int* h, SDL_RendererLogicalPresentation* mode) const { SDL::raw::GetRenderLogicalPresentation(get(), w, h, mode); }
-    inline void GetLogicalPresentationRect(SDL_FRect* rect) const { SDL::raw::GetRenderLogicalPresentationRect(get(), rect); }
-    inline void CoordinatesFromWindow(float window_x, float window_y, float* x, float* y) const { SDL::raw::RenderCoordinatesFromWindow(get(), window_x, window_y, x, y); }
-    inline void CoordinatesToWindow(float x, float y, float* window_x, float* window_y) const { SDL::raw::RenderCoordinatesToWindow(get(), x, y, window_x, window_y); }
-    inline void ConvertEventToCoordinates(SDL_Event* event) const { SDL::raw::ConvertEventToRenderCoordinates(get(), event); }
-    inline void SetViewport(const SDL_Rect* rect) const { SDL::raw::SetRenderViewport(get(), rect); }
-    inline void GetViewport(SDL_Rect* rect) const { SDL::raw::GetRenderViewport(get(), rect); }
-    inline bool ViewportSet() const { return SDL::raw::RenderViewportSet(get()); }
-    inline void GetSafeArea(SDL_Rect* rect) const { SDL::raw::GetRenderSafeArea(get(), rect); }
-    inline void SetClipRect(const SDL_Rect* rect) const { SDL::raw::SetRenderClipRect(get(), rect); }
-    inline void GetClipRect(SDL_Rect* rect) const { SDL::raw::GetRenderClipRect(get(), rect); }
-    inline void ClipEnabled() const { SDL::raw::RenderClipEnabled(get()); }
-    inline void SetScale(float scaleX, float scaleY) const { SDL::raw::SetRenderScale(get(), scaleX, scaleY); }
-    inline void GetScale(float* scaleX, float* scaleY) const { SDL::raw::GetRenderScale(get(), scaleX, scaleY); }
-    inline void SetDrawColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a) const { SDL::raw::SetRenderDrawColor(get(), r, g, b, a); }
-    inline void SetDrawColorFloat(float r, float g, float b, float a) const { SDL::raw::SetRenderDrawColorFloat(get(), r, g, b, a); }
-    inline void GetDrawColor(Uint8* r, Uint8* g, Uint8* b, Uint8* a) const { SDL::raw::GetRenderDrawColor(get(), r, g, b, a); }
-    inline void GetDrawColorFloat(float* r, float* g, float* b, float* a) const { SDL::raw::GetRenderDrawColorFloat(get(), r, g, b, a); }
-    inline void SetColorScale(float scale) const { SDL::raw::SetRenderColorScale(get(), scale); }
-    inline void GetColorScale(float* scale) const { SDL::raw::GetRenderColorScale(get(), scale); }
-    inline void SetDrawBlendMode(SDL_BlendMode blendMode) const { SDL::raw::SetRenderDrawBlendMode(get(), blendMode); }
-    inline void GetDrawBlendMode(SDL_BlendMode* blendMode) const { SDL::raw::GetRenderDrawBlendMode(get(), blendMode); }
-    inline void Clear() const { SDL::raw::RenderClear(get()); }
-    inline void Point(float x, float y) const { SDL::raw::RenderPoint(get(), x, y); }
-    inline void Points(const SDL_FPoint* points, int count) const { SDL::raw::RenderPoints(get(), points, count); }
-    inline void Line(float x1, float y1, float x2, float y2) const { SDL::raw::RenderLine(get(), x1, y1, x2, y2); }
-    inline void Lines(const SDL_FPoint* points, int count) const { SDL::raw::RenderLines(get(), points, count); }
-    inline void Rect(const SDL_FRect* rect) const { SDL::raw::RenderRect(get(), rect); }
-    inline void Rects(const SDL_FRect* rects, int count) const { SDL::raw::RenderRects(get(), rects, count); }
-    inline void FillRect(const SDL_FRect* rect) const { SDL::raw::RenderFillRect(get(), rect); }
-    inline void FillRects(const SDL_FRect* rects, int count) const { SDL::raw::RenderFillRects(get(), rects, count); }
-    inline void Texture(SDL_Texture* texture, const SDL_FRect* srcrect, const SDL_FRect* dstrect) const { SDL::raw::RenderTexture(get(), texture, srcrect, dstrect); }
-    inline void TextureRotated(SDL_Texture* texture, const SDL_FRect* srcrect, const SDL_FRect* dstrect, double angle, const SDL_FPoint* center, SDL_FlipMode flip) const { SDL::raw::RenderTextureRotated(get(), texture, srcrect, dstrect, angle, center, flip); }
-    inline void TextureAffine(SDL_Texture* texture, const SDL_FRect* srcrect, const SDL_FPoint* origin, const SDL_FPoint* right, const SDL_FPoint* down) const { SDL::raw::RenderTextureAffine(get(), texture, srcrect, origin, right, down); }
-    inline void TextureTiled(SDL_Texture* texture, const SDL_FRect* srcrect, float scale, const SDL_FRect* dstrect) const { SDL::raw::RenderTextureTiled(get(), texture, srcrect, scale, dstrect); }
-    inline void Texture9Grid(SDL_Texture* texture, const SDL_FRect* srcrect, float left_width, float right_width, float top_height, float bottom_height, float scale, const SDL_FRect* dstrect) const { SDL::raw::RenderTexture9Grid(get(), texture, srcrect, left_width, right_width, top_height, bottom_height, scale, dstrect); }
-    inline void Geometry(SDL_Texture* texture, const SDL_Vertex* vertices, int num_vertices, const int* indices, int num_indices) const { SDL::raw::RenderGeometry(get(), texture, vertices, num_vertices, indices, num_indices); }
-    inline void GeometryRaw(SDL_Texture* texture, const float* xy, int xy_stride, const SDL_FColor* color, int color_stride, const float* uv, int uv_stride, int num_vertices, const void* indices, int num_indices, int size_indices) const { SDL::raw::RenderGeometryRaw(get(), texture, xy, xy_stride, color, color_stride, uv, uv_stride, num_vertices, indices, num_indices, size_indices); }
-    inline std::shared_ptr<SDL::Surface> ReadPixels(const SDL_Rect* rect) const { return SDL::Surface::get(SDL::raw::RenderReadPixels(get(), rect)); }
-    inline void Present() const { SDL::raw::RenderPresent(get()); }
-    inline void Flusher() const { SDL::raw::FlushRenderer(get()); }
-    inline void* GetMetalLayer() const { return SDL::raw::GetRenderMetalLayer(get()); }
-    inline void* GetMetalCommandEncoder() const { return SDL::raw::GetRenderMetalCommandEncoder(get()); }
-    inline void AddVulkanSemaphores(Uint32 wait_stage_mask, Sint64 wait_semaphore, Sint64 signal_semaphore) const { SDL::raw::AddVulkanRenderSemaphores(get(), wait_stage_mask, wait_semaphore, signal_semaphore); }
-    inline void SetVSync(int vsync) const { SDL::raw::SetRenderVSync(get(), vsync); }
-    inline void GetVSync(int* vsync) const { SDL::raw::GetRenderVSync(get(), vsync); }
-    inline void DebugText(float x, float y, std::string& str) const { SDL::raw::RenderDebugText(get(), x, y, str.c_str()); }
+    inline std::shared_ptr<SDL::Window> GetRenderWindow() const { return SDL::Window::get(SDL::raw::GetRenderWindow(_ptr)); }
+    inline std::string GetName() const { return SDL::raw::GetRendererName(_ptr); }
+    inline SDL_PropertiesID GetProperties() const { return SDL::raw::GetRendererProperties(_ptr); }
+    inline SDL::Point GetRenderOutputSize() const { SDL::Point _p = {}; SDL::raw::GetRenderOutputSize(_ptr, &_p.x, &_p.y); return _p; }
+    inline SDL::Point GetCurrentRenderOutputSize() const { SDL::Point _p = {}; SDL::raw::GetCurrentRenderOutputSize(_ptr, &_p.x, &_p.y); return _p; }
+    inline std::shared_ptr<SDL::Texture> CreateTexture(SDL_PixelFormat format, SDL_TextureAccess access, int w, int h) const { return SDL::Texture::get(SDL::raw::CreateTexture(_ptr, format, access, w, h)); }
+    inline std::shared_ptr<SDL::Texture> CreateTextureFromSurface(std::shared_ptr<SDL::Surface> surface) const { return SDL::Texture::get(SDL::raw::CreateTextureFromSurface(_ptr, surface->get())); }
+    inline std::shared_ptr<SDL::Texture> CreateTextureWithProperties(SDL_PropertiesID props) const { return SDL::Texture::get(SDL::raw::CreateTextureWithProperties(_ptr, props)); }
+    inline void SetRenderTarget(std::shared_ptr<SDL::Texture> texture) const { SDL::raw::SetRenderTarget(_ptr, texture->get()); }
+    inline std::shared_ptr<SDL::Texture> GetRenderTarget() const { return SDL::Texture::get(SDL::raw::GetRenderTarget(_ptr)); }
+    inline void SetRenderLogicalPresentation(int w, int h, SDL_RendererLogicalPresentation mode) const { SDL::raw::SetRenderLogicalPresentation(_ptr, w, h, mode); }
+    inline void GetRenderLogicalPresentation(int* w, int* h, SDL_RendererLogicalPresentation* mode) const { SDL::raw::GetRenderLogicalPresentation(_ptr, w, h, mode); }
+    inline SDL::FRect GetRenderLogicalPresentationRect() const { SDL_FRect _out; SDL::raw::GetRenderLogicalPresentationRect(_ptr, &_out); return _out; }
+    inline void RenderCoordinatesFromWindow(float window_x, float window_y, float* x, float* y) const { SDL::raw::RenderCoordinatesFromWindow(_ptr, window_x, window_y, x, y); }
+    inline void RenderCoordinatesToWindow(float x, float y, float* window_x, float* window_y) const { SDL::raw::RenderCoordinatesToWindow(_ptr, x, y, window_x, window_y); }
+    inline void ConvertEventToRenderCoordinates(SDL_Event* event) const { SDL::raw::ConvertEventToRenderCoordinates(_ptr, event); }
+    inline void SetRenderViewport(const SDL::Rect& rect) const { SDL::raw::SetRenderViewport(_ptr, &rect); }
+    inline SDL::Rect GetRenderViewport() const { SDL_Rect _out; SDL::raw::GetRenderViewport(_ptr, &_out); return _out; }
+    inline bool RenderViewportSet() const { return SDL::raw::RenderViewportSet(_ptr); }
+    inline SDL::Rect GetRenderSafeArea() const { SDL_Rect _out; SDL::raw::GetRenderSafeArea(_ptr, &_out); return _out; }
+    inline void SetRenderClipRect(const SDL::Rect& rect) const { SDL::raw::SetRenderClipRect(_ptr, &rect); }
+    inline SDL::Rect GetRenderClipRect() const { SDL_Rect _out; SDL::raw::GetRenderClipRect(_ptr, &_out); return _out; }
+    inline void RenderClipEnabled() const { SDL::raw::RenderClipEnabled(_ptr); }
+    inline void SetRenderScale(float scaleX, float scaleY) const { SDL::raw::SetRenderScale(_ptr, scaleX, scaleY); }
+    inline SDL::FPoint GetRenderScale() const { SDL::FPoint _p = {}; SDL::raw::GetRenderScale(_ptr, &_p.x, &_p.y); return _p; }
+    inline void SetRenderDrawColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a) const { SDL::raw::SetRenderDrawColor(_ptr, r, g, b, a); }
+    inline void SetRenderDrawColorFloat(float r, float g, float b, float a) const { SDL::raw::SetRenderDrawColorFloat(_ptr, r, g, b, a); }
+    inline void GetRenderDrawColor(Uint8* r, Uint8* g, Uint8* b, Uint8* a) const { SDL::raw::GetRenderDrawColor(_ptr, r, g, b, a); }
+    inline SDL::FRect GetRenderDrawColorFloat() const { SDL::FRect _r = {}; SDL::raw::GetRenderDrawColorFloat(_ptr, &_r.x, &_r.y, &_r.w, &_r.h); return _r; }
+    inline void SetRenderColorScale(float scale) const { SDL::raw::SetRenderColorScale(_ptr, scale); }
+    inline float GetRenderColorScale() const { float _out; SDL::raw::GetRenderColorScale(_ptr, &_out); return _out; }
+    inline void SetRenderDrawBlendMode(SDL_BlendMode blendMode) const { SDL::raw::SetRenderDrawBlendMode(_ptr, blendMode); }
+    inline SDL_BlendMode GetRenderDrawBlendMode() const { SDL_BlendMode _out; SDL::raw::GetRenderDrawBlendMode(_ptr, &_out); return _out; }
+    inline void RenderClear() const { SDL::raw::RenderClear(_ptr); }
+    inline void RenderPoint(float x, float y) const { SDL::raw::RenderPoint(_ptr, x, y); }
+    inline void RenderPoints(const SDL::FPoint& points, int count) const { SDL::raw::RenderPoints(_ptr, &points, count); }
+    inline void RenderLine(float x1, float y1, float x2, float y2) const { SDL::raw::RenderLine(_ptr, x1, y1, x2, y2); }
+    inline void RenderLines(const SDL::FPoint& points, int count) const { SDL::raw::RenderLines(_ptr, &points, count); }
+    inline void RenderRect(const SDL::FRect& rect) const { SDL::raw::RenderRect(_ptr, &rect); }
+    inline void RenderRects(const SDL::FRect& rects, int count) const { SDL::raw::RenderRects(_ptr, &rects, count); }
+    inline void RenderFillRect(const SDL::FRect& rect) const { SDL::raw::RenderFillRect(_ptr, &rect); }
+    inline void RenderFillRects(const SDL::FRect& rects, int count) const { SDL::raw::RenderFillRects(_ptr, &rects, count); }
+    inline void RenderTexture(std::shared_ptr<SDL::Texture> texture, const SDL::FRect& srcrect, const SDL::FRect& dstrect) const { SDL::raw::RenderTexture(_ptr, texture->get(), &srcrect, &dstrect); }
+    inline void RenderTextureRotated(std::shared_ptr<SDL::Texture> texture, const SDL::FRect& srcrect, const SDL::FRect& dstrect, double angle, const SDL::FPoint& center, SDL_FlipMode flip) const { SDL::raw::RenderTextureRotated(_ptr, texture->get(), &srcrect, &dstrect, angle, &center, flip); }
+    inline void RenderTextureAffine(std::shared_ptr<SDL::Texture> texture, const SDL::FRect& srcrect, const SDL::FPoint& origin, const SDL::FPoint& right, const SDL::FPoint& down) const { SDL::raw::RenderTextureAffine(_ptr, texture->get(), &srcrect, &origin, &right, &down); }
+    inline void RenderTextureTiled(std::shared_ptr<SDL::Texture> texture, const SDL::FRect& srcrect, float scale, const SDL::FRect& dstrect) const { SDL::raw::RenderTextureTiled(_ptr, texture->get(), &srcrect, scale, &dstrect); }
+    inline void RenderTexture9Grid(std::shared_ptr<SDL::Texture> texture, const SDL::FRect& srcrect, float left_width, float right_width, float top_height, float bottom_height, float scale, const SDL::FRect& dstrect) const { SDL::raw::RenderTexture9Grid(_ptr, texture->get(), &srcrect, left_width, right_width, top_height, bottom_height, scale, &dstrect); }
+    inline void RenderGeometry(std::shared_ptr<SDL::Texture> texture, const SDL_Vertex* vertices, int num_vertices, const int* indices, int num_indices) const { SDL::raw::RenderGeometry(_ptr, texture->get(), vertices, num_vertices, indices, num_indices); }
+    inline void RenderGeometryRaw(std::shared_ptr<SDL::Texture> texture, const float* xy, int xy_stride, const SDL_FColor* color, int color_stride, const float* uv, int uv_stride, int num_vertices, const void* indices, int num_indices, int size_indices) const { SDL::raw::RenderGeometryRaw(_ptr, texture->get(), xy, xy_stride, color, color_stride, uv, uv_stride, num_vertices, indices, num_indices, size_indices); }
+    inline std::shared_ptr<SDL::Surface> RenderReadPixels(const SDL::Rect& rect) const { return SDL::Surface::get(SDL::raw::RenderReadPixels(_ptr, &rect)); }
+    inline void RenderPresent() const { SDL::raw::RenderPresent(_ptr); }
+    inline void Flush() const { SDL::raw::FlushRenderer(_ptr); }
+    inline void* GetRenderMetalLayer() const { return SDL::raw::GetRenderMetalLayer(_ptr); }
+    inline void* GetRenderMetalCommandEncoder() const { return SDL::raw::GetRenderMetalCommandEncoder(_ptr); }
+    inline void AddVulkanRenderSemaphores(Uint32 wait_stage_mask, Sint64 wait_semaphore, Sint64 signal_semaphore) const { SDL::raw::AddVulkanRenderSemaphores(_ptr, wait_stage_mask, wait_semaphore, signal_semaphore); }
+    inline void SetRenderVSync(int vsync) const { SDL::raw::SetRenderVSync(_ptr, vsync); }
+    inline int GetRenderVSync() const { int _out; SDL::raw::GetRenderVSync(_ptr, &_out); return _out; }
+    inline void RenderDebugText(float x, float y, std::string& str) const { SDL::raw::RenderDebugText(_ptr, x, y, str.c_str()); }
 
     inline SDL_Renderer* get() const { return _ptr; }
 
-    static inline std::shared_ptr<Renderer> get(SDL_Renderer* ptr)
+    static inline std::shared_ptr<Renderer> get(SDL_Renderer* ptr, bool block_destroy = false)
     {
         auto& entry = _ptrs[ptr];
         if (!entry.expired()) return entry.lock();
-        std::shared_ptr<Renderer> obj(new Renderer(ptr));
+        std::shared_ptr<Renderer> obj(new Renderer(ptr, block_destroy));
         entry = obj;
         return obj;
     }
@@ -3879,75 +3394,76 @@ private:
 class Surface
 {
     SDL_Surface* _ptr;
-    Surface(SDL_Surface* ptr) : _ptr(ptr) { }
+    bool _block_destroy;
+    Surface(SDL_Surface* ptr, bool block_destroy) : _ptr(ptr), _block_destroy(block_destroy) { }
 public:
     static inline std::shared_ptr<Surface> Create(int width, int height, SDL_PixelFormat format) { return get(SDL::raw::CreateSurface(width, height, format)); }
     static inline std::shared_ptr<Surface> Create(int width, int height, SDL_PixelFormat format, void* pixels, int pitch) { return get(SDL::raw::CreateSurfaceFrom(width, height, format, pixels, pitch)); }
 
     Surface(const Surface&) = delete;
-    ~Surface() { SDL::raw::DestroySurface(_ptr); }
+    ~Surface() { if (!_block_destroy) SDL::raw::DestroySurface(_ptr); }
     Surface& operator=(const Surface&) = delete;
 
-    inline SDL_PropertiesID GetSurfaceProperties() const { return SDL::raw::GetSurfaceProperties(get()); }
-    inline void SetSurfaceColorspace(SDL_Colorspace colorspace) const { SDL::raw::SetSurfaceColorspace(get(), colorspace); }
-    inline SDL_Colorspace GetSurfaceColorspace() const { return SDL::raw::GetSurfaceColorspace(get()); }
-    inline std::shared_ptr<SDL::Palette> CreateSurfacePalette() const { return SDL::Palette::get(SDL::raw::CreateSurfacePalette(get())); }
-    inline void SetSurfacePalette(std::shared_ptr<SDL::Palette> palette) const { SDL::raw::SetSurfacePalette(get(), palette->get()); }
-    inline std::shared_ptr<SDL::Palette> GetSurfacePalette() const { return SDL::Palette::get(SDL::raw::GetSurfacePalette(get())); }
-    inline void AddSurfaceAlternateImage(std::shared_ptr<SDL::Surface> image) const { SDL::raw::AddSurfaceAlternateImage(get(), image->get()); }
-    inline bool SurfaceHasAlternateImages() const { return SDL::raw::SurfaceHasAlternateImages(get()); }
-    inline std::vector<std::shared_ptr<SDL::Surface>> GetSurfaceImages() const { int count; std::vector<std::shared_ptr<SDL::Surface>> items; auto ret = SDL::raw::GetSurfaceImages(get(), &count); for (int i = 0; i < count; i++) items.push_back(SDL::Surface::get(ret[i])); return items; }
-    inline void RemoveSurfaceAlternateImages() const { SDL::raw::RemoveSurfaceAlternateImages(get()); }
-    inline void LockSurface() const { SDL::raw::LockSurface(get()); }
-    inline void UnlockSurface() const { SDL::raw::UnlockSurface(get()); }
-    inline void SaveBMP_IO(SDL_IOStream* dst, bool closeio) const { SDL::raw::SaveBMP_IO(get(), dst, closeio); }
-    inline void SaveBMP(std::string& file) const { SDL::raw::SaveBMP(get(), file.c_str()); }
-    inline void SetSurfaceRLE(bool enabled) const { SDL::raw::SetSurfaceRLE(get(), enabled); }
-    inline bool SurfaceHasRLE() const { return SDL::raw::SurfaceHasRLE(get()); }
-    inline void SetSurfaceColorKey(bool enabled, Uint32 key) const { SDL::raw::SetSurfaceColorKey(get(), enabled, key); }
-    inline bool SurfaceHasColorKey() const { return SDL::raw::SurfaceHasColorKey(get()); }
-    inline void GetSurfaceColorKey(Uint32* key) const { SDL::raw::GetSurfaceColorKey(get(), key); }
-    inline void SetSurfaceColorMod(Uint8 r, Uint8 g, Uint8 b) const { SDL::raw::SetSurfaceColorMod(get(), r, g, b); }
-    inline void GetSurfaceColorMod(Uint8* r, Uint8* g, Uint8* b) const { SDL::raw::GetSurfaceColorMod(get(), r, g, b); }
-    inline void SetSurfaceAlphaMod(Uint8 alpha) const { SDL::raw::SetSurfaceAlphaMod(get(), alpha); }
-    inline void GetSurfaceAlphaMod(Uint8* alpha) const { SDL::raw::GetSurfaceAlphaMod(get(), alpha); }
-    inline void SetSurfaceBlendMode(SDL_BlendMode blendMode) const { SDL::raw::SetSurfaceBlendMode(get(), blendMode); }
-    inline void GetSurfaceBlendMode(SDL_BlendMode* blendMode) const { SDL::raw::GetSurfaceBlendMode(get(), blendMode); }
-    inline bool SetSurfaceClipRect(const SDL_Rect* rect) const { return SDL::raw::SetSurfaceClipRect(get(), rect); }
-    inline void GetSurfaceClipRect(SDL_Rect* rect) const { SDL::raw::GetSurfaceClipRect(get(), rect); }
-    inline void FlipSurface(SDL_FlipMode flip) const { SDL::raw::FlipSurface(get(), flip); }
-    inline std::shared_ptr<SDL::Surface> DuplicateSurface() const { return SDL::Surface::get(SDL::raw::DuplicateSurface(get())); }
-    inline std::shared_ptr<SDL::Surface> ScaleSurface(int width, int height, SDL_ScaleMode scaleMode) const { return SDL::Surface::get(SDL::raw::ScaleSurface(get(), width, height, scaleMode)); }
-    inline std::shared_ptr<SDL::Surface> ConvertSurface(SDL_PixelFormat format) const { return SDL::Surface::get(SDL::raw::ConvertSurface(get(), format)); }
-    inline std::shared_ptr<SDL::Surface> ConvertSurfaceAndColorspace(SDL_PixelFormat format, std::shared_ptr<SDL::Palette> palette, SDL_Colorspace colorspace, SDL_PropertiesID props) const { return SDL::Surface::get(SDL::raw::ConvertSurfaceAndColorspace(get(), format, palette->get(), colorspace, props)); }
-    inline void PremultiplySurfaceAlpha(bool linear) const { SDL::raw::PremultiplySurfaceAlpha(get(), linear); }
-    inline void ClearSurface(float r, float g, float b, float a) const { SDL::raw::ClearSurface(get(), r, g, b, a); }
-    inline void FillSurfaceRect(const SDL_Rect* rect, Uint32 color) const { SDL::raw::FillSurfaceRect(get(), rect, color); }
-    inline void FillSurfaceRects(const SDL_Rect* rects, int count, Uint32 color) const { SDL::raw::FillSurfaceRects(get(), rects, count, color); }
-    inline void BlitSurface(const SDL_Rect* srcrect, std::shared_ptr<SDL::Surface> dst, const SDL_Rect* dstrect) const { SDL::raw::BlitSurface(get(), srcrect, dst->get(), dstrect); }
-    inline void BlitSurfaceUnchecked(const SDL_Rect* srcrect, std::shared_ptr<SDL::Surface> dst, const SDL_Rect* dstrect) const { SDL::raw::BlitSurfaceUnchecked(get(), srcrect, dst->get(), dstrect); }
-    inline void BlitSurfaceScaled(const SDL_Rect* srcrect, std::shared_ptr<SDL::Surface> dst, const SDL_Rect* dstrect, SDL_ScaleMode scaleMode) const { SDL::raw::BlitSurfaceScaled(get(), srcrect, dst->get(), dstrect, scaleMode); }
-    inline void BlitSurfaceUncheckedScaled(const SDL_Rect* srcrect, std::shared_ptr<SDL::Surface> dst, const SDL_Rect* dstrect, SDL_ScaleMode scaleMode) const { SDL::raw::BlitSurfaceUncheckedScaled(get(), srcrect, dst->get(), dstrect, scaleMode); }
-    inline void BlitSurfaceTiled(const SDL_Rect* srcrect, std::shared_ptr<SDL::Surface> dst, const SDL_Rect* dstrect) const { SDL::raw::BlitSurfaceTiled(get(), srcrect, dst->get(), dstrect); }
-    inline void BlitSurfaceTiledWithScale(const SDL_Rect* srcrect, float scale, SDL_ScaleMode scaleMode, std::shared_ptr<SDL::Surface> dst, const SDL_Rect* dstrect) const { SDL::raw::BlitSurfaceTiledWithScale(get(), srcrect, scale, scaleMode, dst->get(), dstrect); }
-    inline void BlitSurface9Grid(const SDL_Rect* srcrect, int left_width, int right_width, int top_height, int bottom_height, float scale, SDL_ScaleMode scaleMode, std::shared_ptr<SDL::Surface> dst, const SDL_Rect* dstrect) const { SDL::raw::BlitSurface9Grid(get(), srcrect, left_width, right_width, top_height, bottom_height, scale, scaleMode, dst->get(), dstrect); }
-    inline Uint32 MapSurfaceRGB(Uint8 r, Uint8 g, Uint8 b) const { return SDL::raw::MapSurfaceRGB(get(), r, g, b); }
-    inline Uint32 MapSurfaceRGBA(Uint8 r, Uint8 g, Uint8 b, Uint8 a) const { return SDL::raw::MapSurfaceRGBA(get(), r, g, b, a); }
-    inline void ReadSurfacePixel(int x, int y, Uint8* r, Uint8* g, Uint8* b, Uint8* a) const { SDL::raw::ReadSurfacePixel(get(), x, y, r, g, b, a); }
-    inline void ReadSurfacePixelFloat(int x, int y, float* r, float* g, float* b, float* a) const { SDL::raw::ReadSurfacePixelFloat(get(), x, y, r, g, b, a); }
-    inline void WriteSurfacePixel(int x, int y, Uint8 r, Uint8 g, Uint8 b, Uint8 a) const { SDL::raw::WriteSurfacePixel(get(), x, y, r, g, b, a); }
-    inline void WriteSurfacePixelFloat(int x, int y, float r, float g, float b, float a) const { SDL::raw::WriteSurfacePixelFloat(get(), x, y, r, g, b, a); }
-    inline SDL_Cursor* CreateColorCursor(int hot_x, int hot_y) const { return SDL::raw::CreateColorCursor(get(), hot_x, hot_y); }
-    inline std::shared_ptr<SDL::Renderer> CreateSoftwareRenderer() const { return SDL::Renderer::get(SDL::raw::CreateSoftwareRenderer(get())); }
-    inline SDL_Tray* CreateTray(std::string& tooltip) const { return SDL::raw::CreateTray(get(), tooltip.c_str()); }
+    inline SDL_PropertiesID GetProperties() const { return SDL::raw::GetSurfaceProperties(_ptr); }
+    inline void SetColorspace(SDL_Colorspace colorspace) const { SDL::raw::SetSurfaceColorspace(_ptr, colorspace); }
+    inline SDL_Colorspace GetColorspace() const { return SDL::raw::GetSurfaceColorspace(_ptr); }
+    inline std::shared_ptr<SDL::Palette> CreatePalette() const { return SDL::Palette::get(SDL::raw::CreateSurfacePalette(_ptr)); }
+    inline void SetPalette(std::shared_ptr<SDL::Palette> palette) const { SDL::raw::SetSurfacePalette(_ptr, palette->get()); }
+    inline std::shared_ptr<SDL::Palette> GetPalette() const { return SDL::Palette::get(SDL::raw::GetSurfacePalette(_ptr)); }
+    inline void AddAlternateImage(std::shared_ptr<SDL::Surface> image) const { SDL::raw::AddSurfaceAlternateImage(_ptr, image->get()); }
+    inline bool HasAlternateImages() const { return SDL::raw::SurfaceHasAlternateImages(_ptr); }
+    inline std::vector<std::shared_ptr<SDL::Surface>> GetImages() const { int _count; std::vector<std::shared_ptr<SDL::Surface>> _items; auto _ret = SDL::raw::GetSurfaceImages(_ptr, &_count); for (int i = 0; i < _count; i++) _items.push_back(SDL::Surface::get(_ret[i])); return _items; }
+    inline void RemoveAlternateImages() const { SDL::raw::RemoveSurfaceAlternateImages(_ptr); }
+    inline void Lock() const { SDL::raw::LockSurface(_ptr); }
+    inline void Unlock() const { SDL::raw::UnlockSurface(_ptr); }
+    inline void SaveBMP_IO(SDL_IOStream* dst, bool closeio) const { SDL::raw::SaveBMP_IO(_ptr, dst, closeio); }
+    inline void SaveBMP(std::string& file) const { SDL::raw::SaveBMP(_ptr, file.c_str()); }
+    inline void SetRLE(bool enabled) const { SDL::raw::SetSurfaceRLE(_ptr, enabled); }
+    inline bool HasRLE() const { return SDL::raw::SurfaceHasRLE(_ptr); }
+    inline void SetColorKey(bool enabled, Uint32 key) const { SDL::raw::SetSurfaceColorKey(_ptr, enabled, key); }
+    inline bool HasColorKey() const { return SDL::raw::SurfaceHasColorKey(_ptr); }
+    inline Uint32 GetColorKey() const { Uint32 _out; SDL::raw::GetSurfaceColorKey(_ptr, &_out); return _out; }
+    inline void SetColorMod(Uint8 r, Uint8 g, Uint8 b) const { SDL::raw::SetSurfaceColorMod(_ptr, r, g, b); }
+    inline void GetColorMod(Uint8* r, Uint8* g, Uint8* b) const { SDL::raw::GetSurfaceColorMod(_ptr, r, g, b); }
+    inline void SetAlphaMod(Uint8 alpha) const { SDL::raw::SetSurfaceAlphaMod(_ptr, alpha); }
+    inline Uint8 GetAlphaMod() const { Uint8 _out; SDL::raw::GetSurfaceAlphaMod(_ptr, &_out); return _out; }
+    inline void SetBlendMode(SDL_BlendMode blendMode) const { SDL::raw::SetSurfaceBlendMode(_ptr, blendMode); }
+    inline SDL_BlendMode GetBlendMode() const { SDL_BlendMode _out; SDL::raw::GetSurfaceBlendMode(_ptr, &_out); return _out; }
+    inline bool SetClipRect(const SDL::Rect& rect) const { return SDL::raw::SetSurfaceClipRect(_ptr, &rect); }
+    inline SDL::Rect GetClipRect() const { SDL_Rect _out; SDL::raw::GetSurfaceClipRect(_ptr, &_out); return _out; }
+    inline void Flip(SDL_FlipMode flip) const { SDL::raw::FlipSurface(_ptr, flip); }
+    inline std::shared_ptr<SDL::Surface> Duplicate() const { return SDL::Surface::get(SDL::raw::DuplicateSurface(_ptr)); }
+    inline std::shared_ptr<SDL::Surface> Scale(int width, int height, SDL_ScaleMode scaleMode) const { return SDL::Surface::get(SDL::raw::ScaleSurface(_ptr, width, height, scaleMode)); }
+    inline std::shared_ptr<SDL::Surface> Convert(SDL_PixelFormat format) const { return SDL::Surface::get(SDL::raw::ConvertSurface(_ptr, format)); }
+    inline std::shared_ptr<SDL::Surface> ConvertAndColorspace(SDL_PixelFormat format, std::shared_ptr<SDL::Palette> palette, SDL_Colorspace colorspace, SDL_PropertiesID props) const { return SDL::Surface::get(SDL::raw::ConvertSurfaceAndColorspace(_ptr, format, palette->get(), colorspace, props)); }
+    inline void PremultiplyAlpha(bool linear) const { SDL::raw::PremultiplySurfaceAlpha(_ptr, linear); }
+    inline void Clear(float r, float g, float b, float a) const { SDL::raw::ClearSurface(_ptr, r, g, b, a); }
+    inline void FillRect(const SDL::Rect& rect, Uint32 color) const { SDL::raw::FillSurfaceRect(_ptr, &rect, color); }
+    inline void FillRects(const SDL::Rect& rects, int count, Uint32 color) const { SDL::raw::FillSurfaceRects(_ptr, &rects, count, color); }
+    inline void Blit(const SDL::Rect& srcrect, std::shared_ptr<SDL::Surface> dst, const SDL::Rect& dstrect) const { SDL::raw::BlitSurface(_ptr, &srcrect, dst->get(), &dstrect); }
+    inline void BlitUnchecked(const SDL::Rect& srcrect, std::shared_ptr<SDL::Surface> dst, const SDL::Rect& dstrect) const { SDL::raw::BlitSurfaceUnchecked(_ptr, &srcrect, dst->get(), &dstrect); }
+    inline void BlitScaled(const SDL::Rect& srcrect, std::shared_ptr<SDL::Surface> dst, const SDL::Rect& dstrect, SDL_ScaleMode scaleMode) const { SDL::raw::BlitSurfaceScaled(_ptr, &srcrect, dst->get(), &dstrect, scaleMode); }
+    inline void BlitUncheckedScaled(const SDL::Rect& srcrect, std::shared_ptr<SDL::Surface> dst, const SDL::Rect& dstrect, SDL_ScaleMode scaleMode) const { SDL::raw::BlitSurfaceUncheckedScaled(_ptr, &srcrect, dst->get(), &dstrect, scaleMode); }
+    inline void BlitTiled(const SDL::Rect& srcrect, std::shared_ptr<SDL::Surface> dst, const SDL::Rect& dstrect) const { SDL::raw::BlitSurfaceTiled(_ptr, &srcrect, dst->get(), &dstrect); }
+    inline void BlitTiledWithScale(const SDL::Rect& srcrect, float scale, SDL_ScaleMode scaleMode, std::shared_ptr<SDL::Surface> dst, const SDL::Rect& dstrect) const { SDL::raw::BlitSurfaceTiledWithScale(_ptr, &srcrect, scale, scaleMode, dst->get(), &dstrect); }
+    inline void Blit9Grid(const SDL::Rect& srcrect, int left_width, int right_width, int top_height, int bottom_height, float scale, SDL_ScaleMode scaleMode, std::shared_ptr<SDL::Surface> dst, const SDL::Rect& dstrect) const { SDL::raw::BlitSurface9Grid(_ptr, &srcrect, left_width, right_width, top_height, bottom_height, scale, scaleMode, dst->get(), &dstrect); }
+    inline Uint32 MapRGB(Uint8 r, Uint8 g, Uint8 b) const { return SDL::raw::MapSurfaceRGB(_ptr, r, g, b); }
+    inline Uint32 MapRGBA(Uint8 r, Uint8 g, Uint8 b, Uint8 a) const { return SDL::raw::MapSurfaceRGBA(_ptr, r, g, b, a); }
+    inline void ReadPixel(int x, int y, Uint8* r, Uint8* g, Uint8* b, Uint8* a) const { SDL::raw::ReadSurfacePixel(_ptr, x, y, r, g, b, a); }
+    inline void ReadPixelFloat(int x, int y, float* r, float* g, float* b, float* a) const { SDL::raw::ReadSurfacePixelFloat(_ptr, x, y, r, g, b, a); }
+    inline void WritePixel(int x, int y, Uint8 r, Uint8 g, Uint8 b, Uint8 a) const { SDL::raw::WriteSurfacePixel(_ptr, x, y, r, g, b, a); }
+    inline void WritePixelFloat(int x, int y, float r, float g, float b, float a) const { SDL::raw::WriteSurfacePixelFloat(_ptr, x, y, r, g, b, a); }
+    inline SDL_Cursor* CreateColorCursor(int hot_x, int hot_y) const { return SDL::raw::CreateColorCursor(_ptr, hot_x, hot_y); }
+    inline std::shared_ptr<SDL::Renderer> CreateSoftwareRenderer() const { return SDL::Renderer::get(SDL::raw::CreateSoftwareRenderer(_ptr)); }
+    inline std::shared_ptr<SDL::Tray> CreateTray(std::string& tooltip) const { return SDL::Tray::get(SDL::raw::CreateTray(_ptr, tooltip.c_str())); }
 
     inline SDL_Surface* get() const { return _ptr; }
 
-    static inline std::shared_ptr<Surface> get(SDL_Surface* ptr)
+    static inline std::shared_ptr<Surface> get(SDL_Surface* ptr, bool block_destroy = false)
     {
         auto& entry = _ptrs[ptr];
         if (!entry.expired()) return entry.lock();
-        std::shared_ptr<Surface> obj(new Surface(ptr));
+        std::shared_ptr<Surface> obj(new Surface(ptr, block_destroy));
         entry = obj;
         return obj;
     }
@@ -3955,27 +3471,78 @@ private:
     static std::unordered_map<SDL_Surface*, std::weak_ptr<Surface>> _ptrs;
 };
 
+class Texture
+{
+    SDL_Texture* _ptr;
+    bool _block_destroy;
+    Texture(SDL_Texture* ptr, bool block_destroy) : _ptr(ptr), _block_destroy(block_destroy) { }
+public:
+    static inline std::shared_ptr<Texture> Create(std::shared_ptr<SDL::Renderer> renderer, SDL_PixelFormat format, SDL_TextureAccess access, int w, int h) { return get(SDL::raw::CreateTexture(renderer->get(), format, access, w, h)); }
+    static inline std::shared_ptr<Texture> Create(std::shared_ptr<SDL::Renderer> renderer, std::shared_ptr<SDL::Surface> surface) { return get(SDL::raw::CreateTextureFromSurface(renderer->get(), surface->get())); }
+    static inline std::shared_ptr<Texture> Create(std::shared_ptr<SDL::Renderer> renderer, SDL_PropertiesID props) { return get(SDL::raw::CreateTextureWithProperties(renderer->get(), props)); }
+
+    Texture(const Texture&) = delete;
+    ~Texture() { if (!_block_destroy) SDL::raw::DestroyTexture(_ptr); }
+    Texture& operator=(const Texture&) = delete;
+
+    inline SDL_PropertiesID GetProperties() const { return SDL::raw::GetTextureProperties(_ptr); }
+    inline std::shared_ptr<SDL::Renderer> GetRendererFrom() const { return SDL::Renderer::get(SDL::raw::GetRendererFromTexture(_ptr)); }
+    inline SDL::FPoint GetSize() const { SDL::FPoint _p = {}; SDL::raw::GetTextureSize(_ptr, &_p.x, &_p.y); return _p; }
+    inline void SetColorMod(Uint8 r, Uint8 g, Uint8 b) const { SDL::raw::SetTextureColorMod(_ptr, r, g, b); }
+    inline void SetColorModFloat(float r, float g, float b) const { SDL::raw::SetTextureColorModFloat(_ptr, r, g, b); }
+    inline void GetColorMod(Uint8* r, Uint8* g, Uint8* b) const { SDL::raw::GetTextureColorMod(_ptr, r, g, b); }
+    inline void GetColorModFloat(float* r, float* g, float* b) const { SDL::raw::GetTextureColorModFloat(_ptr, r, g, b); }
+    inline void SetAlphaMod(Uint8 alpha) const { SDL::raw::SetTextureAlphaMod(_ptr, alpha); }
+    inline void SetAlphaModFloat(float alpha) const { SDL::raw::SetTextureAlphaModFloat(_ptr, alpha); }
+    inline Uint8 GetAlphaMod() const { Uint8 _out; SDL::raw::GetTextureAlphaMod(_ptr, &_out); return _out; }
+    inline float GetAlphaModFloat() const { float _out; SDL::raw::GetTextureAlphaModFloat(_ptr, &_out); return _out; }
+    inline void SetBlendMode(SDL_BlendMode blendMode) const { SDL::raw::SetTextureBlendMode(_ptr, blendMode); }
+    inline SDL_BlendMode GetBlendMode() const { SDL_BlendMode _out; SDL::raw::GetTextureBlendMode(_ptr, &_out); return _out; }
+    inline void SetScaleMode(SDL_ScaleMode scaleMode) const { SDL::raw::SetTextureScaleMode(_ptr, scaleMode); }
+    inline SDL_ScaleMode GetScaleMode() const { SDL_ScaleMode _out; SDL::raw::GetTextureScaleMode(_ptr, &_out); return _out; }
+    inline void Update(const SDL::Rect& rect, const void* pixels, int pitch) const { SDL::raw::UpdateTexture(_ptr, &rect, pixels, pitch); }
+    inline void UpdateYUV(const SDL::Rect& rect, const Uint8* Yplane, int Ypitch, const Uint8* Uplane, int Upitch, const Uint8* Vplane, int Vpitch) const { SDL::raw::UpdateYUVTexture(_ptr, &rect, Yplane, Ypitch, Uplane, Upitch, Vplane, Vpitch); }
+    inline void UpdateNV(const SDL::Rect& rect, const Uint8* Yplane, int Ypitch, const Uint8* UVplane, int UVpitch) const { SDL::raw::UpdateNVTexture(_ptr, &rect, Yplane, Ypitch, UVplane, UVpitch); }
+    inline void Lock(const SDL::Rect& rect, void** pixels, int* pitch) const { SDL::raw::LockTexture(_ptr, &rect, pixels, pitch); }
+    inline std::shared_ptr<SDL::Surface> LockToSurface(const SDL::Rect& rect) const { SDL_Surface* _out; SDL::raw::LockTextureToSurface(get(), &rect, &_out); return SDL::Surface::get(_out, true); }
+    inline void Unlock() const { SDL::raw::UnlockTexture(_ptr); }
+
+    inline SDL_Texture* get() const { return _ptr; }
+
+    static inline std::shared_ptr<Texture> get(SDL_Texture* ptr, bool block_destroy = false)
+    {
+        auto& entry = _ptrs[ptr];
+        if (!entry.expired()) return entry.lock();
+        std::shared_ptr<Texture> obj(new Texture(ptr, block_destroy));
+        entry = obj;
+        return obj;
+    }
+private:
+    static std::unordered_map<SDL_Texture*, std::weak_ptr<Texture>> _ptrs;
+};
+
 class Palette
 {
     SDL_Palette* _ptr;
-    Palette(SDL_Palette* ptr) : _ptr(ptr) { }
+    bool _block_destroy;
+    Palette(SDL_Palette* ptr, bool block_destroy) : _ptr(ptr), _block_destroy(block_destroy) { }
 public:
     static inline std::shared_ptr<Palette> Create(int ncolors) { return get(SDL::raw::CreatePalette(ncolors)); }
     static inline std::shared_ptr<Palette> Create(std::shared_ptr<SDL::Surface> surface) { return get(SDL::raw::CreateSurfacePalette(surface->get())); }
 
     Palette(const Palette&) = delete;
-    ~Palette() { SDL::raw::DestroyPalette(_ptr); }
+    ~Palette() { if (!_block_destroy) SDL::raw::DestroyPalette(_ptr); }
     Palette& operator=(const Palette&) = delete;
 
-    inline void SetColors(const SDL_Color* colors, int firstcolor, int ncolors) const { SDL::raw::SetPaletteColors(get(), colors, firstcolor, ncolors); }
+    inline void SetColors(const SDL_Color* colors, int firstcolor, int ncolors) const { SDL::raw::SetPaletteColors(_ptr, colors, firstcolor, ncolors); }
 
     inline SDL_Palette* get() const { return _ptr; }
 
-    static inline std::shared_ptr<Palette> get(SDL_Palette* ptr)
+    static inline std::shared_ptr<Palette> get(SDL_Palette* ptr, bool block_destroy = false)
     {
         auto& entry = _ptrs[ptr];
         if (!entry.expired()) return entry.lock();
-        std::shared_ptr<Palette> obj(new Palette(ptr));
+        std::shared_ptr<Palette> obj(new Palette(ptr, block_destroy));
         entry = obj;
         return obj;
     }
@@ -3983,4 +3550,874 @@ private:
     static std::unordered_map<SDL_Palette*, std::weak_ptr<Palette>> _ptrs;
 };
 
+class Tray
+{
+    SDL_Tray* _ptr;
+    bool _block_destroy;
+    Tray(SDL_Tray* ptr, bool block_destroy) : _ptr(ptr), _block_destroy(block_destroy) { }
+public:
+    static inline std::shared_ptr<Tray> Create(std::shared_ptr<SDL::Surface> icon, std::string& tooltip) { return get(SDL::raw::CreateTray(icon->get(), tooltip.c_str())); }
+
+    Tray(const Tray&) = delete;
+    ~Tray() { if (!_block_destroy) SDL::raw::DestroyTray(_ptr); }
+    Tray& operator=(const Tray&) = delete;
+
+    inline void SetIcon(std::shared_ptr<SDL::Surface> icon) const { SDL::raw::SetTrayIcon(_ptr, icon->get()); }
+    inline void SetTooltip(std::string& tooltip) const { SDL::raw::SetTrayTooltip(_ptr, tooltip.c_str()); }
+    inline std::shared_ptr<SDL::TrayMenu> CreateMenu() const { return SDL::TrayMenu::get(SDL::raw::CreateTrayMenu(_ptr)); }
+    inline std::shared_ptr<SDL::TrayMenu> GetMenu() const { return SDL::TrayMenu::get(SDL::raw::GetTrayMenu(_ptr)); }
+
+    inline SDL_Tray* get() const { return _ptr; }
+
+    static inline std::shared_ptr<Tray> get(SDL_Tray* ptr, bool block_destroy = false)
+    {
+        auto& entry = _ptrs[ptr];
+        if (!entry.expired()) return entry.lock();
+        std::shared_ptr<Tray> obj(new Tray(ptr, block_destroy));
+        entry = obj;
+        return obj;
+    }
+private:
+    static std::unordered_map<SDL_Tray*, std::weak_ptr<Tray>> _ptrs;
+};
+
+class TrayMenu
+{
+    SDL_TrayMenu* _ptr;
+    bool _block_destroy;
+    TrayMenu(SDL_TrayMenu* ptr, bool block_destroy) : _ptr(ptr), _block_destroy(block_destroy) { }
+public:
+    static inline std::shared_ptr<TrayMenu> Create(std::shared_ptr<SDL::Tray> tray) { return get(SDL::raw::CreateTrayMenu(tray->get())); }
+
+    TrayMenu(const TrayMenu&) = delete;
+    TrayMenu& operator=(const TrayMenu&) = delete;
+
+    inline const SDL_TrayEntry** GetTrayEntries(int* size) const { return SDL::raw::GetTrayEntries(_ptr, size); }
+    inline SDL_TrayEntry* InsertTrayEntryAt(int pos, std::string& label, SDL::TrayEntryFlags flags) const { return SDL::raw::InsertTrayEntryAt(_ptr, pos, label.c_str(), flags); }
+    inline SDL_TrayEntry* GetParentEntry() const { return SDL::raw::GetTrayMenuParentEntry(_ptr); }
+    inline std::shared_ptr<SDL::Tray> GetParentTray() const { return SDL::Tray::get(SDL::raw::GetTrayMenuParentTray(_ptr)); }
+
+    inline SDL_TrayMenu* get() const { return _ptr; }
+
+    static inline std::shared_ptr<TrayMenu> get(SDL_TrayMenu* ptr, bool block_destroy = false)
+    {
+        auto& entry = _ptrs[ptr];
+        if (!entry.expired()) return entry.lock();
+        std::shared_ptr<TrayMenu> obj(new TrayMenu(ptr, block_destroy));
+        entry = obj;
+        return obj;
+    }
+private:
+    static std::unordered_map<SDL_TrayMenu*, std::weak_ptr<TrayMenu>> _ptrs;
+};
+inline SDL_AssertState ReportAssertion(SDL_AssertData* data, std::string& func, std::string& file, int line) { return SDL::raw::ReportAssertion(data, func.c_str(), file.c_str(), line); }
+inline void SetAssertionHandler(SDL_AssertionHandler handler, void* userdata) { SDL::raw::SetAssertionHandler(handler, userdata); }
+inline SDL_AssertionHandler GetDefaultAssertionHandler() { return SDL::raw::GetDefaultAssertionHandler(); }
+inline SDL_AssertionHandler GetAssertionHandler(void** puserdata) { return SDL::raw::GetAssertionHandler(puserdata); }
+inline const SDL_AssertData* GetAssertionReport() { return SDL::raw::GetAssertionReport(); }
+inline void ResetAssertionReport() { SDL::raw::ResetAssertionReport(); }
+inline SDL_AsyncIO* AsyncIOFromFile(std::string& file, std::string& mode) { return SDL::raw::AsyncIOFromFile(file.c_str(), mode.c_str()); }
+inline Sint64 GetAsyncIOSize(SDL_AsyncIO* asyncio) { return SDL::raw::GetAsyncIOSize(asyncio); }
+inline void ReadAsyncIO(SDL_AsyncIO* asyncio, void* ptr, Uint64 offset, Uint64 size, SDL_AsyncIOQueue* queue, void* userdata) { SDL::raw::ReadAsyncIO(asyncio, ptr, offset, size, queue, userdata); }
+inline void WriteAsyncIO(SDL_AsyncIO* asyncio, void* ptr, Uint64 offset, Uint64 size, SDL_AsyncIOQueue* queue, void* userdata) { SDL::raw::WriteAsyncIO(asyncio, ptr, offset, size, queue, userdata); }
+inline void CloseAsyncIO(SDL_AsyncIO* asyncio, bool flush, SDL_AsyncIOQueue* queue, void* userdata) { SDL::raw::CloseAsyncIO(asyncio, flush, queue, userdata); }
+inline SDL_AsyncIOQueue* CreateAsyncIOQueue() { return SDL::raw::CreateAsyncIOQueue(); }
+inline void DestroyAsyncIOQueue(SDL_AsyncIOQueue* queue) { SDL::raw::DestroyAsyncIOQueue(queue); }
+inline bool GetAsyncIOResult(SDL_AsyncIOQueue* queue, SDL_AsyncIOOutcome* outcome) { return SDL::raw::GetAsyncIOResult(queue, outcome); }
+inline bool WaitAsyncIOResult(SDL_AsyncIOQueue* queue, SDL_AsyncIOOutcome* outcome, Sint32 timeoutMS) { return SDL::raw::WaitAsyncIOResult(queue, outcome, timeoutMS); }
+inline void SignalAsyncIOQueue(SDL_AsyncIOQueue* queue) { SDL::raw::SignalAsyncIOQueue(queue); }
+inline void LoadFileAsync(std::string& file, SDL_AsyncIOQueue* queue, void* userdata) { SDL::raw::LoadFileAsync(file.c_str(), queue, userdata); }
+inline bool TryLockSpinlock(SDL_SpinLock* lock) { return SDL::raw::TryLockSpinlock(lock); }
+inline void LockSpinlock(SDL_SpinLock* lock) { SDL::raw::LockSpinlock(lock); }
+inline void UnlockSpinlock(SDL_SpinLock* lock) { SDL::raw::UnlockSpinlock(lock); }
+inline void MemoryBarrierReleaseFunction() { SDL::raw::MemoryBarrierReleaseFunction(); }
+inline void MemoryBarrierAcquireFunction() { SDL::raw::MemoryBarrierAcquireFunction(); }
+inline bool CompareAndSwapAtomicInt(SDL_AtomicInt* a, int oldval, int newval) { return SDL::raw::CompareAndSwapAtomicInt(a, oldval, newval); }
+inline int SetAtomicInt(SDL_AtomicInt* a, int v) { return SDL::raw::SetAtomicInt(a, v); }
+inline int GetAtomicInt(SDL_AtomicInt* a) { return SDL::raw::GetAtomicInt(a); }
+inline int AddAtomicInt(SDL_AtomicInt* a, int v) { return SDL::raw::AddAtomicInt(a, v); }
+inline bool CompareAndSwapAtomicU32(SDL_AtomicU32* a, Uint32 oldval, Uint32 newval) { return SDL::raw::CompareAndSwapAtomicU32(a, oldval, newval); }
+inline Uint32 SetAtomicU32(SDL_AtomicU32* a, Uint32 v) { return SDL::raw::SetAtomicU32(a, v); }
+inline Uint32 GetAtomicU32(SDL_AtomicU32* a) { return SDL::raw::GetAtomicU32(a); }
+inline bool CompareAndSwapAtomicPointer(void** a, void* oldval, void* newval) { return SDL::raw::CompareAndSwapAtomicPointer(a, oldval, newval); }
+inline void* SetAtomicPointer(void** a, void* v) { return SDL::raw::SetAtomicPointer(a, v); }
+inline void* GetAtomicPointer(void** a) { return SDL::raw::GetAtomicPointer(a); }
+inline Uint16 Swap16(Uint16 x) { return SDL::raw::Swap16(x); }
+inline Uint32 Swap32(Uint32 x) { return SDL::raw::Swap32(x); }
+inline Uint64 Swap64(Uint64 x) { return SDL::raw::Swap64(x); }
+inline float SwapFloat(float x) { return SDL::raw::SwapFloat(x); }
+inline bool SetErrorV(std::string& fmt, va_list ap) { return SDL::raw::SetErrorV(fmt.c_str(), ap); }
+inline bool OutOfMemory() { return SDL::raw::OutOfMemory(); }
+inline std::string GetError() { return SDL::raw::GetError(); }
+inline bool ClearError() { return SDL::raw::ClearError(); }
+inline SDL_PropertiesID GetGlobalProperties() { return SDL::raw::GetGlobalProperties(); }
+inline SDL_PropertiesID CreateProperties() { return SDL::raw::CreateProperties(); }
+inline void CopyProperties(SDL_PropertiesID src, SDL_PropertiesID dst) { SDL::raw::CopyProperties(src, dst); }
+inline void LockProperties(SDL_PropertiesID props) { SDL::raw::LockProperties(props); }
+inline void UnlockProperties(SDL_PropertiesID props) { SDL::raw::UnlockProperties(props); }
+inline void SetPointerPropertyWithCleanup(SDL_PropertiesID props, std::string& name, void* value, SDL_CleanupPropertyCallback cleanup, void* userdata) { SDL::raw::SetPointerPropertyWithCleanup(props, name.c_str(), value, cleanup, userdata); }
+inline void SetPointerProperty(SDL_PropertiesID props, std::string& name, void* value) { SDL::raw::SetPointerProperty(props, name.c_str(), value); }
+inline void SetStringProperty(SDL_PropertiesID props, std::string& name, std::string& value) { SDL::raw::SetStringProperty(props, name.c_str(), value.c_str()); }
+inline void SetNumberProperty(SDL_PropertiesID props, std::string& name, Sint64 value) { SDL::raw::SetNumberProperty(props, name.c_str(), value); }
+inline void SetFloatProperty(SDL_PropertiesID props, std::string& name, float value) { SDL::raw::SetFloatProperty(props, name.c_str(), value); }
+inline void SetBooleanProperty(SDL_PropertiesID props, std::string& name, bool value) { SDL::raw::SetBooleanProperty(props, name.c_str(), value); }
+inline bool HasProperty(SDL_PropertiesID props, std::string& name) { return SDL::raw::HasProperty(props, name.c_str()); }
+inline SDL_PropertyType GetPropertyType(SDL_PropertiesID props, std::string& name) { return SDL::raw::GetPropertyType(props, name.c_str()); }
+inline void* GetPointerProperty(SDL_PropertiesID props, std::string& name, void* default_value) { return SDL::raw::GetPointerProperty(props, name.c_str(), default_value); }
+inline std::string GetStringProperty(SDL_PropertiesID props, std::string& name, std::string& default_value) { return SDL::raw::GetStringProperty(props, name.c_str(), default_value.c_str()); }
+inline Sint64 GetNumberProperty(SDL_PropertiesID props, std::string& name, Sint64 default_value) { return SDL::raw::GetNumberProperty(props, name.c_str(), default_value); }
+inline float GetFloatProperty(SDL_PropertiesID props, std::string& name, float default_value) { return SDL::raw::GetFloatProperty(props, name.c_str(), default_value); }
+inline bool GetBooleanProperty(SDL_PropertiesID props, std::string& name, bool default_value) { return SDL::raw::GetBooleanProperty(props, name.c_str(), default_value); }
+inline void ClearProperty(SDL_PropertiesID props, std::string& name) { SDL::raw::ClearProperty(props, name.c_str()); }
+inline void EnumerateProperties(SDL_PropertiesID props, SDL_EnumeratePropertiesCallback callback, void* userdata) { SDL::raw::EnumerateProperties(props, callback, userdata); }
+inline void DestroyProperties(SDL_PropertiesID props) { SDL::raw::DestroyProperties(props); }
+inline SDL_Thread* CreateThreadRuntime(SDL_ThreadFunction fn, std::string& name, void* data, SDL_FunctionPointer pfnBeginThread, SDL_FunctionPointer pfnEndThread) { return SDL::raw::CreateThreadRuntime(fn, name.c_str(), data, pfnBeginThread, pfnEndThread); }
+inline SDL_Thread* CreateThreadWithPropertiesRuntime(SDL_PropertiesID props, SDL_FunctionPointer pfnBeginThread, SDL_FunctionPointer pfnEndThread) { return SDL::raw::CreateThreadWithPropertiesRuntime(props, pfnBeginThread, pfnEndThread); }
+inline std::string GetThreadName(SDL_Thread* thread) { return SDL::raw::GetThreadName(thread); }
+inline SDL_ThreadID GetCurrentThreadID() { return SDL::raw::GetCurrentThreadID(); }
+inline SDL_ThreadID GetThreadID(SDL_Thread* thread) { return SDL::raw::GetThreadID(thread); }
+inline void SetCurrentThreadPriority(SDL_ThreadPriority priority) { SDL::raw::SetCurrentThreadPriority(priority); }
+inline void WaitThread(SDL_Thread* thread, int* status) { SDL::raw::WaitThread(thread, status); }
+inline SDL_ThreadState GetThreadState(SDL_Thread* thread) { return SDL::raw::GetThreadState(thread); }
+inline void DetachThread(SDL_Thread* thread) { SDL::raw::DetachThread(thread); }
+inline void* GetTLS(SDL_TLSID* id) { return SDL::raw::GetTLS(id); }
+inline void SetTLS(SDL_TLSID* id, const void* value, SDL_TLSDestructorCallback destructor) { SDL::raw::SetTLS(id, value, destructor); }
+inline void CleanupTLS() { SDL::raw::CleanupTLS(); }
+inline SDL_Mutex* CreateMutex() { return SDL::raw::CreateMutex(); }
+inline void LockMutex(SDL_Mutex* mutex) { SDL::raw::LockMutex(mutex); }
+inline bool TryLockMutex(SDL_Mutex* mutex) { return SDL::raw::TryLockMutex(mutex); }
+inline void UnlockMutex(SDL_Mutex* mutex) { SDL::raw::UnlockMutex(mutex); }
+inline void DestroyMutex(SDL_Mutex* mutex) { SDL::raw::DestroyMutex(mutex); }
+inline SDL_RWLock* CreateRWLock() { return SDL::raw::CreateRWLock(); }
+inline void LockRWLockForReading(SDL_RWLock* rwlock) { SDL::raw::LockRWLockForReading(rwlock); }
+inline void LockRWLockForWriting(SDL_RWLock* rwlock) { SDL::raw::LockRWLockForWriting(rwlock); }
+inline bool TryLockRWLockForReading(SDL_RWLock* rwlock) { return SDL::raw::TryLockRWLockForReading(rwlock); }
+inline bool TryLockRWLockForWriting(SDL_RWLock* rwlock) { return SDL::raw::TryLockRWLockForWriting(rwlock); }
+inline void UnlockRWLock(SDL_RWLock* rwlock) { SDL::raw::UnlockRWLock(rwlock); }
+inline void DestroyRWLock(SDL_RWLock* rwlock) { SDL::raw::DestroyRWLock(rwlock); }
+inline SDL_Semaphore* CreateSemaphore(Uint32 initial_value) { return SDL::raw::CreateSemaphore(initial_value); }
+inline void DestroySemaphore(SDL_Semaphore* sem) { SDL::raw::DestroySemaphore(sem); }
+inline void WaitSemaphore(SDL_Semaphore* sem) { SDL::raw::WaitSemaphore(sem); }
+inline bool TryWaitSemaphore(SDL_Semaphore* sem) { return SDL::raw::TryWaitSemaphore(sem); }
+inline bool WaitSemaphoreTimeout(SDL_Semaphore* sem, Sint32 timeoutMS) { return SDL::raw::WaitSemaphoreTimeout(sem, timeoutMS); }
+inline void SignalSemaphore(SDL_Semaphore* sem) { SDL::raw::SignalSemaphore(sem); }
+inline Uint32 GetSemaphoreValue(SDL_Semaphore* sem) { return SDL::raw::GetSemaphoreValue(sem); }
+inline SDL_Condition* CreateCondition() { return SDL::raw::CreateCondition(); }
+inline void DestroyCondition(SDL_Condition* cond) { SDL::raw::DestroyCondition(cond); }
+inline void SignalCondition(SDL_Condition* cond) { SDL::raw::SignalCondition(cond); }
+inline void BroadcastCondition(SDL_Condition* cond) { SDL::raw::BroadcastCondition(cond); }
+inline void WaitCondition(SDL_Condition* cond, SDL_Mutex* mutex) { SDL::raw::WaitCondition(cond, mutex); }
+inline bool WaitConditionTimeout(SDL_Condition* cond, SDL_Mutex* mutex, Sint32 timeoutMS) { return SDL::raw::WaitConditionTimeout(cond, mutex, timeoutMS); }
+inline bool ShouldInit(SDL_InitState* state) { return SDL::raw::ShouldInit(state); }
+inline bool ShouldQuit(SDL_InitState* state) { return SDL::raw::ShouldQuit(state); }
+inline void SetInitialized(SDL_InitState* state, bool initialized) { SDL::raw::SetInitialized(state, initialized); }
+inline SDL_IOStream* IOFromFile(std::string& file, std::string& mode) { return SDL::raw::IOFromFile(file.c_str(), mode.c_str()); }
+inline SDL_IOStream* IOFromMem(void* mem, size_t size) { return SDL::raw::IOFromMem(mem, size); }
+inline SDL_IOStream* IOFromConstMem(const void* mem, size_t size) { return SDL::raw::IOFromConstMem(mem, size); }
+inline SDL_IOStream* IOFromDynamicMem() { return SDL::raw::IOFromDynamicMem(); }
+inline SDL_IOStream* OpenIO(const SDL_IOStreamInterface* iface, void* userdata) { return SDL::raw::OpenIO(iface, userdata); }
+inline void CloseIO(SDL_IOStream* context) { SDL::raw::CloseIO(context); }
+inline SDL_PropertiesID GetIOProperties(SDL_IOStream* context) { return SDL::raw::GetIOProperties(context); }
+inline SDL_IOStatus GetIOStatus(SDL_IOStream* context) { return SDL::raw::GetIOStatus(context); }
+inline Sint64 GetIOSize(SDL_IOStream* context) { return SDL::raw::GetIOSize(context); }
+inline Sint64 SeekIO(SDL_IOStream* context, Sint64 offset, SDL_IOWhence whence) { return SDL::raw::SeekIO(context, offset, whence); }
+inline Sint64 TellIO(SDL_IOStream* context) { return SDL::raw::TellIO(context); }
+inline size_t ReadIO(SDL_IOStream* context, void* ptr, size_t size) { return SDL::raw::ReadIO(context, ptr, size); }
+inline size_t WriteIO(SDL_IOStream* context, const void* ptr, size_t size) { return SDL::raw::WriteIO(context, ptr, size); }
+inline size_t IOvprintf(SDL_IOStream* context, std::string& fmt, va_list ap) { return SDL::raw::IOvprintf(context, fmt.c_str(), ap); }
+inline void FlushIO(SDL_IOStream* context) { SDL::raw::FlushIO(context); }
+inline void* LoadFile_IO(SDL_IOStream* src, size_t* datasize, bool closeio) { return SDL::raw::LoadFile_IO(src, datasize, closeio); }
+inline void* LoadFile(std::string& file, size_t* datasize) { return SDL::raw::LoadFile(file.c_str(), datasize); }
+inline void SaveFile_IO(SDL_IOStream* src, const void* data, size_t datasize, bool closeio) { SDL::raw::SaveFile_IO(src, data, datasize, closeio); }
+inline void SaveFile(std::string& file, const void* data, size_t datasize) { SDL::raw::SaveFile(file.c_str(), data, datasize); }
+inline void ReadU8(SDL_IOStream* src, Uint8* value) { SDL::raw::ReadU8(src, value); }
+inline void ReadS8(SDL_IOStream* src, Sint8* value) { SDL::raw::ReadS8(src, value); }
+inline void ReadU16LE(SDL_IOStream* src, Uint16* value) { SDL::raw::ReadU16LE(src, value); }
+inline void ReadS16LE(SDL_IOStream* src, Sint16* value) { SDL::raw::ReadS16LE(src, value); }
+inline void ReadU16BE(SDL_IOStream* src, Uint16* value) { SDL::raw::ReadU16BE(src, value); }
+inline void ReadS16BE(SDL_IOStream* src, Sint16* value) { SDL::raw::ReadS16BE(src, value); }
+inline void ReadU32LE(SDL_IOStream* src, Uint32* value) { SDL::raw::ReadU32LE(src, value); }
+inline void ReadS32LE(SDL_IOStream* src, Sint32* value) { SDL::raw::ReadS32LE(src, value); }
+inline void ReadU32BE(SDL_IOStream* src, Uint32* value) { SDL::raw::ReadU32BE(src, value); }
+inline void ReadS32BE(SDL_IOStream* src, Sint32* value) { SDL::raw::ReadS32BE(src, value); }
+inline void ReadU64LE(SDL_IOStream* src, Uint64* value) { SDL::raw::ReadU64LE(src, value); }
+inline void ReadS64LE(SDL_IOStream* src, Sint64* value) { SDL::raw::ReadS64LE(src, value); }
+inline void ReadU64BE(SDL_IOStream* src, Uint64* value) { SDL::raw::ReadU64BE(src, value); }
+inline void ReadS64BE(SDL_IOStream* src, Sint64* value) { SDL::raw::ReadS64BE(src, value); }
+inline void WriteU8(SDL_IOStream* dst, Uint8 value) { SDL::raw::WriteU8(dst, value); }
+inline void WriteS8(SDL_IOStream* dst, Sint8 value) { SDL::raw::WriteS8(dst, value); }
+inline void WriteU16LE(SDL_IOStream* dst, Uint16 value) { SDL::raw::WriteU16LE(dst, value); }
+inline void WriteS16LE(SDL_IOStream* dst, Sint16 value) { SDL::raw::WriteS16LE(dst, value); }
+inline void WriteU16BE(SDL_IOStream* dst, Uint16 value) { SDL::raw::WriteU16BE(dst, value); }
+inline void WriteS16BE(SDL_IOStream* dst, Sint16 value) { SDL::raw::WriteS16BE(dst, value); }
+inline void WriteU32LE(SDL_IOStream* dst, Uint32 value) { SDL::raw::WriteU32LE(dst, value); }
+inline void WriteS32LE(SDL_IOStream* dst, Sint32 value) { SDL::raw::WriteS32LE(dst, value); }
+inline void WriteU32BE(SDL_IOStream* dst, Uint32 value) { SDL::raw::WriteU32BE(dst, value); }
+inline void WriteS32BE(SDL_IOStream* dst, Sint32 value) { SDL::raw::WriteS32BE(dst, value); }
+inline void WriteU64LE(SDL_IOStream* dst, Uint64 value) { SDL::raw::WriteU64LE(dst, value); }
+inline void WriteS64LE(SDL_IOStream* dst, Sint64 value) { SDL::raw::WriteS64LE(dst, value); }
+inline void WriteU64BE(SDL_IOStream* dst, Uint64 value) { SDL::raw::WriteU64BE(dst, value); }
+inline void WriteS64BE(SDL_IOStream* dst, Sint64 value) { SDL::raw::WriteS64BE(dst, value); }
+inline int GetNumAudioDrivers() { return SDL::raw::GetNumAudioDrivers(); }
+inline std::string GetAudioDriver(int index) { return SDL::raw::GetAudioDriver(index); }
+inline std::string GetCurrentAudioDriver() { return SDL::raw::GetCurrentAudioDriver(); }
+inline std::vector<SDL_AudioDeviceID> GetAudioPlaybackDevices() { int _count; std::vector<SDL_AudioDeviceID> _items; auto _ret = SDL::raw::GetAudioPlaybackDevices(&_count); for (int i = 0; i < _count; i++) _items.push_back(_ret[i]); return _items; }
+inline std::vector<SDL_AudioDeviceID> GetAudioRecordingDevices() { int _count; std::vector<SDL_AudioDeviceID> _items; auto _ret = SDL::raw::GetAudioRecordingDevices(&_count); for (int i = 0; i < _count; i++) _items.push_back(_ret[i]); return _items; }
+inline std::string GetAudioDeviceName(SDL_AudioDeviceID devid) { return SDL::raw::GetAudioDeviceName(devid); }
+inline void GetAudioDeviceFormat(SDL_AudioDeviceID devid, SDL_AudioSpec* spec, int* sample_frames) { SDL::raw::GetAudioDeviceFormat(devid, spec, sample_frames); }
+inline std::vector<int> GetAudioDeviceChannelMap(SDL_AudioDeviceID devid) { int _count; std::vector<int> _items; auto _ret = SDL::raw::GetAudioDeviceChannelMap(devid, &_count); for (int i = 0; i < _count; i++) _items.push_back(_ret[i]); return _items; }
+inline SDL_AudioDeviceID OpenAudioDevice(SDL_AudioDeviceID devid, const SDL_AudioSpec* spec) { return SDL::raw::OpenAudioDevice(devid, spec); }
+inline bool IsAudioDevicePhysical(SDL_AudioDeviceID devid) { return SDL::raw::IsAudioDevicePhysical(devid); }
+inline bool IsAudioDevicePlayback(SDL_AudioDeviceID devid) { return SDL::raw::IsAudioDevicePlayback(devid); }
+inline void PauseAudioDevice(SDL_AudioDeviceID dev) { SDL::raw::PauseAudioDevice(dev); }
+inline void ResumeAudioDevice(SDL_AudioDeviceID dev) { SDL::raw::ResumeAudioDevice(dev); }
+inline bool AudioDevicePaused(SDL_AudioDeviceID dev) { return SDL::raw::AudioDevicePaused(dev); }
+inline float GetAudioDeviceGain(SDL_AudioDeviceID devid) { return SDL::raw::GetAudioDeviceGain(devid); }
+inline void SetAudioDeviceGain(SDL_AudioDeviceID devid, float gain) { SDL::raw::SetAudioDeviceGain(devid, gain); }
+inline void CloseAudioDevice(SDL_AudioDeviceID devid) { SDL::raw::CloseAudioDevice(devid); }
+inline void BindAudioStreams(SDL_AudioDeviceID devid, SDL_AudioStream** streams, int num_streams) { SDL::raw::BindAudioStreams(devid, streams, num_streams); }
+inline void BindAudioStream(SDL_AudioDeviceID devid, SDL_AudioStream* stream) { SDL::raw::BindAudioStream(devid, stream); }
+inline void UnbindAudioStreams(SDL_AudioStream** streams, int num_streams) { SDL::raw::UnbindAudioStreams(streams, num_streams); }
+inline void UnbindAudioStream(SDL_AudioStream* stream) { SDL::raw::UnbindAudioStream(stream); }
+inline SDL_AudioDeviceID GetAudioStreamDevice(SDL_AudioStream* stream) { return SDL::raw::GetAudioStreamDevice(stream); }
+inline SDL_AudioStream* CreateAudioStream(const SDL_AudioSpec* src_spec, const SDL_AudioSpec* dst_spec) { return SDL::raw::CreateAudioStream(src_spec, dst_spec); }
+inline SDL_PropertiesID GetAudioStreamProperties(SDL_AudioStream* stream) { return SDL::raw::GetAudioStreamProperties(stream); }
+inline void GetAudioStreamFormat(SDL_AudioStream* stream, SDL_AudioSpec* src_spec, SDL_AudioSpec* dst_spec) { SDL::raw::GetAudioStreamFormat(stream, src_spec, dst_spec); }
+inline void SetAudioStreamFormat(SDL_AudioStream* stream, const SDL_AudioSpec* src_spec, const SDL_AudioSpec* dst_spec) { SDL::raw::SetAudioStreamFormat(stream, src_spec, dst_spec); }
+inline float GetAudioStreamFrequencyRatio(SDL_AudioStream* stream) { return SDL::raw::GetAudioStreamFrequencyRatio(stream); }
+inline void SetAudioStreamFrequencyRatio(SDL_AudioStream* stream, float ratio) { SDL::raw::SetAudioStreamFrequencyRatio(stream, ratio); }
+inline float GetAudioStreamGain(SDL_AudioStream* stream) { return SDL::raw::GetAudioStreamGain(stream); }
+inline void SetAudioStreamGain(SDL_AudioStream* stream, float gain) { SDL::raw::SetAudioStreamGain(stream, gain); }
+inline std::vector<int> GetAudioStreamInputChannelMap(SDL_AudioStream* stream) { int _count; std::vector<int> _items; auto _ret = SDL::raw::GetAudioStreamInputChannelMap(stream, &_count); for (int i = 0; i < _count; i++) _items.push_back(_ret[i]); return _items; }
+inline std::vector<int> GetAudioStreamOutputChannelMap(SDL_AudioStream* stream) { int _count; std::vector<int> _items; auto _ret = SDL::raw::GetAudioStreamOutputChannelMap(stream, &_count); for (int i = 0; i < _count; i++) _items.push_back(_ret[i]); return _items; }
+inline void SetAudioStreamInputChannelMap(SDL_AudioStream* stream, const int* chmap, int count) { SDL::raw::SetAudioStreamInputChannelMap(stream, chmap, count); }
+inline void SetAudioStreamOutputChannelMap(SDL_AudioStream* stream, const int* chmap, int count) { SDL::raw::SetAudioStreamOutputChannelMap(stream, chmap, count); }
+inline void PutAudioStreamData(SDL_AudioStream* stream, const void* buf, int len) { SDL::raw::PutAudioStreamData(stream, buf, len); }
+inline int GetAudioStreamData(SDL_AudioStream* stream, void* buf, int len) { return SDL::raw::GetAudioStreamData(stream, buf, len); }
+inline int GetAudioStreamAvailable(SDL_AudioStream* stream) { return SDL::raw::GetAudioStreamAvailable(stream); }
+inline int GetAudioStreamQueued(SDL_AudioStream* stream) { return SDL::raw::GetAudioStreamQueued(stream); }
+inline void FlushAudioStream(SDL_AudioStream* stream) { SDL::raw::FlushAudioStream(stream); }
+inline void ClearAudioStream(SDL_AudioStream* stream) { SDL::raw::ClearAudioStream(stream); }
+inline void PauseAudioStreamDevice(SDL_AudioStream* stream) { SDL::raw::PauseAudioStreamDevice(stream); }
+inline void ResumeAudioStreamDevice(SDL_AudioStream* stream) { SDL::raw::ResumeAudioStreamDevice(stream); }
+inline bool AudioStreamDevicePaused(SDL_AudioStream* stream) { return SDL::raw::AudioStreamDevicePaused(stream); }
+inline void LockAudioStream(SDL_AudioStream* stream) { SDL::raw::LockAudioStream(stream); }
+inline void UnlockAudioStream(SDL_AudioStream* stream) { SDL::raw::UnlockAudioStream(stream); }
+inline void SetAudioStreamGetCallback(SDL_AudioStream* stream, SDL_AudioStreamCallback callback, void* userdata) { SDL::raw::SetAudioStreamGetCallback(stream, callback, userdata); }
+inline void SetAudioStreamPutCallback(SDL_AudioStream* stream, SDL_AudioStreamCallback callback, void* userdata) { SDL::raw::SetAudioStreamPutCallback(stream, callback, userdata); }
+inline void DestroyAudioStream(SDL_AudioStream* stream) { SDL::raw::DestroyAudioStream(stream); }
+inline SDL_AudioStream* OpenAudioDeviceStream(SDL_AudioDeviceID devid, const SDL_AudioSpec* spec, SDL_AudioStreamCallback callback, void* userdata) { return SDL::raw::OpenAudioDeviceStream(devid, spec, callback, userdata); }
+inline void SetAudioPostmixCallback(SDL_AudioDeviceID devid, SDL_AudioPostmixCallback callback, void* userdata) { SDL::raw::SetAudioPostmixCallback(devid, callback, userdata); }
+inline void LoadWAV_IO(SDL_IOStream* src, bool closeio, SDL_AudioSpec* spec, Uint8** audio_buf, Uint32* audio_len) { SDL::raw::LoadWAV_IO(src, closeio, spec, audio_buf, audio_len); }
+inline void LoadWAV(std::string& path, SDL_AudioSpec* spec, Uint8** audio_buf, Uint32* audio_len) { SDL::raw::LoadWAV(path.c_str(), spec, audio_buf, audio_len); }
+inline void MixAudio(Uint8* dst, const Uint8* src, SDL_AudioFormat format, Uint32 len, float volume) { SDL::raw::MixAudio(dst, src, format, len, volume); }
+inline void ConvertAudioSamples(const SDL_AudioSpec* src_spec, const Uint8* src_data, int src_len, const SDL_AudioSpec* dst_spec, Uint8** dst_data, int* dst_len) { SDL::raw::ConvertAudioSamples(src_spec, src_data, src_len, dst_spec, dst_data, dst_len); }
+inline std::string GetAudioFormatName(SDL_AudioFormat format) { return SDL::raw::GetAudioFormatName(format); }
+inline int GetSilenceValueForFormat(SDL_AudioFormat format) { return SDL::raw::GetSilenceValueForFormat(format); }
+inline int MostSignificantBitIndex32(Uint32 x) { return SDL::raw::MostSignificantBitIndex32(x); }
+inline bool HasExactlyOneBitSet32(Uint32 x) { return SDL::raw::HasExactlyOneBitSet32(x); }
+inline SDL_BlendMode ComposeCustomBlendMode(SDL_BlendFactor srcColorFactor, SDL_BlendFactor dstColorFactor, SDL_BlendOperation colorOperation, SDL_BlendFactor srcAlphaFactor, SDL_BlendFactor dstAlphaFactor, SDL_BlendOperation alphaOperation) { return SDL::raw::ComposeCustomBlendMode(srcColorFactor, dstColorFactor, colorOperation, srcAlphaFactor, dstAlphaFactor, alphaOperation); }
+inline std::string GetPixelFormatName(SDL_PixelFormat format) { return SDL::raw::GetPixelFormatName(format); }
+inline void GetMasksForPixelFormat(SDL_PixelFormat format, int* bpp, Uint32* Rmask, Uint32* Gmask, Uint32* Bmask, Uint32* Amask) { SDL::raw::GetMasksForPixelFormat(format, bpp, Rmask, Gmask, Bmask, Amask); }
+inline SDL_PixelFormat GetPixelFormatForMasks(int bpp, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask) { return SDL::raw::GetPixelFormatForMasks(bpp, Rmask, Gmask, Bmask, Amask); }
+inline const SDL_PixelFormatDetails* GetPixelFormatDetails(SDL_PixelFormat format) { return SDL::raw::GetPixelFormatDetails(format); }
+inline std::shared_ptr<SDL::Palette> CreatePalette(int ncolors) { return SDL::Palette::get(SDL::raw::CreatePalette(ncolors)); }
+inline void DestroyPalette(std::shared_ptr<SDL::Palette> palette) { SDL::raw::DestroyPalette(palette->get()); }
+inline Uint32 MapRGB(const SDL_PixelFormatDetails* format, const SDL_Palette* palette, Uint8 r, Uint8 g, Uint8 b) { return SDL::raw::MapRGB(format, palette, r, g, b); }
+inline Uint32 MapRGBA(const SDL_PixelFormatDetails* format, const SDL_Palette* palette, Uint8 r, Uint8 g, Uint8 b, Uint8 a) { return SDL::raw::MapRGBA(format, palette, r, g, b, a); }
+inline void GetRGB(Uint32 pixel, const SDL_PixelFormatDetails* format, const SDL_Palette* palette, Uint8* r, Uint8* g, Uint8* b) { SDL::raw::GetRGB(pixel, format, palette, r, g, b); }
+inline void GetRGBA(Uint32 pixel, const SDL_PixelFormatDetails* format, const SDL_Palette* palette, Uint8* r, Uint8* g, Uint8* b, Uint8* a) { SDL::raw::GetRGBA(pixel, format, palette, r, g, b, a); }
+inline void RectToFRect(const SDL::Rect& rect, SDL::FRect& frect) { SDL::raw::RectToFRect(&rect, &frect); }
+inline bool PointInRect(const SDL::Point& p, const SDL::Rect& r) { return SDL::raw::PointInRect(&p, &r); }
+inline bool RectEmpty(const SDL::Rect& r) { return SDL::raw::RectEmpty(&r); }
+inline bool RectsEqual(const SDL::Rect& a, const SDL::Rect& b) { return SDL::raw::RectsEqual(&a, &b); }
+inline bool HasRectIntersection(const SDL::Rect& A, const SDL::Rect& B) { return SDL::raw::HasRectIntersection(&A, &B); }
+inline bool GetRectIntersection(const SDL::Rect& A, const SDL::Rect& B, SDL::Rect& result) { return SDL::raw::GetRectIntersection(&A, &B, &result); }
+inline void GetRectUnion(const SDL::Rect& A, const SDL::Rect& B, SDL::Rect& result) { SDL::raw::GetRectUnion(&A, &B, &result); }
+inline bool GetRectEnclosingPoints(const SDL::Point& points, int count, const SDL::Rect& clip, SDL::Rect& result) { return SDL::raw::GetRectEnclosingPoints(&points, count, &clip, &result); }
+inline bool GetRectAndLineIntersection(const SDL::Rect& rect, int* X1, int* Y1, int* X2, int* Y2) { return SDL::raw::GetRectAndLineIntersection(&rect, X1, Y1, X2, Y2); }
+inline bool PointInRectFloat(const SDL::FPoint& p, const SDL::FRect& r) { return SDL::raw::PointInRectFloat(&p, &r); }
+inline bool RectEmptyFloat(const SDL::FRect& r) { return SDL::raw::RectEmptyFloat(&r); }
+inline bool RectsEqualEpsilon(const SDL::FRect& a, const SDL::FRect& b, const float epsilon) { return SDL::raw::RectsEqualEpsilon(&a, &b, epsilon); }
+inline bool RectsEqualFloat(const SDL::FRect& a, const SDL::FRect& b) { return SDL::raw::RectsEqualFloat(&a, &b); }
+inline bool HasRectIntersectionFloat(const SDL::FRect& A, const SDL::FRect& B) { return SDL::raw::HasRectIntersectionFloat(&A, &B); }
+inline bool GetRectIntersectionFloat(const SDL::FRect& A, const SDL::FRect& B, SDL::FRect& result) { return SDL::raw::GetRectIntersectionFloat(&A, &B, &result); }
+inline void GetRectUnionFloat(const SDL::FRect& A, const SDL::FRect& B, SDL::FRect& result) { SDL::raw::GetRectUnionFloat(&A, &B, &result); }
+inline bool GetRectEnclosingPointsFloat(const SDL::FPoint& points, int count, const SDL::FRect& clip, SDL::FRect& result) { return SDL::raw::GetRectEnclosingPointsFloat(&points, count, &clip, &result); }
+inline bool GetRectAndLineIntersectionFloat(const SDL::FRect& rect, float* X1, float* Y1, float* X2, float* Y2) { return SDL::raw::GetRectAndLineIntersectionFloat(&rect, X1, Y1, X2, Y2); }
+inline std::shared_ptr<SDL::Surface> CreateSurface(int width, int height, SDL_PixelFormat format) { return SDL::Surface::get(SDL::raw::CreateSurface(width, height, format)); }
+inline std::shared_ptr<SDL::Surface> CreateSurfaceFrom(int width, int height, SDL_PixelFormat format, void* pixels, int pitch) { return SDL::Surface::get(SDL::raw::CreateSurfaceFrom(width, height, format, pixels, pitch)); }
+inline void DestroySurface(std::shared_ptr<SDL::Surface> surface) { SDL::raw::DestroySurface(surface->get()); }
+inline std::shared_ptr<SDL::Surface> LoadBMP_IO(SDL_IOStream* src, bool closeio) { return SDL::Surface::get(SDL::raw::LoadBMP_IO(src, closeio)); }
+inline std::shared_ptr<SDL::Surface> LoadBMP(std::string& file) { return SDL::Surface::get(SDL::raw::LoadBMP(file.c_str())); }
+inline void ConvertPixels(int width, int height, SDL_PixelFormat src_format, const void* src, int src_pitch, SDL_PixelFormat dst_format, void* dst, int dst_pitch) { SDL::raw::ConvertPixels(width, height, src_format, src, src_pitch, dst_format, dst, dst_pitch); }
+inline void ConvertPixelsAndColorspace(int width, int height, SDL_PixelFormat src_format, SDL_Colorspace src_colorspace, SDL_PropertiesID src_properties, const void* src, int src_pitch, SDL_PixelFormat dst_format, SDL_Colorspace dst_colorspace, SDL_PropertiesID dst_properties, void* dst, int dst_pitch) { SDL::raw::ConvertPixelsAndColorspace(width, height, src_format, src_colorspace, src_properties, src, src_pitch, dst_format, dst_colorspace, dst_properties, dst, dst_pitch); }
+inline void PremultiplyAlpha(int width, int height, SDL_PixelFormat src_format, const void* src, int src_pitch, SDL_PixelFormat dst_format, void* dst, int dst_pitch, bool linear) { SDL::raw::PremultiplyAlpha(width, height, src_format, src, src_pitch, dst_format, dst, dst_pitch, linear); }
+inline int GetNumCameraDrivers() { return SDL::raw::GetNumCameraDrivers(); }
+inline std::string GetCameraDriver(int index) { return SDL::raw::GetCameraDriver(index); }
+inline std::string GetCurrentCameraDriver() { return SDL::raw::GetCurrentCameraDriver(); }
+inline std::vector<SDL_CameraID> GetCameras() { int _count; std::vector<SDL_CameraID> _items; auto _ret = SDL::raw::GetCameras(&_count); for (int i = 0; i < _count; i++) _items.push_back(_ret[i]); return _items; }
+inline std::vector<SDL_CameraSpec*> GetCameraSupportedFormats(SDL_CameraID devid) { int _count; std::vector<SDL_CameraSpec*> _items; auto _ret = SDL::raw::GetCameraSupportedFormats(devid, &_count); for (int i = 0; i < _count; i++) _items.push_back(_ret[i]); return _items; }
+inline std::string GetCameraName(SDL_CameraID instance_id) { return SDL::raw::GetCameraName(instance_id); }
+inline SDL_CameraPosition GetCameraPosition(SDL_CameraID instance_id) { return SDL::raw::GetCameraPosition(instance_id); }
+inline SDL_Camera* OpenCamera(SDL_CameraID instance_id, const SDL_CameraSpec* spec) { return SDL::raw::OpenCamera(instance_id, spec); }
+inline int GetCameraPermissionState(SDL_Camera* camera) { return SDL::raw::GetCameraPermissionState(camera); }
+inline SDL_CameraID GetCameraID(SDL_Camera* camera) { return SDL::raw::GetCameraID(camera); }
+inline SDL_PropertiesID GetCameraProperties(SDL_Camera* camera) { return SDL::raw::GetCameraProperties(camera); }
+inline void GetCameraFormat(SDL_Camera* camera, SDL_CameraSpec* spec) { SDL::raw::GetCameraFormat(camera, spec); }
+inline std::shared_ptr<SDL::Surface> AcquireCameraFrame(SDL_Camera* camera, Uint64* timestampNS) { return SDL::Surface::get(SDL::raw::AcquireCameraFrame(camera, timestampNS)); }
+inline void ReleaseCameraFrame(SDL_Camera* camera, std::shared_ptr<SDL::Surface> frame) { SDL::raw::ReleaseCameraFrame(camera, frame->get()); }
+inline void CloseCamera(SDL_Camera* camera) { SDL::raw::CloseCamera(camera); }
+inline void SetClipboardText(std::string& text) { SDL::raw::SetClipboardText(text.c_str()); }
+inline std::string GetClipboardText() { return SDL::raw::GetClipboardText(); }
+inline bool HasClipboardText() { return SDL::raw::HasClipboardText(); }
+inline void SetPrimarySelectionText(std::string& text) { SDL::raw::SetPrimarySelectionText(text.c_str()); }
+inline std::string GetPrimarySelectionText() { return SDL::raw::GetPrimarySelectionText(); }
+inline bool HasPrimarySelectionText() { return SDL::raw::HasPrimarySelectionText(); }
+inline void SetClipboardData(SDL_ClipboardDataCallback callback, SDL_ClipboardCleanupCallback cleanup, void* userdata, std::string& mime_types, size_t num_mime_types) { SDL::raw::SetClipboardData(callback, cleanup, userdata, mime_types, num_mime_types); }
+inline void ClearClipboardData() { SDL::raw::ClearClipboardData(); }
+inline void* GetClipboardData(std::string& mime_type, size_t* size) { return SDL::raw::GetClipboardData(mime_type.c_str(), size); }
+inline bool HasClipboardData(std::string& mime_type) { return SDL::raw::HasClipboardData(mime_type.c_str()); }
+inline std::string GetClipboardMimeTypes(size_t* num_mime_types) { return SDL::raw::GetClipboardMimeTypes(num_mime_types); }
+inline int GetNumLogicalCPUCores() { return SDL::raw::GetNumLogicalCPUCores(); }
+inline int GetCPUCacheLineSize() { return SDL::raw::GetCPUCacheLineSize(); }
+inline bool HasAltiVec() { return SDL::raw::HasAltiVec(); }
+inline bool HasMMX() { return SDL::raw::HasMMX(); }
+inline bool HasSSE() { return SDL::raw::HasSSE(); }
+inline bool HasSSE2() { return SDL::raw::HasSSE2(); }
+inline bool HasSSE3() { return SDL::raw::HasSSE3(); }
+inline bool HasSSE41() { return SDL::raw::HasSSE41(); }
+inline bool HasSSE42() { return SDL::raw::HasSSE42(); }
+inline bool HasAVX() { return SDL::raw::HasAVX(); }
+inline bool HasAVX2() { return SDL::raw::HasAVX2(); }
+inline bool HasAVX512F() { return SDL::raw::HasAVX512F(); }
+inline bool HasARMSIMD() { return SDL::raw::HasARMSIMD(); }
+inline bool HasNEON() { return SDL::raw::HasNEON(); }
+inline bool HasLSX() { return SDL::raw::HasLSX(); }
+inline bool HasLASX() { return SDL::raw::HasLASX(); }
+inline int GetSystemRAM() { return SDL::raw::GetSystemRAM(); }
+inline size_t GetSIMDAlignment() { return SDL::raw::GetSIMDAlignment(); }
+inline int GetNumVideoDrivers() { return SDL::raw::GetNumVideoDrivers(); }
+inline std::string GetVideoDriver(int index) { return SDL::raw::GetVideoDriver(index); }
+inline std::string GetCurrentVideoDriver() { return SDL::raw::GetCurrentVideoDriver(); }
+inline SDL_SystemTheme GetSystemTheme() { return SDL::raw::GetSystemTheme(); }
+inline std::vector<SDL_DisplayID> GetDisplays() { int _count; std::vector<SDL_DisplayID> _items; auto _ret = SDL::raw::GetDisplays(&_count); for (int i = 0; i < _count; i++) _items.push_back(_ret[i]); return _items; }
+inline SDL_DisplayID GetPrimaryDisplay() { return SDL::raw::GetPrimaryDisplay(); }
+inline SDL_PropertiesID GetDisplayProperties(SDL_DisplayID displayID) { return SDL::raw::GetDisplayProperties(displayID); }
+inline std::string GetDisplayName(SDL_DisplayID displayID) { return SDL::raw::GetDisplayName(displayID); }
+inline SDL::Rect GetDisplayBounds(SDL_DisplayID displayID) { SDL_Rect _out; SDL::raw::GetDisplayBounds(displayID, &_out); return _out; }
+inline SDL::Rect GetDisplayUsableBounds(SDL_DisplayID displayID) { SDL_Rect _out; SDL::raw::GetDisplayUsableBounds(displayID, &_out); return _out; }
+inline SDL_DisplayOrientation GetNaturalDisplayOrientation(SDL_DisplayID displayID) { return SDL::raw::GetNaturalDisplayOrientation(displayID); }
+inline SDL_DisplayOrientation GetCurrentDisplayOrientation(SDL_DisplayID displayID) { return SDL::raw::GetCurrentDisplayOrientation(displayID); }
+inline float GetDisplayContentScale(SDL_DisplayID displayID) { return SDL::raw::GetDisplayContentScale(displayID); }
+inline std::vector<SDL_DisplayMode*> GetFullscreenDisplayModes(SDL_DisplayID displayID) { int _count; std::vector<SDL_DisplayMode*> _items; auto _ret = SDL::raw::GetFullscreenDisplayModes(displayID, &_count); for (int i = 0; i < _count; i++) _items.push_back(_ret[i]); return _items; }
+inline SDL_DisplayMode GetClosestFullscreenDisplayMode(SDL_DisplayID displayID, int w, int h, float refresh_rate, bool include_high_density_modes) { SDL_DisplayMode _out; SDL::raw::GetClosestFullscreenDisplayMode(displayID, w, h, refresh_rate, include_high_density_modes, &_out); return _out; }
+inline const SDL_DisplayMode* GetDesktopDisplayMode(SDL_DisplayID displayID) { return SDL::raw::GetDesktopDisplayMode(displayID); }
+inline const SDL_DisplayMode* GetCurrentDisplayMode(SDL_DisplayID displayID) { return SDL::raw::GetCurrentDisplayMode(displayID); }
+inline SDL_DisplayID GetDisplayForPoint(const SDL::Point& point) { return SDL::raw::GetDisplayForPoint(&point); }
+inline SDL_DisplayID GetDisplayForRect(const SDL::Rect& rect) { return SDL::raw::GetDisplayForRect(&rect); }
+inline std::vector<std::shared_ptr<SDL::Window>> GetWindows() { int _count; std::vector<std::shared_ptr<SDL::Window>> _items; auto _ret = SDL::raw::GetWindows(&_count); for (int i = 0; i < _count; i++) _items.push_back(SDL::Window::get(_ret[i])); return _items; }
+inline std::shared_ptr<SDL::Window> CreateWindow(std::string& title, int w, int h, SDL::WindowFlags flags) { return SDL::Window::get(SDL::raw::CreateWindow(title.c_str(), w, h, flags)); }
+inline std::shared_ptr<SDL::Window> CreateWindowWithProperties(SDL_PropertiesID props) { return SDL::Window::get(SDL::raw::CreateWindowWithProperties(props)); }
+inline std::shared_ptr<SDL::Window> GetWindowFromID(SDL_WindowID id) { return SDL::Window::get(SDL::raw::GetWindowFromID(id)); }
+inline std::shared_ptr<SDL::Window> GetGrabbedWindow() { return SDL::Window::get(SDL::raw::GetGrabbedWindow()); }
+inline void DestroyWindow(std::shared_ptr<SDL::Window> window) { SDL::raw::DestroyWindow(window->get()); }
+inline bool ScreenSaverEnabled() { return SDL::raw::ScreenSaverEnabled(); }
+inline void EnableScreenSaver() { SDL::raw::EnableScreenSaver(); }
+inline void DisableScreenSaver() { SDL::raw::DisableScreenSaver(); }
+inline void GL_LoadLibrary(std::string& path) { SDL::raw::GL_LoadLibrary(path.c_str()); }
+inline SDL_FunctionPointer GL_GetProcAddress(std::string& proc) { return SDL::raw::GL_GetProcAddress(proc.c_str()); }
+inline SDL_FunctionPointer EGL_GetProcAddress(std::string& proc) { return SDL::raw::EGL_GetProcAddress(proc.c_str()); }
+inline void GL_UnloadLibrary() { SDL::raw::GL_UnloadLibrary(); }
+inline bool GL_ExtensionSupported(std::string& extension) { return SDL::raw::GL_ExtensionSupported(extension.c_str()); }
+inline void GL_ResetAttributes() { SDL::raw::GL_ResetAttributes(); }
+inline void GL_SetAttribute(SDL_GLAttr attr, int value) { SDL::raw::GL_SetAttribute(attr, value); }
+inline void GL_GetAttribute(SDL_GLAttr attr, int* value) { SDL::raw::GL_GetAttribute(attr, value); }
+inline std::shared_ptr<SDL::Window> GL_GetCurrentWindow() { return SDL::Window::get(SDL::raw::GL_GetCurrentWindow()); }
+inline SDL_GLContext GL_GetCurrentContext() { return SDL::raw::GL_GetCurrentContext(); }
+inline SDL_EGLDisplay EGL_GetCurrentDisplay() { return SDL::raw::EGL_GetCurrentDisplay(); }
+inline SDL_EGLConfig EGL_GetCurrentConfig() { return SDL::raw::EGL_GetCurrentConfig(); }
+inline void EGL_SetAttributeCallbacks(SDL_EGLAttribArrayCallback platformAttribCallback, SDL_EGLIntArrayCallback surfaceAttribCallback, SDL_EGLIntArrayCallback contextAttribCallback, void* userdata) { SDL::raw::EGL_SetAttributeCallbacks(platformAttribCallback, surfaceAttribCallback, contextAttribCallback, userdata); }
+inline void GL_SetSwapInterval(int interval) { SDL::raw::GL_SetSwapInterval(interval); }
+inline void GL_GetSwapInterval(int* interval) { SDL::raw::GL_GetSwapInterval(interval); }
+inline void GL_DestroyContext(SDL_GLContext context) { SDL::raw::GL_DestroyContext(context); }
+inline void ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userdata, std::shared_ptr<SDL::Window> window, const SDL_DialogFileFilter* filters, int nfilters, std::string& default_location, bool allow_many) { SDL::raw::ShowOpenFileDialog(callback, userdata, window->get(), filters, nfilters, default_location.c_str(), allow_many); }
+inline void ShowSaveFileDialog(SDL_DialogFileCallback callback, void* userdata, std::shared_ptr<SDL::Window> window, const SDL_DialogFileFilter* filters, int nfilters, std::string& default_location) { SDL::raw::ShowSaveFileDialog(callback, userdata, window->get(), filters, nfilters, default_location.c_str()); }
+inline void ShowOpenFolderDialog(SDL_DialogFileCallback callback, void* userdata, std::shared_ptr<SDL::Window> window, std::string& default_location, bool allow_many) { SDL::raw::ShowOpenFolderDialog(callback, userdata, window->get(), default_location.c_str(), allow_many); }
+inline void ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFileCallback callback, void* userdata, SDL_PropertiesID props) { SDL::raw::ShowFileDialogWithProperties(type, callback, userdata, props); }
+inline void GUIDToString(SDL_GUID guid, std::string& pszGUID, int cbGUID) { SDL::raw::GUIDToString(guid, pszGUID.c_str(), cbGUID); }
+inline SDL_GUID StringToGUID(std::string& pchGUID) { return SDL::raw::StringToGUID(pchGUID.c_str()); }
+inline SDL_PowerState GetPowerInfo(int* seconds, int* percent) { return SDL::raw::GetPowerInfo(seconds, percent); }
+inline std::vector<SDL_SensorID> GetSensors() { int _count; std::vector<SDL_SensorID> _items; auto _ret = SDL::raw::GetSensors(&_count); for (int i = 0; i < _count; i++) _items.push_back(_ret[i]); return _items; }
+inline std::string GetSensorNameForID(SDL_SensorID instance_id) { return SDL::raw::GetSensorNameForID(instance_id); }
+inline SDL_SensorType GetSensorTypeForID(SDL_SensorID instance_id) { return SDL::raw::GetSensorTypeForID(instance_id); }
+inline int GetSensorNonPortableTypeForID(SDL_SensorID instance_id) { return SDL::raw::GetSensorNonPortableTypeForID(instance_id); }
+inline SDL_Sensor* OpenSensor(SDL_SensorID instance_id) { return SDL::raw::OpenSensor(instance_id); }
+inline SDL_Sensor* GetSensorFromID(SDL_SensorID instance_id) { return SDL::raw::GetSensorFromID(instance_id); }
+inline SDL_PropertiesID GetSensorProperties(SDL_Sensor* sensor) { return SDL::raw::GetSensorProperties(sensor); }
+inline std::string GetSensorName(SDL_Sensor* sensor) { return SDL::raw::GetSensorName(sensor); }
+inline SDL_SensorType GetSensorType(SDL_Sensor* sensor) { return SDL::raw::GetSensorType(sensor); }
+inline int GetSensorNonPortableType(SDL_Sensor* sensor) { return SDL::raw::GetSensorNonPortableType(sensor); }
+inline SDL_SensorID GetSensorID(SDL_Sensor* sensor) { return SDL::raw::GetSensorID(sensor); }
+inline void GetSensorData(SDL_Sensor* sensor, float* data, int num_values) { SDL::raw::GetSensorData(sensor, data, num_values); }
+inline void CloseSensor(SDL_Sensor* sensor) { SDL::raw::CloseSensor(sensor); }
+inline void UpdateSensors() { SDL::raw::UpdateSensors(); }
+inline void LockJoysticks() { SDL::raw::LockJoysticks(); }
+inline void UnlockJoysticks() { SDL::raw::UnlockJoysticks(); }
+inline bool HasJoystick() { return SDL::raw::HasJoystick(); }
+inline std::vector<SDL_JoystickID> GetJoysticks() { int _count; std::vector<SDL_JoystickID> _items; auto _ret = SDL::raw::GetJoysticks(&_count); for (int i = 0; i < _count; i++) _items.push_back(_ret[i]); return _items; }
+inline std::string GetJoystickNameForID(SDL_JoystickID instance_id) { return SDL::raw::GetJoystickNameForID(instance_id); }
+inline std::string GetJoystickPathForID(SDL_JoystickID instance_id) { return SDL::raw::GetJoystickPathForID(instance_id); }
+inline int GetJoystickPlayerIndexForID(SDL_JoystickID instance_id) { return SDL::raw::GetJoystickPlayerIndexForID(instance_id); }
+inline SDL_GUID GetJoystickGUIDForID(SDL_JoystickID instance_id) { return SDL::raw::GetJoystickGUIDForID(instance_id); }
+inline Uint16 GetJoystickVendorForID(SDL_JoystickID instance_id) { return SDL::raw::GetJoystickVendorForID(instance_id); }
+inline Uint16 GetJoystickProductForID(SDL_JoystickID instance_id) { return SDL::raw::GetJoystickProductForID(instance_id); }
+inline Uint16 GetJoystickProductVersionForID(SDL_JoystickID instance_id) { return SDL::raw::GetJoystickProductVersionForID(instance_id); }
+inline SDL_JoystickType GetJoystickTypeForID(SDL_JoystickID instance_id) { return SDL::raw::GetJoystickTypeForID(instance_id); }
+inline SDL_Joystick* OpenJoystick(SDL_JoystickID instance_id) { return SDL::raw::OpenJoystick(instance_id); }
+inline SDL_Joystick* GetJoystickFromID(SDL_JoystickID instance_id) { return SDL::raw::GetJoystickFromID(instance_id); }
+inline SDL_Joystick* GetJoystickFromPlayerIndex(int player_index) { return SDL::raw::GetJoystickFromPlayerIndex(player_index); }
+inline SDL_JoystickID AttachVirtualJoystick(const SDL_VirtualJoystickDesc* desc) { return SDL::raw::AttachVirtualJoystick(desc); }
+inline void DetachVirtualJoystick(SDL_JoystickID instance_id) { SDL::raw::DetachVirtualJoystick(instance_id); }
+inline bool IsJoystickVirtual(SDL_JoystickID instance_id) { return SDL::raw::IsJoystickVirtual(instance_id); }
+inline void SetJoystickVirtualAxis(SDL_Joystick* joystick, int axis, Sint16 value) { SDL::raw::SetJoystickVirtualAxis(joystick, axis, value); }
+inline void SetJoystickVirtualBall(SDL_Joystick* joystick, int ball, Sint16 xrel, Sint16 yrel) { SDL::raw::SetJoystickVirtualBall(joystick, ball, xrel, yrel); }
+inline void SetJoystickVirtualButton(SDL_Joystick* joystick, int button, bool down) { SDL::raw::SetJoystickVirtualButton(joystick, button, down); }
+inline void SetJoystickVirtualHat(SDL_Joystick* joystick, int hat, Uint8 value) { SDL::raw::SetJoystickVirtualHat(joystick, hat, value); }
+inline void SetJoystickVirtualTouchpad(SDL_Joystick* joystick, int touchpad, int finger, bool down, float x, float y, float pressure) { SDL::raw::SetJoystickVirtualTouchpad(joystick, touchpad, finger, down, x, y, pressure); }
+inline void SendJoystickVirtualSensorData(SDL_Joystick* joystick, SDL_SensorType type, Uint64 sensor_timestamp, const float* data, int num_values) { SDL::raw::SendJoystickVirtualSensorData(joystick, type, sensor_timestamp, data, num_values); }
+inline SDL_PropertiesID GetJoystickProperties(SDL_Joystick* joystick) { return SDL::raw::GetJoystickProperties(joystick); }
+inline std::string GetJoystickName(SDL_Joystick* joystick) { return SDL::raw::GetJoystickName(joystick); }
+inline std::string GetJoystickPath(SDL_Joystick* joystick) { return SDL::raw::GetJoystickPath(joystick); }
+inline int GetJoystickPlayerIndex(SDL_Joystick* joystick) { return SDL::raw::GetJoystickPlayerIndex(joystick); }
+inline void SetJoystickPlayerIndex(SDL_Joystick* joystick, int player_index) { SDL::raw::SetJoystickPlayerIndex(joystick, player_index); }
+inline SDL_GUID GetJoystickGUID(SDL_Joystick* joystick) { return SDL::raw::GetJoystickGUID(joystick); }
+inline Uint16 GetJoystickVendor(SDL_Joystick* joystick) { return SDL::raw::GetJoystickVendor(joystick); }
+inline Uint16 GetJoystickProduct(SDL_Joystick* joystick) { return SDL::raw::GetJoystickProduct(joystick); }
+inline Uint16 GetJoystickProductVersion(SDL_Joystick* joystick) { return SDL::raw::GetJoystickProductVersion(joystick); }
+inline Uint16 GetJoystickFirmwareVersion(SDL_Joystick* joystick) { return SDL::raw::GetJoystickFirmwareVersion(joystick); }
+inline std::string GetJoystickSerial(SDL_Joystick* joystick) { return SDL::raw::GetJoystickSerial(joystick); }
+inline SDL_JoystickType GetJoystickType(SDL_Joystick* joystick) { return SDL::raw::GetJoystickType(joystick); }
+inline void GetJoystickGUIDInfo(SDL_GUID guid, Uint16* vendor, Uint16* product, Uint16* version, Uint16* crc16) { SDL::raw::GetJoystickGUIDInfo(guid, vendor, product, version, crc16); }
+inline void JoystickConnected(SDL_Joystick* joystick) { SDL::raw::JoystickConnected(joystick); }
+inline SDL_JoystickID GetJoystickID(SDL_Joystick* joystick) { return SDL::raw::GetJoystickID(joystick); }
+inline int GetNumJoystickAxes(SDL_Joystick* joystick) { return SDL::raw::GetNumJoystickAxes(joystick); }
+inline int GetNumJoystickBalls(SDL_Joystick* joystick) { return SDL::raw::GetNumJoystickBalls(joystick); }
+inline int GetNumJoystickHats(SDL_Joystick* joystick) { return SDL::raw::GetNumJoystickHats(joystick); }
+inline int GetNumJoystickButtons(SDL_Joystick* joystick) { return SDL::raw::GetNumJoystickButtons(joystick); }
+inline void SetJoystickEventsEnabled(bool enabled) { SDL::raw::SetJoystickEventsEnabled(enabled); }
+inline bool JoystickEventsEnabled() { return SDL::raw::JoystickEventsEnabled(); }
+inline void UpdateJoysticks() { SDL::raw::UpdateJoysticks(); }
+inline Sint16 GetJoystickAxis(SDL_Joystick* joystick, int axis) { return SDL::raw::GetJoystickAxis(joystick, axis); }
+inline bool GetJoystickAxisInitialState(SDL_Joystick* joystick, int axis, Sint16* state) { return SDL::raw::GetJoystickAxisInitialState(joystick, axis, state); }
+inline void GetJoystickBall(SDL_Joystick* joystick, int ball, int* dx, int* dy) { SDL::raw::GetJoystickBall(joystick, ball, dx, dy); }
+inline Uint8 GetJoystickHat(SDL_Joystick* joystick, int hat) { return SDL::raw::GetJoystickHat(joystick, hat); }
+inline bool GetJoystickButton(SDL_Joystick* joystick, int button) { return SDL::raw::GetJoystickButton(joystick, button); }
+inline bool RumbleJoystick(SDL_Joystick* joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms) { return SDL::raw::RumbleJoystick(joystick, low_frequency_rumble, high_frequency_rumble, duration_ms); }
+inline void RumbleJoystickTriggers(SDL_Joystick* joystick, Uint16 left_rumble, Uint16 right_rumble, Uint32 duration_ms) { SDL::raw::RumbleJoystickTriggers(joystick, left_rumble, right_rumble, duration_ms); }
+inline void SetJoystickLED(SDL_Joystick* joystick, Uint8 red, Uint8 green, Uint8 blue) { SDL::raw::SetJoystickLED(joystick, red, green, blue); }
+inline void SendJoystickEffect(SDL_Joystick* joystick, const void* data, int size) { SDL::raw::SendJoystickEffect(joystick, data, size); }
+inline void CloseJoystick(SDL_Joystick* joystick) { SDL::raw::CloseJoystick(joystick); }
+inline SDL_JoystickConnectionState GetJoystickConnectionState(SDL_Joystick* joystick) { return SDL::raw::GetJoystickConnectionState(joystick); }
+inline SDL_PowerState GetJoystickPowerInfo(SDL_Joystick* joystick, int* percent) { return SDL::raw::GetJoystickPowerInfo(joystick, percent); }
+inline int AddGamepadMapping(std::string& mapping) { return SDL::raw::AddGamepadMapping(mapping.c_str()); }
+inline int AddGamepadMappingsFromIO(SDL_IOStream* src, bool closeio) { return SDL::raw::AddGamepadMappingsFromIO(src, closeio); }
+inline int AddGamepadMappingsFromFile(std::string& file) { return SDL::raw::AddGamepadMappingsFromFile(file.c_str()); }
+inline void ReloadGamepadMappings() { SDL::raw::ReloadGamepadMappings(); }
+inline std::vector<std::string> GetGamepadMappings() { int _count; std::vector<std::string> _items; auto _ret = SDL::raw::GetGamepadMappings(&_count); for (int i = 0; i < _count; i++) _items.push_back(_ret[i]); return _items; }
+inline std::string GetGamepadMappingForGUID(SDL_GUID guid) { return SDL::raw::GetGamepadMappingForGUID(guid); }
+inline std::string GetGamepadMapping(SDL_Gamepad* gamepad) { return SDL::raw::GetGamepadMapping(gamepad); }
+inline void SetGamepadMapping(SDL_JoystickID instance_id, std::string& mapping) { SDL::raw::SetGamepadMapping(instance_id, mapping.c_str()); }
+inline bool HasGamepad() { return SDL::raw::HasGamepad(); }
+inline std::vector<SDL_JoystickID> GetGamepads() { int _count; std::vector<SDL_JoystickID> _items; auto _ret = SDL::raw::GetGamepads(&_count); for (int i = 0; i < _count; i++) _items.push_back(_ret[i]); return _items; }
+inline bool IsGamepad(SDL_JoystickID instance_id) { return SDL::raw::IsGamepad(instance_id); }
+inline std::string GetGamepadNameForID(SDL_JoystickID instance_id) { return SDL::raw::GetGamepadNameForID(instance_id); }
+inline std::string GetGamepadPathForID(SDL_JoystickID instance_id) { return SDL::raw::GetGamepadPathForID(instance_id); }
+inline int GetGamepadPlayerIndexForID(SDL_JoystickID instance_id) { return SDL::raw::GetGamepadPlayerIndexForID(instance_id); }
+inline SDL_GUID GetGamepadGUIDForID(SDL_JoystickID instance_id) { return SDL::raw::GetGamepadGUIDForID(instance_id); }
+inline Uint16 GetGamepadVendorForID(SDL_JoystickID instance_id) { return SDL::raw::GetGamepadVendorForID(instance_id); }
+inline Uint16 GetGamepadProductForID(SDL_JoystickID instance_id) { return SDL::raw::GetGamepadProductForID(instance_id); }
+inline Uint16 GetGamepadProductVersionForID(SDL_JoystickID instance_id) { return SDL::raw::GetGamepadProductVersionForID(instance_id); }
+inline SDL_GamepadType GetGamepadTypeForID(SDL_JoystickID instance_id) { return SDL::raw::GetGamepadTypeForID(instance_id); }
+inline SDL_GamepadType GetRealGamepadTypeForID(SDL_JoystickID instance_id) { return SDL::raw::GetRealGamepadTypeForID(instance_id); }
+inline std::string GetGamepadMappingForID(SDL_JoystickID instance_id) { return SDL::raw::GetGamepadMappingForID(instance_id); }
+inline SDL_Gamepad* OpenGamepad(SDL_JoystickID instance_id) { return SDL::raw::OpenGamepad(instance_id); }
+inline SDL_Gamepad* GetGamepadFromID(SDL_JoystickID instance_id) { return SDL::raw::GetGamepadFromID(instance_id); }
+inline SDL_Gamepad* GetGamepadFromPlayerIndex(int player_index) { return SDL::raw::GetGamepadFromPlayerIndex(player_index); }
+inline SDL_PropertiesID GetGamepadProperties(SDL_Gamepad* gamepad) { return SDL::raw::GetGamepadProperties(gamepad); }
+inline SDL_JoystickID GetGamepadID(SDL_Gamepad* gamepad) { return SDL::raw::GetGamepadID(gamepad); }
+inline std::string GetGamepadName(SDL_Gamepad* gamepad) { return SDL::raw::GetGamepadName(gamepad); }
+inline std::string GetGamepadPath(SDL_Gamepad* gamepad) { return SDL::raw::GetGamepadPath(gamepad); }
+inline SDL_GamepadType GetGamepadType(SDL_Gamepad* gamepad) { return SDL::raw::GetGamepadType(gamepad); }
+inline SDL_GamepadType GetRealGamepadType(SDL_Gamepad* gamepad) { return SDL::raw::GetRealGamepadType(gamepad); }
+inline int GetGamepadPlayerIndex(SDL_Gamepad* gamepad) { return SDL::raw::GetGamepadPlayerIndex(gamepad); }
+inline void SetGamepadPlayerIndex(SDL_Gamepad* gamepad, int player_index) { SDL::raw::SetGamepadPlayerIndex(gamepad, player_index); }
+inline Uint16 GetGamepadVendor(SDL_Gamepad* gamepad) { return SDL::raw::GetGamepadVendor(gamepad); }
+inline Uint16 GetGamepadProduct(SDL_Gamepad* gamepad) { return SDL::raw::GetGamepadProduct(gamepad); }
+inline Uint16 GetGamepadProductVersion(SDL_Gamepad* gamepad) { return SDL::raw::GetGamepadProductVersion(gamepad); }
+inline Uint16 GetGamepadFirmwareVersion(SDL_Gamepad* gamepad) { return SDL::raw::GetGamepadFirmwareVersion(gamepad); }
+inline std::string GetGamepadSerial(SDL_Gamepad* gamepad) { return SDL::raw::GetGamepadSerial(gamepad); }
+inline Uint64 GetGamepadSteamHandle(SDL_Gamepad* gamepad) { return SDL::raw::GetGamepadSteamHandle(gamepad); }
+inline SDL_JoystickConnectionState GetGamepadConnectionState(SDL_Gamepad* gamepad) { return SDL::raw::GetGamepadConnectionState(gamepad); }
+inline SDL_PowerState GetGamepadPowerInfo(SDL_Gamepad* gamepad, int* percent) { return SDL::raw::GetGamepadPowerInfo(gamepad, percent); }
+inline bool GamepadConnected(SDL_Gamepad* gamepad) { return SDL::raw::GamepadConnected(gamepad); }
+inline SDL_Joystick* GetGamepadJoystick(SDL_Gamepad* gamepad) { return SDL::raw::GetGamepadJoystick(gamepad); }
+inline void SetGamepadEventsEnabled(bool enabled) { SDL::raw::SetGamepadEventsEnabled(enabled); }
+inline bool GamepadEventsEnabled() { return SDL::raw::GamepadEventsEnabled(); }
+inline std::vector<SDL_GamepadBinding*> GetGamepadBindings(SDL_Gamepad* gamepad) { int _count; std::vector<SDL_GamepadBinding*> _items; auto _ret = SDL::raw::GetGamepadBindings(gamepad, &_count); for (int i = 0; i < _count; i++) _items.push_back(_ret[i]); return _items; }
+inline void UpdateGamepads() { SDL::raw::UpdateGamepads(); }
+inline SDL_GamepadType GetGamepadTypeFromString(std::string& str) { return SDL::raw::GetGamepadTypeFromString(str.c_str()); }
+inline std::string GetGamepadStringForType(SDL_GamepadType type) { return SDL::raw::GetGamepadStringForType(type); }
+inline SDL_GamepadAxis GetGamepadAxisFromString(std::string& str) { return SDL::raw::GetGamepadAxisFromString(str.c_str()); }
+inline std::string GetGamepadStringForAxis(SDL_GamepadAxis axis) { return SDL::raw::GetGamepadStringForAxis(axis); }
+inline bool GamepadHasAxis(SDL_Gamepad* gamepad, SDL_GamepadAxis axis) { return SDL::raw::GamepadHasAxis(gamepad, axis); }
+inline Sint16 GetGamepadAxis(SDL_Gamepad* gamepad, SDL_GamepadAxis axis) { return SDL::raw::GetGamepadAxis(gamepad, axis); }
+inline SDL_GamepadButton GetGamepadButtonFromString(std::string& str) { return SDL::raw::GetGamepadButtonFromString(str.c_str()); }
+inline std::string GetGamepadStringForButton(SDL_GamepadButton button) { return SDL::raw::GetGamepadStringForButton(button); }
+inline bool GamepadHasButton(SDL_Gamepad* gamepad, SDL_GamepadButton button) { return SDL::raw::GamepadHasButton(gamepad, button); }
+inline bool GetGamepadButton(SDL_Gamepad* gamepad, SDL_GamepadButton button) { return SDL::raw::GetGamepadButton(gamepad, button); }
+inline SDL_GamepadButtonLabel GetGamepadButtonLabelForType(SDL_GamepadType type, SDL_GamepadButton button) { return SDL::raw::GetGamepadButtonLabelForType(type, button); }
+inline SDL_GamepadButtonLabel GetGamepadButtonLabel(SDL_Gamepad* gamepad, SDL_GamepadButton button) { return SDL::raw::GetGamepadButtonLabel(gamepad, button); }
+inline int GetNumGamepadTouchpads(SDL_Gamepad* gamepad) { return SDL::raw::GetNumGamepadTouchpads(gamepad); }
+inline int GetNumGamepadTouchpadFingers(SDL_Gamepad* gamepad, int touchpad) { return SDL::raw::GetNumGamepadTouchpadFingers(gamepad, touchpad); }
+inline void GetGamepadTouchpadFinger(SDL_Gamepad* gamepad, int touchpad, int finger, bool* down, float* x, float* y, float* pressure) { SDL::raw::GetGamepadTouchpadFinger(gamepad, touchpad, finger, down, x, y, pressure); }
+inline bool GamepadHasSensor(SDL_Gamepad* gamepad, SDL_SensorType type) { return SDL::raw::GamepadHasSensor(gamepad, type); }
+inline void SetGamepadSensorEnabled(SDL_Gamepad* gamepad, SDL_SensorType type, bool enabled) { SDL::raw::SetGamepadSensorEnabled(gamepad, type, enabled); }
+inline bool GamepadSensorEnabled(SDL_Gamepad* gamepad, SDL_SensorType type) { return SDL::raw::GamepadSensorEnabled(gamepad, type); }
+inline float GetGamepadSensorDataRate(SDL_Gamepad* gamepad, SDL_SensorType type) { return SDL::raw::GetGamepadSensorDataRate(gamepad, type); }
+inline void GetGamepadSensorData(SDL_Gamepad* gamepad, SDL_SensorType type, float* data, int num_values) { SDL::raw::GetGamepadSensorData(gamepad, type, data, num_values); }
+inline void RumbleGamepad(SDL_Gamepad* gamepad, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms) { SDL::raw::RumbleGamepad(gamepad, low_frequency_rumble, high_frequency_rumble, duration_ms); }
+inline void RumbleGamepadTriggers(SDL_Gamepad* gamepad, Uint16 left_rumble, Uint16 right_rumble, Uint32 duration_ms) { SDL::raw::RumbleGamepadTriggers(gamepad, left_rumble, right_rumble, duration_ms); }
+inline void SetGamepadLED(SDL_Gamepad* gamepad, Uint8 red, Uint8 green, Uint8 blue) { SDL::raw::SetGamepadLED(gamepad, red, green, blue); }
+inline void SendGamepadEffect(SDL_Gamepad* gamepad, const void* data, int size) { SDL::raw::SendGamepadEffect(gamepad, data, size); }
+inline void CloseGamepad(SDL_Gamepad* gamepad) { SDL::raw::CloseGamepad(gamepad); }
+inline std::string GetGamepadAppleSFSymbolsNameForButton(SDL_Gamepad* gamepad, SDL_GamepadButton button) { return SDL::raw::GetGamepadAppleSFSymbolsNameForButton(gamepad, button); }
+inline std::string GetGamepadAppleSFSymbolsNameForAxis(SDL_Gamepad* gamepad, SDL_GamepadAxis axis) { return SDL::raw::GetGamepadAppleSFSymbolsNameForAxis(gamepad, axis); }
+inline bool HasKeyboard() { return SDL::raw::HasKeyboard(); }
+inline std::vector<SDL_KeyboardID> GetKeyboards() { int _count; std::vector<SDL_KeyboardID> _items; auto _ret = SDL::raw::GetKeyboards(&_count); for (int i = 0; i < _count; i++) _items.push_back(_ret[i]); return _items; }
+inline std::string GetKeyboardNameForID(SDL_KeyboardID instance_id) { return SDL::raw::GetKeyboardNameForID(instance_id); }
+inline std::shared_ptr<SDL::Window> GetKeyboardFocus() { return SDL::Window::get(SDL::raw::GetKeyboardFocus()); }
+inline const bool* GetKeyboardState(int* numkeys) { return SDL::raw::GetKeyboardState(numkeys); }
+inline void ResetKeyboard() { SDL::raw::ResetKeyboard(); }
+inline SDL_Keymod GetModState() { return SDL::raw::GetModState(); }
+inline void SetModState(SDL_Keymod modstate) { SDL::raw::SetModState(modstate); }
+inline SDL_Keycode GetKeyFromScancode(SDL_Scancode scancode, SDL_Keymod modstate, bool key_event) { return SDL::raw::GetKeyFromScancode(scancode, modstate, key_event); }
+inline SDL_Scancode GetScancodeFromKey(SDL_Keycode key, SDL_Keymod* modstate) { return SDL::raw::GetScancodeFromKey(key, modstate); }
+inline void SetScancodeName(SDL_Scancode scancode, std::string& name) { SDL::raw::SetScancodeName(scancode, name.c_str()); }
+inline std::string GetScancodeName(SDL_Scancode scancode) { return SDL::raw::GetScancodeName(scancode); }
+inline SDL_Scancode GetScancodeFromName(std::string& name) { return SDL::raw::GetScancodeFromName(name.c_str()); }
+inline std::string GetKeyName(SDL_Keycode key) { return SDL::raw::GetKeyName(key); }
+inline SDL_Keycode GetKeyFromName(std::string& name) { return SDL::raw::GetKeyFromName(name.c_str()); }
+inline bool HasScreenKeyboardSupport() { return SDL::raw::HasScreenKeyboardSupport(); }
+inline bool HasMouse() { return SDL::raw::HasMouse(); }
+inline std::vector<SDL_MouseID> GetMice() { int _count; std::vector<SDL_MouseID> _items; auto _ret = SDL::raw::GetMice(&_count); for (int i = 0; i < _count; i++) _items.push_back(_ret[i]); return _items; }
+inline std::string GetMouseNameForID(SDL_MouseID instance_id) { return SDL::raw::GetMouseNameForID(instance_id); }
+inline std::shared_ptr<SDL::Window> GetMouseFocus() { return SDL::Window::get(SDL::raw::GetMouseFocus()); }
+inline SDL_MouseButtonFlags GetMouseState(float* x, float* y) { return SDL::raw::GetMouseState(x, y); }
+inline SDL_MouseButtonFlags GetGlobalMouseState(float* x, float* y) { return SDL::raw::GetGlobalMouseState(x, y); }
+inline SDL_MouseButtonFlags GetRelativeMouseState(float* x, float* y) { return SDL::raw::GetRelativeMouseState(x, y); }
+inline void WarpMouseGlobal(float x, float y) { SDL::raw::WarpMouseGlobal(x, y); }
+inline void CaptureMouse(bool enabled) { SDL::raw::CaptureMouse(enabled); }
+inline SDL_Cursor* CreateCursor(const Uint8* data, const Uint8* mask, int w, int h, int hot_x, int hot_y) { return SDL::raw::CreateCursor(data, mask, w, h, hot_x, hot_y); }
+inline SDL_Cursor* CreateSystemCursor(SDL_SystemCursor id) { return SDL::raw::CreateSystemCursor(id); }
+inline void SetCursor(SDL_Cursor* cursor) { SDL::raw::SetCursor(cursor); }
+inline SDL_Cursor* GetCursor() { return SDL::raw::GetCursor(); }
+inline SDL_Cursor* GetDefaultCursor() { return SDL::raw::GetDefaultCursor(); }
+inline void DestroyCursor(SDL_Cursor* cursor) { SDL::raw::DestroyCursor(cursor); }
+inline void ShowCursor() { SDL::raw::ShowCursor(); }
+inline void HideCursor() { SDL::raw::HideCursor(); }
+inline bool CursorVisible() { return SDL::raw::CursorVisible(); }
+inline std::vector<SDL_TouchID> GetTouchDevices() { int _count; std::vector<SDL_TouchID> _items; auto _ret = SDL::raw::GetTouchDevices(&_count); for (int i = 0; i < _count; i++) _items.push_back(_ret[i]); return _items; }
+inline std::string GetTouchDeviceName(SDL_TouchID touchID) { return SDL::raw::GetTouchDeviceName(touchID); }
+inline SDL_TouchDeviceType GetTouchDeviceType(SDL_TouchID touchID) { return SDL::raw::GetTouchDeviceType(touchID); }
+inline std::vector<SDL_Finger*> GetTouchFingers(SDL_TouchID touchID) { int _count; std::vector<SDL_Finger*> _items; auto _ret = SDL::raw::GetTouchFingers(touchID, &_count); for (int i = 0; i < _count; i++) _items.push_back(_ret[i]); return _items; }
+inline void PumpEvents() { SDL::raw::PumpEvents(); }
+inline int PeepEvents(SDL_Event* events, int numevents, SDL_EventAction action, Uint32 minType, Uint32 maxType) { return SDL::raw::PeepEvents(events, numevents, action, minType, maxType); }
+inline bool HasEvent(Uint32 type) { return SDL::raw::HasEvent(type); }
+inline bool HasEvents(Uint32 minType, Uint32 maxType) { return SDL::raw::HasEvents(minType, maxType); }
+inline void FlushEvent(Uint32 type) { SDL::raw::FlushEvent(type); }
+inline void FlushEvents(Uint32 minType, Uint32 maxType) { SDL::raw::FlushEvents(minType, maxType); }
+inline bool PollEvent(SDL_Event* event) { return SDL::raw::PollEvent(event); }
+inline void WaitEvent(SDL_Event* event) { SDL::raw::WaitEvent(event); }
+inline bool WaitEventTimeout(SDL_Event* event, Sint32 timeoutMS) { return SDL::raw::WaitEventTimeout(event, timeoutMS); }
+inline void PushEvent(SDL_Event* event) { SDL::raw::PushEvent(event); }
+inline void SetEventFilter(SDL_EventFilter filter, void* userdata) { SDL::raw::SetEventFilter(filter, userdata); }
+inline bool GetEventFilter(SDL_EventFilter* filter, void** userdata) { return SDL::raw::GetEventFilter(filter, userdata); }
+inline void AddEventWatch(SDL_EventFilter filter, void* userdata) { SDL::raw::AddEventWatch(filter, userdata); }
+inline void RemoveEventWatch(SDL_EventFilter filter, void* userdata) { SDL::raw::RemoveEventWatch(filter, userdata); }
+inline void FilterEvents(SDL_EventFilter filter, void* userdata) { SDL::raw::FilterEvents(filter, userdata); }
+inline void SetEventEnabled(Uint32 type, bool enabled) { SDL::raw::SetEventEnabled(type, enabled); }
+inline bool EventEnabled(Uint32 type) { return SDL::raw::EventEnabled(type); }
+inline Uint32 RegisterEvents(int numevents) { return SDL::raw::RegisterEvents(numevents); }
+inline std::shared_ptr<SDL::Window> GetWindowFromEvent(const SDL_Event* event) { return SDL::Window::get(SDL::raw::GetWindowFromEvent(event)); }
+inline std::string GetBasePath() { return SDL::raw::GetBasePath(); }
+inline std::string GetPrefPath(std::string& org, std::string& app) { return SDL::raw::GetPrefPath(org.c_str(), app.c_str()); }
+inline std::string GetUserFolder(SDL_Folder folder) { return SDL::raw::GetUserFolder(folder); }
+inline void CreateDirectory(std::string& path) { SDL::raw::CreateDirectory(path.c_str()); }
+inline void EnumerateDirectory(std::string& path, SDL_EnumerateDirectoryCallback callback, void* userdata) { SDL::raw::EnumerateDirectory(path.c_str(), callback, userdata); }
+inline void RemovePath(std::string& path) { SDL::raw::RemovePath(path.c_str()); }
+inline void RenamePath(std::string& oldpath, std::string& newpath) { SDL::raw::RenamePath(oldpath.c_str(), newpath.c_str()); }
+inline void CopyFile(std::string& oldpath, std::string& newpath) { SDL::raw::CopyFile(oldpath.c_str(), newpath.c_str()); }
+inline void GetPathInfo(std::string& path, SDL_PathInfo* info) { SDL::raw::GetPathInfo(path.c_str(), info); }
+inline std::vector<std::string> GlobDirectory(std::string& path, std::string& pattern, SDL::GlobFlags flags) { int _count; std::vector<std::string> _items; auto _ret = SDL::raw::GlobDirectory(path.c_str(), pattern.c_str(), flags, &_count); for (int i = 0; i < _count; i++) _items.push_back(_ret[i]); return _items; }
+inline std::string GetCurrentDirectory() { return SDL::raw::GetCurrentDirectory(); }
+inline bool GPUSupportsShaderFormats(SDL_GPUShaderFormat format_flags, std::string& name) { return SDL::raw::GPUSupportsShaderFormats(format_flags, name.c_str()); }
+inline bool GPUSupportsProperties(SDL_PropertiesID props) { return SDL::raw::GPUSupportsProperties(props); }
+inline SDL_GPUDevice* CreateGPUDevice(SDL_GPUShaderFormat format_flags, bool debug_mode, std::string& name) { return SDL::raw::CreateGPUDevice(format_flags, debug_mode, name.c_str()); }
+inline SDL_GPUDevice* CreateGPUDeviceWithProperties(SDL_PropertiesID props) { return SDL::raw::CreateGPUDeviceWithProperties(props); }
+inline void DestroyGPUDevice(SDL_GPUDevice* device) { SDL::raw::DestroyGPUDevice(device); }
+inline int GetNumGPUDrivers() { return SDL::raw::GetNumGPUDrivers(); }
+inline std::string GetGPUDriver(int index) { return SDL::raw::GetGPUDriver(index); }
+inline std::string GetGPUDeviceDriver(SDL_GPUDevice* device) { return SDL::raw::GetGPUDeviceDriver(device); }
+inline SDL_GPUShaderFormat GetGPUShaderFormats(SDL_GPUDevice* device) { return SDL::raw::GetGPUShaderFormats(device); }
+inline SDL_GPUComputePipeline* CreateGPUComputePipeline(SDL_GPUDevice* device, const SDL_GPUComputePipelineCreateInfo* createinfo) { return SDL::raw::CreateGPUComputePipeline(device, createinfo); }
+inline SDL_GPUGraphicsPipeline* CreateGPUGraphicsPipeline(SDL_GPUDevice* device, const SDL_GPUGraphicsPipelineCreateInfo* createinfo) { return SDL::raw::CreateGPUGraphicsPipeline(device, createinfo); }
+inline SDL_GPUSampler* CreateGPUSampler(SDL_GPUDevice* device, const SDL_GPUSamplerCreateInfo* createinfo) { return SDL::raw::CreateGPUSampler(device, createinfo); }
+inline SDL_GPUShader* CreateGPUShader(SDL_GPUDevice* device, const SDL_GPUShaderCreateInfo* createinfo) { return SDL::raw::CreateGPUShader(device, createinfo); }
+inline SDL_GPUTexture* CreateGPUTexture(SDL_GPUDevice* device, const SDL_GPUTextureCreateInfo* createinfo) { return SDL::raw::CreateGPUTexture(device, createinfo); }
+inline SDL_GPUBuffer* CreateGPUBuffer(SDL_GPUDevice* device, const SDL_GPUBufferCreateInfo* createinfo) { return SDL::raw::CreateGPUBuffer(device, createinfo); }
+inline SDL_GPUTransferBuffer* CreateGPUTransferBuffer(SDL_GPUDevice* device, const SDL_GPUTransferBufferCreateInfo* createinfo) { return SDL::raw::CreateGPUTransferBuffer(device, createinfo); }
+inline void SetGPUBufferName(SDL_GPUDevice* device, SDL_GPUBuffer* buffer, std::string& text) { SDL::raw::SetGPUBufferName(device, buffer, text.c_str()); }
+inline void SetGPUTextureName(SDL_GPUDevice* device, SDL_GPUTexture* texture, std::string& text) { SDL::raw::SetGPUTextureName(device, texture, text.c_str()); }
+inline void InsertGPUDebugLabel(SDL_GPUCommandBuffer* command_buffer, std::string& text) { SDL::raw::InsertGPUDebugLabel(command_buffer, text.c_str()); }
+inline void PushGPUDebugGroup(SDL_GPUCommandBuffer* command_buffer, std::string& name) { SDL::raw::PushGPUDebugGroup(command_buffer, name.c_str()); }
+inline void PopGPUDebugGroup(SDL_GPUCommandBuffer* command_buffer) { SDL::raw::PopGPUDebugGroup(command_buffer); }
+inline void ReleaseGPUTexture(SDL_GPUDevice* device, SDL_GPUTexture* texture) { SDL::raw::ReleaseGPUTexture(device, texture); }
+inline void ReleaseGPUSampler(SDL_GPUDevice* device, SDL_GPUSampler* sampler) { SDL::raw::ReleaseGPUSampler(device, sampler); }
+inline void ReleaseGPUBuffer(SDL_GPUDevice* device, SDL_GPUBuffer* buffer) { SDL::raw::ReleaseGPUBuffer(device, buffer); }
+inline void ReleaseGPUTransferBuffer(SDL_GPUDevice* device, SDL_GPUTransferBuffer* transfer_buffer) { SDL::raw::ReleaseGPUTransferBuffer(device, transfer_buffer); }
+inline void ReleaseGPUComputePipeline(SDL_GPUDevice* device, SDL_GPUComputePipeline* compute_pipeline) { SDL::raw::ReleaseGPUComputePipeline(device, compute_pipeline); }
+inline void ReleaseGPUShader(SDL_GPUDevice* device, SDL_GPUShader* shader) { SDL::raw::ReleaseGPUShader(device, shader); }
+inline void ReleaseGPUGraphicsPipeline(SDL_GPUDevice* device, SDL_GPUGraphicsPipeline* graphics_pipeline) { SDL::raw::ReleaseGPUGraphicsPipeline(device, graphics_pipeline); }
+inline SDL_GPUCommandBuffer* AcquireGPUCommandBuffer(SDL_GPUDevice* device) { return SDL::raw::AcquireGPUCommandBuffer(device); }
+inline void PushGPUVertexUniformData(SDL_GPUCommandBuffer* command_buffer, Uint32 slot_index, const void* data, Uint32 length) { SDL::raw::PushGPUVertexUniformData(command_buffer, slot_index, data, length); }
+inline void PushGPUFragmentUniformData(SDL_GPUCommandBuffer* command_buffer, Uint32 slot_index, const void* data, Uint32 length) { SDL::raw::PushGPUFragmentUniformData(command_buffer, slot_index, data, length); }
+inline void PushGPUComputeUniformData(SDL_GPUCommandBuffer* command_buffer, Uint32 slot_index, const void* data, Uint32 length) { SDL::raw::PushGPUComputeUniformData(command_buffer, slot_index, data, length); }
+inline SDL_GPURenderPass* BeginGPURenderPass(SDL_GPUCommandBuffer* command_buffer, const SDL_GPUColorTargetInfo* color_target_infos, Uint32 num_color_targets, const SDL_GPUDepthStencilTargetInfo* depth_stencil_target_info) { return SDL::raw::BeginGPURenderPass(command_buffer, color_target_infos, num_color_targets, depth_stencil_target_info); }
+inline void BindGPUGraphicsPipeline(SDL_GPURenderPass* render_pass, SDL_GPUGraphicsPipeline* graphics_pipeline) { SDL::raw::BindGPUGraphicsPipeline(render_pass, graphics_pipeline); }
+inline void SetGPUViewport(SDL_GPURenderPass* render_pass, const SDL_GPUViewport* viewport) { SDL::raw::SetGPUViewport(render_pass, viewport); }
+inline void SetGPUScissor(SDL_GPURenderPass* render_pass, const SDL::Rect& scissor) { SDL::raw::SetGPUScissor(render_pass, &scissor); }
+inline void SetGPUBlendConstants(SDL_GPURenderPass* render_pass, SDL_FColor blend_constants) { SDL::raw::SetGPUBlendConstants(render_pass, blend_constants); }
+inline void SetGPUStencilReference(SDL_GPURenderPass* render_pass, Uint8 reference) { SDL::raw::SetGPUStencilReference(render_pass, reference); }
+inline void BindGPUVertexBuffers(SDL_GPURenderPass* render_pass, Uint32 first_slot, const SDL_GPUBufferBinding* bindings, Uint32 num_bindings) { SDL::raw::BindGPUVertexBuffers(render_pass, first_slot, bindings, num_bindings); }
+inline void BindGPUIndexBuffer(SDL_GPURenderPass* render_pass, const SDL_GPUBufferBinding* binding, SDL_GPUIndexElementSize index_element_size) { SDL::raw::BindGPUIndexBuffer(render_pass, binding, index_element_size); }
+inline void BindGPUVertexSamplers(SDL_GPURenderPass* render_pass, Uint32 first_slot, const SDL_GPUTextureSamplerBinding* texture_sampler_bindings, Uint32 num_bindings) { SDL::raw::BindGPUVertexSamplers(render_pass, first_slot, texture_sampler_bindings, num_bindings); }
+inline void BindGPUVertexStorageTextures(SDL_GPURenderPass* render_pass, Uint32 first_slot, SDL_GPUTexture** storage_textures, Uint32 num_bindings) { SDL::raw::BindGPUVertexStorageTextures(render_pass, first_slot, storage_textures, num_bindings); }
+inline void BindGPUVertexStorageBuffers(SDL_GPURenderPass* render_pass, Uint32 first_slot, SDL_GPUBuffer** storage_buffers, Uint32 num_bindings) { SDL::raw::BindGPUVertexStorageBuffers(render_pass, first_slot, storage_buffers, num_bindings); }
+inline void BindGPUFragmentSamplers(SDL_GPURenderPass* render_pass, Uint32 first_slot, const SDL_GPUTextureSamplerBinding* texture_sampler_bindings, Uint32 num_bindings) { SDL::raw::BindGPUFragmentSamplers(render_pass, first_slot, texture_sampler_bindings, num_bindings); }
+inline void BindGPUFragmentStorageTextures(SDL_GPURenderPass* render_pass, Uint32 first_slot, SDL_GPUTexture** storage_textures, Uint32 num_bindings) { SDL::raw::BindGPUFragmentStorageTextures(render_pass, first_slot, storage_textures, num_bindings); }
+inline void BindGPUFragmentStorageBuffers(SDL_GPURenderPass* render_pass, Uint32 first_slot, SDL_GPUBuffer** storage_buffers, Uint32 num_bindings) { SDL::raw::BindGPUFragmentStorageBuffers(render_pass, first_slot, storage_buffers, num_bindings); }
+inline void DrawGPUIndexedPrimitives(SDL_GPURenderPass* render_pass, Uint32 num_indices, Uint32 num_instances, Uint32 first_index, Sint32 vertex_offset, Uint32 first_instance) { SDL::raw::DrawGPUIndexedPrimitives(render_pass, num_indices, num_instances, first_index, vertex_offset, first_instance); }
+inline void DrawGPUPrimitives(SDL_GPURenderPass* render_pass, Uint32 num_vertices, Uint32 num_instances, Uint32 first_vertex, Uint32 first_instance) { SDL::raw::DrawGPUPrimitives(render_pass, num_vertices, num_instances, first_vertex, first_instance); }
+inline void DrawGPUPrimitivesIndirect(SDL_GPURenderPass* render_pass, SDL_GPUBuffer* buffer, Uint32 offset, Uint32 draw_count) { SDL::raw::DrawGPUPrimitivesIndirect(render_pass, buffer, offset, draw_count); }
+inline void DrawGPUIndexedPrimitivesIndirect(SDL_GPURenderPass* render_pass, SDL_GPUBuffer* buffer, Uint32 offset, Uint32 draw_count) { SDL::raw::DrawGPUIndexedPrimitivesIndirect(render_pass, buffer, offset, draw_count); }
+inline void EndGPURenderPass(SDL_GPURenderPass* render_pass) { SDL::raw::EndGPURenderPass(render_pass); }
+inline SDL_GPUComputePass* BeginGPUComputePass(SDL_GPUCommandBuffer* command_buffer, const SDL_GPUStorageTextureReadWriteBinding* storage_texture_bindings, Uint32 num_storage_texture_bindings, const SDL_GPUStorageBufferReadWriteBinding* storage_buffer_bindings, Uint32 num_storage_buffer_bindings) { return SDL::raw::BeginGPUComputePass(command_buffer, storage_texture_bindings, num_storage_texture_bindings, storage_buffer_bindings, num_storage_buffer_bindings); }
+inline void BindGPUComputePipeline(SDL_GPUComputePass* compute_pass, SDL_GPUComputePipeline* compute_pipeline) { SDL::raw::BindGPUComputePipeline(compute_pass, compute_pipeline); }
+inline void BindGPUComputeSamplers(SDL_GPUComputePass* compute_pass, Uint32 first_slot, const SDL_GPUTextureSamplerBinding* texture_sampler_bindings, Uint32 num_bindings) { SDL::raw::BindGPUComputeSamplers(compute_pass, first_slot, texture_sampler_bindings, num_bindings); }
+inline void BindGPUComputeStorageTextures(SDL_GPUComputePass* compute_pass, Uint32 first_slot, SDL_GPUTexture** storage_textures, Uint32 num_bindings) { SDL::raw::BindGPUComputeStorageTextures(compute_pass, first_slot, storage_textures, num_bindings); }
+inline void BindGPUComputeStorageBuffers(SDL_GPUComputePass* compute_pass, Uint32 first_slot, SDL_GPUBuffer** storage_buffers, Uint32 num_bindings) { SDL::raw::BindGPUComputeStorageBuffers(compute_pass, first_slot, storage_buffers, num_bindings); }
+inline void DispatchGPUCompute(SDL_GPUComputePass* compute_pass, Uint32 groupcount_x, Uint32 groupcount_y, Uint32 groupcount_z) { SDL::raw::DispatchGPUCompute(compute_pass, groupcount_x, groupcount_y, groupcount_z); }
+inline void DispatchGPUComputeIndirect(SDL_GPUComputePass* compute_pass, SDL_GPUBuffer* buffer, Uint32 offset) { SDL::raw::DispatchGPUComputeIndirect(compute_pass, buffer, offset); }
+inline void EndGPUComputePass(SDL_GPUComputePass* compute_pass) { SDL::raw::EndGPUComputePass(compute_pass); }
+inline void* MapGPUTransferBuffer(SDL_GPUDevice* device, SDL_GPUTransferBuffer* transfer_buffer, bool cycle) { return SDL::raw::MapGPUTransferBuffer(device, transfer_buffer, cycle); }
+inline void UnmapGPUTransferBuffer(SDL_GPUDevice* device, SDL_GPUTransferBuffer* transfer_buffer) { SDL::raw::UnmapGPUTransferBuffer(device, transfer_buffer); }
+inline SDL_GPUCopyPass* BeginGPUCopyPass(SDL_GPUCommandBuffer* command_buffer) { return SDL::raw::BeginGPUCopyPass(command_buffer); }
+inline void UploadToGPUTexture(SDL_GPUCopyPass* copy_pass, const SDL_GPUTextureTransferInfo* source, const SDL_GPUTextureRegion* destination, bool cycle) { SDL::raw::UploadToGPUTexture(copy_pass, source, destination, cycle); }
+inline void UploadToGPUBuffer(SDL_GPUCopyPass* copy_pass, const SDL_GPUTransferBufferLocation* source, const SDL_GPUBufferRegion* destination, bool cycle) { SDL::raw::UploadToGPUBuffer(copy_pass, source, destination, cycle); }
+inline void CopyGPUTextureToTexture(SDL_GPUCopyPass* copy_pass, const SDL_GPUTextureLocation* source, const SDL_GPUTextureLocation* destination, Uint32 w, Uint32 h, Uint32 d, bool cycle) { SDL::raw::CopyGPUTextureToTexture(copy_pass, source, destination, w, h, d, cycle); }
+inline void CopyGPUBufferToBuffer(SDL_GPUCopyPass* copy_pass, const SDL_GPUBufferLocation* source, const SDL_GPUBufferLocation* destination, Uint32 size, bool cycle) { SDL::raw::CopyGPUBufferToBuffer(copy_pass, source, destination, size, cycle); }
+inline void DownloadFromGPUTexture(SDL_GPUCopyPass* copy_pass, const SDL_GPUTextureRegion* source, const SDL_GPUTextureTransferInfo* destination) { SDL::raw::DownloadFromGPUTexture(copy_pass, source, destination); }
+inline void DownloadFromGPUBuffer(SDL_GPUCopyPass* copy_pass, const SDL_GPUBufferRegion* source, const SDL_GPUTransferBufferLocation* destination) { SDL::raw::DownloadFromGPUBuffer(copy_pass, source, destination); }
+inline void EndGPUCopyPass(SDL_GPUCopyPass* copy_pass) { SDL::raw::EndGPUCopyPass(copy_pass); }
+inline void GenerateMipmapsForGPUTexture(SDL_GPUCommandBuffer* command_buffer, SDL_GPUTexture* texture) { SDL::raw::GenerateMipmapsForGPUTexture(command_buffer, texture); }
+inline void BlitGPUTexture(SDL_GPUCommandBuffer* command_buffer, const SDL_GPUBlitInfo* info) { SDL::raw::BlitGPUTexture(command_buffer, info); }
+inline bool WindowSupportsGPUSwapchainComposition(SDL_GPUDevice* device, std::shared_ptr<SDL::Window> window, SDL_GPUSwapchainComposition swapchain_composition) { return SDL::raw::WindowSupportsGPUSwapchainComposition(device, window->get(), swapchain_composition); }
+inline bool WindowSupportsGPUPresentMode(SDL_GPUDevice* device, std::shared_ptr<SDL::Window> window, SDL_GPUPresentMode present_mode) { return SDL::raw::WindowSupportsGPUPresentMode(device, window->get(), present_mode); }
+inline void ClaimWindowForGPUDevice(SDL_GPUDevice* device, std::shared_ptr<SDL::Window> window) { SDL::raw::ClaimWindowForGPUDevice(device, window->get()); }
+inline void ReleaseWindowFromGPUDevice(SDL_GPUDevice* device, std::shared_ptr<SDL::Window> window) { SDL::raw::ReleaseWindowFromGPUDevice(device, window->get()); }
+inline void SetGPUSwapchainParameters(SDL_GPUDevice* device, std::shared_ptr<SDL::Window> window, SDL_GPUSwapchainComposition swapchain_composition, SDL_GPUPresentMode present_mode) { SDL::raw::SetGPUSwapchainParameters(device, window->get(), swapchain_composition, present_mode); }
+inline void SetGPUAllowedFramesInFlight(SDL_GPUDevice* device, Uint32 allowed_frames_in_flight) { SDL::raw::SetGPUAllowedFramesInFlight(device, allowed_frames_in_flight); }
+inline SDL_GPUTextureFormat GetGPUSwapchainTextureFormat(SDL_GPUDevice* device, std::shared_ptr<SDL::Window> window) { return SDL::raw::GetGPUSwapchainTextureFormat(device, window->get()); }
+inline void AcquireGPUSwapchainTexture(SDL_GPUCommandBuffer* command_buffer, std::shared_ptr<SDL::Window> window, SDL_GPUTexture** swapchain_texture, Uint32* swapchain_texture_width, Uint32* swapchain_texture_height) { SDL::raw::AcquireGPUSwapchainTexture(command_buffer, window->get(), swapchain_texture, swapchain_texture_width, swapchain_texture_height); }
+inline void WaitForGPUSwapchain(SDL_GPUDevice* device, std::shared_ptr<SDL::Window> window) { SDL::raw::WaitForGPUSwapchain(device, window->get()); }
+inline void WaitAndAcquireGPUSwapchainTexture(SDL_GPUCommandBuffer* command_buffer, std::shared_ptr<SDL::Window> window, SDL_GPUTexture** swapchain_texture, Uint32* swapchain_texture_width, Uint32* swapchain_texture_height) { SDL::raw::WaitAndAcquireGPUSwapchainTexture(command_buffer, window->get(), swapchain_texture, swapchain_texture_width, swapchain_texture_height); }
+inline void SubmitGPUCommandBuffer(SDL_GPUCommandBuffer* command_buffer) { SDL::raw::SubmitGPUCommandBuffer(command_buffer); }
+inline SDL_GPUFence* SubmitGPUCommandBufferAndAcquireFence(SDL_GPUCommandBuffer* command_buffer) { return SDL::raw::SubmitGPUCommandBufferAndAcquireFence(command_buffer); }
+inline void CancelGPUCommandBuffer(SDL_GPUCommandBuffer* command_buffer) { SDL::raw::CancelGPUCommandBuffer(command_buffer); }
+inline void WaitForGPUIdle(SDL_GPUDevice* device) { SDL::raw::WaitForGPUIdle(device); }
+inline void WaitForGPUFences(SDL_GPUDevice* device, bool wait_all, SDL_GPUFence** fences, Uint32 num_fences) { SDL::raw::WaitForGPUFences(device, wait_all, fences, num_fences); }
+inline bool QueryGPUFence(SDL_GPUDevice* device, SDL_GPUFence* fence) { return SDL::raw::QueryGPUFence(device, fence); }
+inline void ReleaseGPUFence(SDL_GPUDevice* device, SDL_GPUFence* fence) { SDL::raw::ReleaseGPUFence(device, fence); }
+inline Uint32 GPUTextureFormatTexelBlockSize(SDL_GPUTextureFormat format) { return SDL::raw::GPUTextureFormatTexelBlockSize(format); }
+inline bool GPUTextureSupportsFormat(SDL_GPUDevice* device, SDL_GPUTextureFormat format, SDL_GPUTextureType type, SDL::GPUTextureUsageFlags usage) { return SDL::raw::GPUTextureSupportsFormat(device, format, type, usage); }
+inline bool GPUTextureSupportsSampleCount(SDL_GPUDevice* device, SDL_GPUTextureFormat format, SDL_GPUSampleCount sample_count) { return SDL::raw::GPUTextureSupportsSampleCount(device, format, sample_count); }
+inline Uint32 CalculateGPUTextureFormatSize(SDL_GPUTextureFormat format, Uint32 width, Uint32 height, Uint32 depth_or_layer_count) { return SDL::raw::CalculateGPUTextureFormatSize(format, width, height, depth_or_layer_count); }
+inline std::vector<SDL_HapticID> GetHaptics() { int _count; std::vector<SDL_HapticID> _items; auto _ret = SDL::raw::GetHaptics(&_count); for (int i = 0; i < _count; i++) _items.push_back(_ret[i]); return _items; }
+inline std::string GetHapticNameForID(SDL_HapticID instance_id) { return SDL::raw::GetHapticNameForID(instance_id); }
+inline SDL_Haptic* OpenHaptic(SDL_HapticID instance_id) { return SDL::raw::OpenHaptic(instance_id); }
+inline SDL_Haptic* GetHapticFromID(SDL_HapticID instance_id) { return SDL::raw::GetHapticFromID(instance_id); }
+inline SDL_HapticID GetHapticID(SDL_Haptic* haptic) { return SDL::raw::GetHapticID(haptic); }
+inline std::string GetHapticName(SDL_Haptic* haptic) { return SDL::raw::GetHapticName(haptic); }
+inline bool IsMouseHaptic() { return SDL::raw::IsMouseHaptic(); }
+inline SDL_Haptic* OpenHapticFromMouse() { return SDL::raw::OpenHapticFromMouse(); }
+inline bool IsJoystickHaptic(SDL_Joystick* joystick) { return SDL::raw::IsJoystickHaptic(joystick); }
+inline SDL_Haptic* OpenHapticFromJoystick(SDL_Joystick* joystick) { return SDL::raw::OpenHapticFromJoystick(joystick); }
+inline void CloseHaptic(SDL_Haptic* haptic) { SDL::raw::CloseHaptic(haptic); }
+inline int GetMaxHapticEffects(SDL_Haptic* haptic) { return SDL::raw::GetMaxHapticEffects(haptic); }
+inline int GetMaxHapticEffectsPlaying(SDL_Haptic* haptic) { return SDL::raw::GetMaxHapticEffectsPlaying(haptic); }
+inline Uint32 GetHapticFeatures(SDL_Haptic* haptic) { return SDL::raw::GetHapticFeatures(haptic); }
+inline int GetNumHapticAxes(SDL_Haptic* haptic) { return SDL::raw::GetNumHapticAxes(haptic); }
+inline bool HapticEffectSupported(SDL_Haptic* haptic, const SDL_HapticEffect* effect) { return SDL::raw::HapticEffectSupported(haptic, effect); }
+inline int CreateHapticEffect(SDL_Haptic* haptic, const SDL_HapticEffect* effect) { return SDL::raw::CreateHapticEffect(haptic, effect); }
+inline void UpdateHapticEffect(SDL_Haptic* haptic, int effect, const SDL_HapticEffect* data) { SDL::raw::UpdateHapticEffect(haptic, effect, data); }
+inline void RunHapticEffect(SDL_Haptic* haptic, int effect, Uint32 iterations) { SDL::raw::RunHapticEffect(haptic, effect, iterations); }
+inline void StopHapticEffect(SDL_Haptic* haptic, int effect) { SDL::raw::StopHapticEffect(haptic, effect); }
+inline void DestroyHapticEffect(SDL_Haptic* haptic, int effect) { SDL::raw::DestroyHapticEffect(haptic, effect); }
+inline bool GetHapticEffectStatus(SDL_Haptic* haptic, int effect) { return SDL::raw::GetHapticEffectStatus(haptic, effect); }
+inline void SetHapticGain(SDL_Haptic* haptic, int gain) { SDL::raw::SetHapticGain(haptic, gain); }
+inline void SetHapticAutocenter(SDL_Haptic* haptic, int autocenter) { SDL::raw::SetHapticAutocenter(haptic, autocenter); }
+inline void PauseHaptic(SDL_Haptic* haptic) { SDL::raw::PauseHaptic(haptic); }
+inline void ResumeHaptic(SDL_Haptic* haptic) { SDL::raw::ResumeHaptic(haptic); }
+inline void StopHapticEffects(SDL_Haptic* haptic) { SDL::raw::StopHapticEffects(haptic); }
+inline bool HapticRumbleSupported(SDL_Haptic* haptic) { return SDL::raw::HapticRumbleSupported(haptic); }
+inline void InitHapticRumble(SDL_Haptic* haptic) { SDL::raw::InitHapticRumble(haptic); }
+inline void PlayHapticRumble(SDL_Haptic* haptic, float strength, Uint32 length) { SDL::raw::PlayHapticRumble(haptic, strength, length); }
+inline void StopHapticRumble(SDL_Haptic* haptic) { SDL::raw::StopHapticRumble(haptic); }
+inline int hid_init() { return SDL::raw::hid_init(); }
+inline int hid_exit() { return SDL::raw::hid_exit(); }
+inline Uint32 hid_device_change_count() { return SDL::raw::hid_device_change_count(); }
+inline SDL_hid_device_info* hid_enumerate(unsigned short vendor_id, unsigned short product_id) { return SDL::raw::hid_enumerate(vendor_id, product_id); }
+inline void hid_free_enumeration(SDL_hid_device_info* devs) { SDL::raw::hid_free_enumeration(devs); }
+inline SDL_hid_device* hid_open(unsigned short vendor_id, unsigned short product_id, const wchar_t* serial_number) { return SDL::raw::hid_open(vendor_id, product_id, serial_number); }
+inline SDL_hid_device* hid_open_path(std::string& path) { return SDL::raw::hid_open_path(path.c_str()); }
+inline int hid_write(SDL_hid_device* dev, std::string& data, size_t length) { return SDL::raw::hid_write(dev, data.c_str(), length); }
+inline int hid_read_timeout(SDL_hid_device* dev, std::string& data, size_t length, int milliseconds) { return SDL::raw::hid_read_timeout(dev, data.c_str(), length, milliseconds); }
+inline int hid_read(SDL_hid_device* dev, std::string& data, size_t length) { return SDL::raw::hid_read(dev, data.c_str(), length); }
+inline int hid_set_nonblocking(SDL_hid_device* dev, int nonblock) { return SDL::raw::hid_set_nonblocking(dev, nonblock); }
+inline int hid_send_feature_report(SDL_hid_device* dev, std::string& data, size_t length) { return SDL::raw::hid_send_feature_report(dev, data.c_str(), length); }
+inline int hid_get_feature_report(SDL_hid_device* dev, std::string& data, size_t length) { return SDL::raw::hid_get_feature_report(dev, data.c_str(), length); }
+inline int hid_get_input_report(SDL_hid_device* dev, std::string& data, size_t length) { return SDL::raw::hid_get_input_report(dev, data.c_str(), length); }
+inline int hid_close(SDL_hid_device* dev) { return SDL::raw::hid_close(dev); }
+inline int hid_get_manufacturer_string(SDL_hid_device* dev, wchar_t* string, size_t maxlen) { return SDL::raw::hid_get_manufacturer_string(dev, string, maxlen); }
+inline int hid_get_product_string(SDL_hid_device* dev, wchar_t* string, size_t maxlen) { return SDL::raw::hid_get_product_string(dev, string, maxlen); }
+inline int hid_get_serial_number_string(SDL_hid_device* dev, wchar_t* string, size_t maxlen) { return SDL::raw::hid_get_serial_number_string(dev, string, maxlen); }
+inline int hid_get_indexed_string(SDL_hid_device* dev, int string_index, wchar_t* string, size_t maxlen) { return SDL::raw::hid_get_indexed_string(dev, string_index, string, maxlen); }
+inline SDL_hid_device_info* hid_get_device_info(SDL_hid_device* dev) { return SDL::raw::hid_get_device_info(dev); }
+inline int hid_get_report_descriptor(SDL_hid_device* dev, std::string& buf, size_t buf_size) { return SDL::raw::hid_get_report_descriptor(dev, buf.c_str(), buf_size); }
+inline void hid_ble_scan(bool active) { SDL::raw::hid_ble_scan(active); }
+inline void SetHintWithPriority(std::string& name, std::string& value, SDL_HintPriority priority) { SDL::raw::SetHintWithPriority(name.c_str(), value.c_str(), priority); }
+inline void SetHint(std::string& name, std::string& value) { SDL::raw::SetHint(name.c_str(), value.c_str()); }
+inline void ResetHint(std::string& name) { SDL::raw::ResetHint(name.c_str()); }
+inline void ResetHints() { SDL::raw::ResetHints(); }
+inline std::string GetHint(std::string& name) { return SDL::raw::GetHint(name.c_str()); }
+inline bool GetHintBoolean(std::string& name, bool default_value) { return SDL::raw::GetHintBoolean(name.c_str(), default_value); }
+inline void AddHintCallback(std::string& name, SDL_HintCallback callback, void* userdata) { SDL::raw::AddHintCallback(name.c_str(), callback, userdata); }
+inline void RemoveHintCallback(std::string& name, SDL_HintCallback callback, void* userdata) { SDL::raw::RemoveHintCallback(name.c_str(), callback, userdata); }
+inline void Init(SDL::InitFlags flags) { SDL::raw::Init(flags); }
+inline void InitSubSystem(SDL::InitFlags flags) { SDL::raw::InitSubSystem(flags); }
+inline void QuitSubSystem(SDL::InitFlags flags) { SDL::raw::QuitSubSystem(flags); }
+inline SDL::InitFlags WasInit(SDL::InitFlags flags) { return (SDL::InitFlags) SDL::raw::WasInit(flags); }
+inline void Quit() { SDL::raw::Quit(); }
+inline bool IsMainThread() { return SDL::raw::IsMainThread(); }
+inline void RunOnMainThread(SDL_MainThreadCallback callback, void* userdata, bool wait_complete) { SDL::raw::RunOnMainThread(callback, userdata, wait_complete); }
+inline void SetAppMetadata(std::string& appname, std::string& appversion, std::string& appidentifier) { SDL::raw::SetAppMetadata(appname.c_str(), appversion.c_str(), appidentifier.c_str()); }
+inline void SetAppMetadataProperty(std::string& name, std::string& value) { SDL::raw::SetAppMetadataProperty(name.c_str(), value.c_str()); }
+inline std::string GetAppMetadataProperty(std::string& name) { return SDL::raw::GetAppMetadataProperty(name.c_str()); }
+inline SDL_SharedObject* LoadObject(std::string& sofile) { return SDL::raw::LoadObject(sofile.c_str()); }
+inline SDL_FunctionPointer LoadFunction(SDL_SharedObject* handle, std::string& name) { return SDL::raw::LoadFunction(handle, name.c_str()); }
+inline void UnloadObject(SDL_SharedObject* handle) { SDL::raw::UnloadObject(handle); }
+inline std::vector<SDL_Locale*> GetPreferredLocales() { int _count; std::vector<SDL_Locale*> _items; auto _ret = SDL::raw::GetPreferredLocales(&_count); for (int i = 0; i < _count; i++) _items.push_back(_ret[i]); return _items; }
+inline void SetLogPriorities(SDL_LogPriority priority) { SDL::raw::SetLogPriorities(priority); }
+inline void SetLogPriority(int category, SDL_LogPriority priority) { SDL::raw::SetLogPriority(category, priority); }
+inline SDL_LogPriority GetLogPriority(int category) { return SDL::raw::GetLogPriority(category); }
+inline void ResetLogPriorities() { SDL::raw::ResetLogPriorities(); }
+inline void SetLogPriorityPrefix(SDL_LogPriority priority, std::string& prefix) { SDL::raw::SetLogPriorityPrefix(priority, prefix.c_str()); }
+inline void LogMessageV(int category, SDL_LogPriority priority, std::string& fmt, va_list ap) { SDL::raw::LogMessageV(category, priority, fmt.c_str(), ap); }
+inline SDL_LogOutputFunction GetDefaultLogOutputFunction() { return SDL::raw::GetDefaultLogOutputFunction(); }
+inline void GetLogOutputFunction(SDL_LogOutputFunction* callback, void** userdata) { SDL::raw::GetLogOutputFunction(callback, userdata); }
+inline void SetLogOutputFunction(SDL_LogOutputFunction callback, void* userdata) { SDL::raw::SetLogOutputFunction(callback, userdata); }
+inline void ShowMessageBox(const SDL_MessageBoxData* messageboxdata, int* buttonid) { SDL::raw::ShowMessageBox(messageboxdata, buttonid); }
+inline void ShowSimpleMessageBox(SDL::MessageBoxFlags flags, std::string& title, std::string& message, std::shared_ptr<SDL::Window> window) { SDL::raw::ShowSimpleMessageBox(flags, title.c_str(), message.c_str(), window->get()); }
+inline void Metal_DestroyView(SDL_MetalView view) { SDL::raw::Metal_DestroyView(view); }
+inline void* Metal_GetLayer(SDL_MetalView view) { return SDL::raw::Metal_GetLayer(view); }
+inline void OpenURL(std::string& url) { SDL::raw::OpenURL(url.c_str()); }
+inline std::string GetPlatform() { return SDL::raw::GetPlatform(); }
+inline SDL_Process* CreateProcess(std::string& args, bool pipe_stdio) { return SDL::raw::CreateProcess(args, pipe_stdio); }
+inline SDL_Process* CreateProcessWithProperties(SDL_PropertiesID props) { return SDL::raw::CreateProcessWithProperties(props); }
+inline SDL_PropertiesID GetProcessProperties(SDL_Process* process) { return SDL::raw::GetProcessProperties(process); }
+inline void* ReadProcess(SDL_Process* process, size_t* datasize, int* exitcode) { return SDL::raw::ReadProcess(process, datasize, exitcode); }
+inline SDL_IOStream* GetProcessInput(SDL_Process* process) { return SDL::raw::GetProcessInput(process); }
+inline SDL_IOStream* GetProcessOutput(SDL_Process* process) { return SDL::raw::GetProcessOutput(process); }
+inline void KillProcess(SDL_Process* process, bool force) { SDL::raw::KillProcess(process, force); }
+inline bool WaitProcess(SDL_Process* process, bool block, int* exitcode) { return SDL::raw::WaitProcess(process, block, exitcode); }
+inline void DestroyProcess(SDL_Process* process) { SDL::raw::DestroyProcess(process); }
+inline int GetNumRenderDrivers() { return SDL::raw::GetNumRenderDrivers(); }
+inline std::string GetRenderDriver(int index) { return SDL::raw::GetRenderDriver(index); }
+inline void CreateWindowAndRenderer(std::string& title, int width, int height, SDL::WindowFlags window_flags, std::shared_ptr<SDL::Window> window, std::shared_ptr<SDL::Renderer> renderer) { SDL::raw::CreateWindowAndRenderer(title.c_str(), width, height, window_flags, window->get(), renderer->get()); }
+inline std::shared_ptr<SDL::Renderer> CreateRendererWithProperties(SDL_PropertiesID props) { return SDL::Renderer::get(SDL::raw::CreateRendererWithProperties(props)); }
+inline void DestroyTexture(std::shared_ptr<SDL::Texture> texture) { SDL::raw::DestroyTexture(texture->get()); }
+inline void DestroyRenderer(std::shared_ptr<SDL::Renderer> renderer) { SDL::raw::DestroyRenderer(renderer->get()); }
+inline SDL_Storage* OpenTitleStorage(std::string& override, SDL_PropertiesID props) { return SDL::raw::OpenTitleStorage(override.c_str(), props); }
+inline SDL_Storage* OpenUserStorage(std::string& org, std::string& app, SDL_PropertiesID props) { return SDL::raw::OpenUserStorage(org.c_str(), app.c_str(), props); }
+inline SDL_Storage* OpenFileStorage(std::string& path) { return SDL::raw::OpenFileStorage(path.c_str()); }
+inline SDL_Storage* OpenStorage(const SDL_StorageInterface* iface, void* userdata) { return SDL::raw::OpenStorage(iface, userdata); }
+inline void CloseStorage(SDL_Storage* storage) { SDL::raw::CloseStorage(storage); }
+inline bool StorageReady(SDL_Storage* storage) { return SDL::raw::StorageReady(storage); }
+inline void GetStorageFileSize(SDL_Storage* storage, std::string& path, Uint64* length) { SDL::raw::GetStorageFileSize(storage, path.c_str(), length); }
+inline void ReadStorageFile(SDL_Storage* storage, std::string& path, void* destination, Uint64 length) { SDL::raw::ReadStorageFile(storage, path.c_str(), destination, length); }
+inline void WriteStorageFile(SDL_Storage* storage, std::string& path, const void* source, Uint64 length) { SDL::raw::WriteStorageFile(storage, path.c_str(), source, length); }
+inline void CreateStorageDirectory(SDL_Storage* storage, std::string& path) { SDL::raw::CreateStorageDirectory(storage, path.c_str()); }
+inline void EnumerateStorageDirectory(SDL_Storage* storage, std::string& path, SDL_EnumerateDirectoryCallback callback, void* userdata) { SDL::raw::EnumerateStorageDirectory(storage, path.c_str(), callback, userdata); }
+inline void RemoveStoragePath(SDL_Storage* storage, std::string& path) { SDL::raw::RemoveStoragePath(storage, path.c_str()); }
+inline void RenameStoragePath(SDL_Storage* storage, std::string& oldpath, std::string& newpath) { SDL::raw::RenameStoragePath(storage, oldpath.c_str(), newpath.c_str()); }
+inline void CopyStorageFile(SDL_Storage* storage, std::string& oldpath, std::string& newpath) { SDL::raw::CopyStorageFile(storage, oldpath.c_str(), newpath.c_str()); }
+inline void GetStoragePathInfo(SDL_Storage* storage, std::string& path, SDL_PathInfo* info) { SDL::raw::GetStoragePathInfo(storage, path.c_str(), info); }
+inline Uint64 GetStorageSpaceRemaining(SDL_Storage* storage) { return SDL::raw::GetStorageSpaceRemaining(storage); }
+inline std::vector<std::string> GlobStorageDirectory(SDL_Storage* storage, std::string& path, std::string& pattern, SDL::GlobFlags flags) { int _count; std::vector<std::string> _items; auto _ret = SDL::raw::GlobStorageDirectory(storage, path.c_str(), pattern.c_str(), flags, &_count); for (int i = 0; i < _count; i++) _items.push_back(_ret[i]); return _items; }
+inline void SetX11EventHook(SDL_X11EventHook callback, void* userdata) { SDL::raw::SetX11EventHook(callback, userdata); }
+inline bool IsTablet() { return SDL::raw::IsTablet(); }
+inline bool IsTV() { return SDL::raw::IsTV(); }
+inline SDL_Sandbox GetSandbox() { return SDL::raw::GetSandbox(); }
+inline void OnApplicationWillTerminate() { SDL::raw::OnApplicationWillTerminate(); }
+inline void OnApplicationDidReceiveMemoryWarning() { SDL::raw::OnApplicationDidReceiveMemoryWarning(); }
+inline void OnApplicationWillEnterBackground() { SDL::raw::OnApplicationWillEnterBackground(); }
+inline void OnApplicationDidEnterBackground() { SDL::raw::OnApplicationDidEnterBackground(); }
+inline void OnApplicationWillEnterForeground() { SDL::raw::OnApplicationWillEnterForeground(); }
+inline void OnApplicationDidEnterForeground() { SDL::raw::OnApplicationDidEnterForeground(); }
+inline void GetDateTimeLocalePreferences(SDL_DateFormat* dateFormat, SDL_TimeFormat* timeFormat) { SDL::raw::GetDateTimeLocalePreferences(dateFormat, timeFormat); }
+inline SDL_Time GetCurrentTime() { SDL_Time _out; SDL::raw::GetCurrentTime(&_out); return _out; }
+inline void TimeToDateTime(SDL_Time ticks, SDL_DateTime* dt, bool localTime) { SDL::raw::TimeToDateTime(ticks, dt, localTime); }
+inline void DateTimeToTime(const SDL_DateTime* dt, SDL_Time* ticks) { SDL::raw::DateTimeToTime(dt, ticks); }
+inline void TimeToWindows(SDL_Time ticks, Uint32* dwLowDateTime, Uint32* dwHighDateTime) { SDL::raw::TimeToWindows(ticks, dwLowDateTime, dwHighDateTime); }
+inline SDL_Time TimeFromWindows(Uint32 dwLowDateTime, Uint32 dwHighDateTime) { return SDL::raw::TimeFromWindows(dwLowDateTime, dwHighDateTime); }
+inline int GetDaysInMonth(int year, int month) { return SDL::raw::GetDaysInMonth(year, month); }
+inline int GetDayOfYear(int year, int month, int day) { return SDL::raw::GetDayOfYear(year, month, day); }
+inline int GetDayOfWeek(int year, int month, int day) { return SDL::raw::GetDayOfWeek(year, month, day); }
+inline Uint64 GetTicks() { return SDL::raw::GetTicks(); }
+inline Uint64 GetTicksNS() { return SDL::raw::GetTicksNS(); }
+inline Uint64 GetPerformanceCounter() { return SDL::raw::GetPerformanceCounter(); }
+inline Uint64 GetPerformanceFrequency() { return SDL::raw::GetPerformanceFrequency(); }
+inline void Delay(Uint32 ms) { SDL::raw::Delay(ms); }
+inline void DelayNS(Uint64 ns) { SDL::raw::DelayNS(ns); }
+inline void DelayPrecise(Uint64 ns) { SDL::raw::DelayPrecise(ns); }
+inline SDL_TimerID AddTimer(Uint32 interval, SDL_TimerCallback callback, void* userdata) { return SDL::raw::AddTimer(interval, callback, userdata); }
+inline SDL_TimerID AddTimerNS(Uint64 interval, SDL_NSTimerCallback callback, void* userdata) { return SDL::raw::AddTimerNS(interval, callback, userdata); }
+inline void RemoveTimer(SDL_TimerID id) { SDL::raw::RemoveTimer(id); }
+inline std::shared_ptr<SDL::TrayMenu> CreateTraySubmenu(SDL_TrayEntry* entry) { return SDL::TrayMenu::get(SDL::raw::CreateTraySubmenu(entry)); }
+inline std::shared_ptr<SDL::TrayMenu> GetTraySubmenu(SDL_TrayEntry* entry) { return SDL::TrayMenu::get(SDL::raw::GetTraySubmenu(entry)); }
+inline void RemoveTrayEntry(SDL_TrayEntry* entry) { SDL::raw::RemoveTrayEntry(entry); }
+inline void SetTrayEntryLabel(SDL_TrayEntry* entry, std::string& label) { SDL::raw::SetTrayEntryLabel(entry, label.c_str()); }
+inline std::string GetTrayEntryLabel(SDL_TrayEntry* entry) { return SDL::raw::GetTrayEntryLabel(entry); }
+inline void SetTrayEntryChecked(SDL_TrayEntry* entry, bool checked) { SDL::raw::SetTrayEntryChecked(entry, checked); }
+inline bool GetTrayEntryChecked(SDL_TrayEntry* entry) { return SDL::raw::GetTrayEntryChecked(entry); }
+inline void SetTrayEntryEnabled(SDL_TrayEntry* entry, bool enabled) { SDL::raw::SetTrayEntryEnabled(entry, enabled); }
+inline bool GetTrayEntryEnabled(SDL_TrayEntry* entry) { return SDL::raw::GetTrayEntryEnabled(entry); }
+inline void SetTrayEntryCallback(SDL_TrayEntry* entry, SDL_TrayCallback callback, void* userdata) { SDL::raw::SetTrayEntryCallback(entry, callback, userdata); }
+inline void ClickTrayEntry(SDL_TrayEntry* entry) { SDL::raw::ClickTrayEntry(entry); }
+inline void DestroyTray(std::shared_ptr<SDL::Tray> tray) { SDL::raw::DestroyTray(tray->get()); }
+inline std::shared_ptr<SDL::TrayMenu> GetTrayEntryParent(SDL_TrayEntry* entry) { return SDL::TrayMenu::get(SDL::raw::GetTrayEntryParent(entry)); }
+inline void UpdateTrays() { SDL::raw::UpdateTrays(); }
+inline int GetVersion() { return SDL::raw::GetVersion(); }
+inline std::string GetRevision() { return SDL::raw::GetRevision(); }
 }

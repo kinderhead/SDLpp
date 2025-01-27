@@ -7,20 +7,41 @@
     },
     "SDL_Renderer":
     {
-        "remove": ["Render", "Renderer"],
+        "remove": ["Renderer"],
         "init": ["SDL_CreateRenderer"],
         "destroy": "SDL_DestroyRenderer"
     },
     "SDL_Surface":
     {
-        "remove": [],
+        "remove": ["Surface"],
         "init": ["SDL_CreateSurface", "SDL_CreateSurfaceFrom"],
         "destroy": "SDL_DestroySurface"
+    },
+    "SDL_Texture":
+    {
+        "remove": ["Texture"],
+        "init": ["SDL_CreateTexture", "SDL_CreateTextureFromSurface", "SDL_CreateTextureWithProperties"],
+        "destroy": "SDL_DestroyTexture",
+        "patches": {
+            "SDL_LockTextureToSurface": "inline std::shared_ptr<SDL::Surface> LockToSurface(const SDL::Rect& rect) const { SDL_Surface* _out; SDL::raw::LockTextureToSurface(get(), &rect, &_out); return SDL::Surface::get(_out, true); }"
+        }
     },
     "SDL_Palette":
     {
         "remove": ["Palette"],
         "init": ["SDL_CreatePalette", "SDL_CreateSurfacePalette"],
         "destroy": "SDL_DestroyPalette"
+    },
+    "SDL_Tray":
+    {
+        "remove": ["Tray"],
+        "init": ["SDL_CreateTray"],
+        "destroy": "SDL_DestroyTray"
+    },
+    "SDL_TrayMenu":
+    {
+        "remove": ["TrayMenu"],
+        "init": ["SDL_CreateTrayMenu"],
+        "destroy": ""
     }
 }
